@@ -9,6 +9,7 @@ import { ResultsDisplay } from "@/components/dashboard/results-display"
 import { RecentFiles } from "@/components/dashboard/recent-files"
 import { BackgroundPattern } from "@/components/ui/background-pattern"
 import { cn } from "@/lib/utils"
+import { analyzeMeeting } from "@/lib/api"
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>("upload")
@@ -20,53 +21,48 @@ export function Dashboard() {
     setSidebarExpanded(expanded);
   }
 
-  const handleUpload = (type: string, data: any) => {
-    setProcessingStatus("processing")
-
-    // Simulate processing
-    setTimeout(() => {
-      setProcessingStatus("completed")
-      setResults({
-        summary: "Questa è una riunione di pianificazione del progetto X.",
-        decisions: [
-          "Lanciare il prodotto entro fine mese",
-          "Assumere due nuovi sviluppatori",
-          "Aumentare il budget marketing del 15%",
-        ],
-        tasks: [
-          {
-            task: "Finalizzare il design",
-            assignee: "Marco",
-            deadline: "2023-06-15",
-            priority: "Alta",
-            category: "Design",
-          },
-          {
-            task: "Completare il backend",
-            assignee: "Giulia",
-            deadline: "2023-06-20",
-            priority: "Alta",
-            category: "Sviluppo",
-          },
-          {
-            task: "Preparare materiali marketing",
-            assignee: "Sofia",
-            deadline: "2023-06-25",
-            priority: "Media",
-            category: "Marketing",
-          },
-        ],
-        themes: ["Design del prodotto", "Pianificazione risorse", "Strategia di lancio"],
-        participants: [
-          { name: "Alessandro", role: "Project Manager" },
-          { name: "Marco", role: "Designer" },
-          { name: "Giulia", role: "Sviluppatore" },
-          { name: "Sofia", role: "Marketing" },
-        ],
-      })
-      setActiveTab("results")
-    }, 3000)
-  }
+  const handleUpload = async (type: string, data: any) => {
+    setProcessingStatus("processing");
+    
+    try {
+      let file;
+      
+      if (type === "text") {
+        // Converti il testo in un file
+        const blob = new Blob([data], { type: 'text/plain' });
+        file = new File([blob], "transcript.txt", { type: 'text/plain' });
+      } else {
+        file = data;
+      }
+      
+      const result = await analyzeMeeting(file);
+      
+      // Trasforma i dati dal formato API al formato frontend
+      const formattedResults = {
+        summary: result.riassunto,
+        decisions: result.decisioni,
+        tasks: result.tasks.map((task: { descrizione: string; assegnato_a: string; scadenza?: string }) => ({
+          task: task.descrizione,
+          assignee: task.assegnato_a,
+          deadline: task.scadenza || 'Non specificata',
+          priority: 'Media',
+          category: 'Generale',
+        })),
+        themes: result.temi_principali,
+        participants: result.partecipanti.map((participant: { nome: string; ruolo: string }) => ({
+          name: participant.nome,
+          role: participant.ruolo || 'Partecipante',
+        })),
+      };
+      
+      setResults(formattedResults);
+      setProcessingStatus("completed");
+      setActiveTab("results");
+    } catch (error) {
+      console.error('Errore durante l\'elaborazione:', error);
+      setProcessingStatus("failed");
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {

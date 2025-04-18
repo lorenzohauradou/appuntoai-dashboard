@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2 } from "lucide-react"
+import { Loader2, CheckCircle, XCircle } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -31,14 +31,42 @@ export function ProcessingStatus({ status }: ProcessingStatusProps) {
   }, [status])
 
   if (status === "completed") {
-    return null
+    return (
+      <Card className="border-0 shadow-md bg-white">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <CheckCircle className="h-8 w-8 text-green-500" />
+            <div>
+              <p className="font-medium">Elaborazione completata</p>
+              <p className="text-sm text-muted-foreground">L'analisi è pronta per essere visualizzata</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (status === "failed") {
+    return (
+      <Card className="border-0 shadow-md bg-white">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <XCircle className="h-8 w-8 text-red-500" />
+            <div>
+              <p className="font-medium">Errore durante l'elaborazione</p>
+              <p className="text-sm text-muted-foreground">Si è verificato un errore. Riprova più tardi.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
     <Card className="border-0 shadow-md bg-white">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center">
-          {status === "processing" && <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />}
+          <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />
           Elaborazione in corso
         </CardTitle>
         <CardDescription>
