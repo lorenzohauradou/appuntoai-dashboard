@@ -61,7 +61,7 @@ export function Footer() {
           </nav>
         </div>
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Appuntoai. Tutti i diritti riservati.
+          © {new Date().getFullYear()} Appuntoai. Tutti i diritti riservati. <br />Made with ❤️
         </div>
       </div>
     </footer>

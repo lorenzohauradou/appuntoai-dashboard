@@ -142,7 +142,7 @@ export function ChatDialog({
                   <Button 
                     key={i} 
                     variant="outline" 
-                    className="justify-start text-left h-auto py-2"
+                    className="justify-start text-left h-auto py-2 hover:text-primary"
                     onClick={() => handleSuggestedQuestion(question)}
                   >
                     <FileQuestion className="mr-2 h-4 w-4 flex-shrink-0" />

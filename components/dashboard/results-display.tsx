@@ -403,7 +403,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
           {results.transcript_id && (
             <Button onClick={onChatOpen} className="gap-2 bg-primary text-white">
               <MessageSquare className="h-4 w-4" />
-              Chatta con il documento
+              Chatta con il documento!
             </Button>
           )}
           <Button variant="outline" className="gap-2">

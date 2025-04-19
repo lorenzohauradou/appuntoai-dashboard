@@ -19,9 +19,9 @@ export function LandingPage() {
         <HeroSection />
         <HowItWorksSection />
         <DemoSection />
-        <FeaturesSection />
-        <PricingSection />
         <ForWhoSection />
+        <PricingSection />
+        <FeaturesSection />
         <FaqSection />
         <CtaSection />
       </main>

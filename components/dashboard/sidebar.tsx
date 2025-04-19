@@ -98,7 +98,7 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
                 key={item.id}
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start text-white hover:bg-white/10",
+                  "w-full justify-start text-white hover:bg-white/10 hover:text-white",
                   activeTab === item.id && "bg-white/20",
                 )}
                 onClick={() => {
@@ -188,7 +188,7 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
               key={item.id}
               variant="ghost"
               className={cn(
-                "w-full justify-start text-white hover:bg-white/10",
+                "w-full justify-start text-white hover:bg-white/10 hover:text-white",
                 activeTab === item.id && "bg-white/20",
                 !expanded && "justify-center p-2",
               )}

@@ -21,7 +21,7 @@ export function DemoSection() {
                 <h3 className="text-lg font-medium">Input: Trascrizione riunione</h3>
               </div>
               <CardContent className="p-4">
-                <div className="max-h-[400px] overflow-y-auto rounded-lg bg-slate-100 p-4">
+                <div className="max-h-[400px] overflow-y-auto rounded-lg bg-card p-4">
                   <p className="mb-2 font-medium">Marco (Project Manager):</p>
                   <p className="mb-4 text-sm">
                     Buongiorno a tutti, grazie per essere qui. Oggi dobbiamo discutere lo stato di avanzamento del

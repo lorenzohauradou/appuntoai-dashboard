@@ -6,7 +6,7 @@ export function FaqSection() {
       <div className="container">
         <div className="mx-auto max-w-[800px] text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Domande frequenti</h2>
-          <p className="mb-12 text-xl text-muted-foreground">Risposte alle domande più comuni su Appuntoai</p>
+          <p className="mb-12 text-xl text-muted-foreground">Risposte alle domande più comuni su <span className="font-bold text-primary">Appuntoai</span></p>
         </div>
 
         <div className="mx-auto max-w-[800px]">

@@ -31,7 +31,7 @@ export function HowItWorksSection() {
               </TabsTrigger>
             </TabsList>
             <div className="mt-6 md:mt-8 rounded-lg border p-3 md:p-6">
-              <TabsContent value="record" className="mt-0">
+              <TabsContent value="record" className="mt-0 bg-card">
                 <div className="flex flex-col gap-4 md:gap-6 md:flex-row">
                   <div className="flex-1">
                     <h3 className="mb-4 text-xl font-semibold">Registra o carica il tuo contenuto</h3>

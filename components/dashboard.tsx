@@ -53,12 +53,27 @@ export function Dashboard() {
       // Determina il tipo di contenuto in base alla risposta
       let documentType: "meeting" | "lezione" | "intervista" = "meeting";
       
-      if (result.possibili_domande_esame !== undefined) {
+      // Verifica se è una lezione (presenza di possibili_domande_esame o concetti_chiave)
+      if ((result.possibili_domande_esame !== undefined && result.possibili_domande_esame !== null) || 
+          (result.concetti_chiave !== undefined && result.concetti_chiave !== null && result.concetti_chiave.length > 0)) {
         documentType = "lezione";
-      } else if (result.decisioni !== undefined) {
+        console.log("Rilevato tipo: LEZIONE basato su possibili_domande_esame o concetti_chiave non nulli");
+      } 
+      // Verifica se è un meeting (presenza di decisioni o temi_principali)
+      else if ((result.decisioni !== undefined && result.decisioni !== null && result.decisioni.length > 0) || 
+               (result.temi_principali !== undefined && result.temi_principali !== null && result.temi_principali.length > 0)) {
         documentType = "meeting";
-      } else if (result.domande_principali !== undefined) {
+        console.log("Rilevato tipo: MEETING basato su decisioni o temi_principali non nulli");
+      } 
+      // Verifica esplicitamente il tipo_contenuto se fornito
+      else if (result.tipo_contenuto === 'meeting') {
+        documentType = "meeting";
+        console.log("Rilevato tipo: MEETING basato su tipo_contenuto");
+      }
+      // Altra tipologia (es. intervista)
+      else if (result.domande_principali !== undefined && result.domande_principali !== null) {
         documentType = "intervista";
+        console.log("Rilevato tipo: INTERVISTA basato su domande_principali");
       }
 
       // Imposta lo stato del tipo di contenuto
@@ -111,6 +126,9 @@ export function Dashboard() {
       }
       
       console.log("Risultati formattati:", formattedResults);
+      console.log("Tipo di contenuto in formattedResults:", formattedResults.contentType);
+      console.log("Decisioni incluse:", formattedResults.decisions ? formattedResults.decisions.length : "nessuna");
+      console.log("Temi inclusi:", formattedResults.themes ? formattedResults.themes.length : "nessuno");
       
       setResults(formattedResults);
       setProcessingStatus("completed");
