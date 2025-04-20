@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Check } from "lucide-react"
+import { Check, MessageSquare } from "lucide-react"
 import Link from "next/link"
 
 export function PricingSection() {
@@ -12,110 +12,160 @@ export function PricingSection() {
           <p className="mb-12 text-xl text-muted-foreground">Scegli il piano che meglio si adatta alle tue necessità</p>
         </div>
 
-        <div className="mx-auto grid max-w-[1200px] gap-6 md:grid-cols-3">
+        <div className="mx-auto grid max-w-[1400px] gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="flex flex-col border-2">
             <CardHeader>
-              <CardTitle>Freemium</CardTitle>
+              <CardTitle>Free</CardTitle>
               <div className="mt-4 flex items-baseline text-5xl font-extrabold">Gratis</div>
-              <CardDescription className="mt-4">Ideale per provare il servizio</CardDescription>
+              <CardDescription className="mt-4 h-10">Ideale per provare il servizio</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
                   <span className="text-sm">3 report al mese</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
                   <span className="text-sm">Trascrizione fino a 30 minuti</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Esportazione in PDF</span>
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Analisi base (Task, Decisioni, Temi)</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Esportazione in PDF e TXT</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
                   <span className="text-sm">Supporto email</span>
                 </li>
               </ul>
             </CardContent>
             <CardFooter>
               <Link href="/dashboard" className="w-full">
-                <Button className="w-full bg-primary text-white hover:bg-primary/90">Inizia gratis</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-
-          <Card className="flex flex-col border-2 border-primary">
-            <CardHeader>
-              <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                Più popolare
-              </div>
-              <CardTitle className="mt-4">A consumo</CardTitle>
-              <div className="mt-4 flex items-baseline text-5xl font-extrabold">
-                15€
-                <span className="ml-1 text-lg font-medium text-muted-foreground">/ 10 riunioni</span>
-              </div>
-              <CardDescription className="mt-4">Perfetto per uso occasionale</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">10 report</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Trascrizione fino a 2 ore</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Esportazione in tutti i formati</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Supporto prioritario</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Integrazione con altre app</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/dashboard" className="w-full">
-                <Button className="w-full bg-primary text-white hover:bg-primary/90">Acquista ora</Button>
+                <Button variant="outline" className="w-full">Inizia gratis</Button>
               </Link>
             </CardFooter>
           </Card>
 
           <Card className="flex flex-col border-2">
             <CardHeader>
-              <CardTitle>API white-label</CardTitle>
-              <div className="mt-4 flex items-baseline text-5xl font-extrabold">Contattaci</div>
-              <CardDescription className="mt-4">Per agenzie e piattaforme</CardDescription>
+              <CardTitle>Pro</CardTitle>
+              <div className="mt-4 flex items-baseline text-5xl font-extrabold">
+                12€
+                <span className="ml-1 text-lg font-medium text-muted-foreground">/ mese</span>
+              </div>
+              <CardDescription className="mt-4 h-10">Per professionisti e uso regolare</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Utilizzo illimitato</span>
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">20 report al mese</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">API completa</span>
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Trascrizione fino a 90 minuti</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Personalizzazione completa</span>
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Analisi base (Task, Decisioni, Temi)</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">Supporto dedicato</span>
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Esportazione in tutti i formati</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary" />
-                  <span className="text-sm">SLA garantito</span>
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Supporto prioritario</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Link href="/dashboard" className="w-full">
+                <Button variant="outline" className="w-full">Scegli Pro</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="flex flex-col border-2 border-primary">
+            <CardHeader>
+              <div className="flex justify-end">
+                <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary -mt-2 -mr-2">
+                  Più popolare
+                </div>
+              </div>
+              <CardTitle className="mt-0">Business</CardTitle>
+              <div className="mt-4 flex items-baseline text-5xl font-extrabold">
+                39€
+                <span className="ml-1 text-lg font-medium text-muted-foreground">/ mese</span>
+              </div>
+              <CardDescription className="mt-4 h-10">Per team e analisi interattive</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">100 report al mese</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Trascrizione fino a 180 minuti</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Tutte le funzionalità Pro</span>
+                </li>
+                <li className="flex items-start gap-2 font-medium text-primary">
+                  <MessageSquare className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Chatta con il documento (RAG)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Funzionalità collaborative (presto)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Supporto Dedicato</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Link href="/dashboard" className="w-full">
+                <Button className="w-full bg-primary text-white hover:bg-primary/90">Scegli Business</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="flex flex-col border-2">
+            <CardHeader>
+              <CardTitle>Enterprise</CardTitle>
+              <div className="mt-4 flex items-baseline text-5xl font-extrabold">Custom</div>
+              <CardDescription className="mt-4 h-10">Per agenzie e soluzioni su misura</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Volumi personalizzati</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Accesso API completo</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Opzioni White-label</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Personalizzazioni avanzate</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Supporto dedicato e SLA</span>
                 </li>
               </ul>
             </CardContent>
