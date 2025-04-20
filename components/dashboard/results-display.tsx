@@ -66,6 +66,11 @@ interface ResultsDisplayProps {
 }
 
 export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
+  // Log #1: Controlla le props ricevute all'inizio
+  console.log("--- ResultsDisplay RENDER ---");
+  console.log("Props ricevute:", results);
+  console.log("ContentType:", results.contentType); // Conferma il tipo
+
   const [activeTab, setActiveTab] = useState(results.contentType === "lezione" ? "summary" : "summary")
 
   const getPriorityColor = (priority: string) => {
@@ -83,6 +88,8 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
 
   // Determina i tab da mostrare in base al tipo di contenuto
   const renderTabs = () => {
+    // Log #2: Verifica quale set di TabsList viene scelto
+    console.log("ResultsDisplay: renderTabs - ContentType =", results.contentType); 
     if (results.contentType === "lezione") {
       return (
         <TabsList className="grid grid-cols-2 md:grid-cols-6 mb-6">
@@ -145,6 +152,9 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
 
   // Render condizionale del contenuto dei tab
   const renderTabsContent = () => {
+    // Log #3: Verifica quale blocco di contenuto viene scelto
+    console.log("ResultsDisplay: renderTabsContent - ContentType =", results.contentType);
+
     // Contenuto comune a tutti i tipi
     const commonTabs = (
       <>
@@ -172,7 +182,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {results.participants.length > 0 ? (
+                {results.participants && results.participants.length > 0 ? ( // Aggiunto check esplicito per results.participants
                   results.participants.map((participant, index) => (
                     <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary">
@@ -294,6 +304,8 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
     } else {
       // Meeting e altri tipi
       const meetingResults = results as MeetingResults;
+      // Log #6: Controlla i dati specifici del meeting
+      console.log("ResultsDisplay: Rendering Meeting Content - Data:", meetingResults);
       return (
         <>
           {commonTabs}
@@ -306,7 +318,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-4">
-                  {meetingResults.decisions.length > 0 ? (
+                  {meetingResults.decisions && meetingResults.decisions.length > 0 ? ( // Aggiunto check esplicito
                     meetingResults.decisions.map((decision, index) => (
                       <li key={index} className="flex items-start gap-3 p-3 rounded-lg border">
                         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
@@ -329,7 +341,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {meetingResults.tasks.length > 0 ? (
+                  {meetingResults.tasks && meetingResults.tasks.length > 0 ? ( // Aggiunto check esplicito
                     meetingResults.tasks.map((task, index) => (
                       <div key={index} className="p-4 rounded-lg border">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
@@ -370,7 +382,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {meetingResults.themes.length > 0 ? (
+                  {meetingResults.themes && meetingResults.themes.length > 0 ? ( // Aggiunto check esplicito
                     meetingResults.themes.map((theme, index) => (
                       <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3 bg-primary-100 text-primary">
                         {theme}
@@ -388,6 +400,8 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
     }
   }
 
+  // Log #10: Controlla se il componente arriva a fare il return finale
+  console.log("--- ResultsDisplay: Fine Render Function ---");
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

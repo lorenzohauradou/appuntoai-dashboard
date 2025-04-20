@@ -92,7 +92,7 @@ export function HowItWorksSection() {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="transcribe" className="mt-0">
+              <TabsContent value="transcribe" className="mt-0 bg-card">
                 <div className="flex flex-col gap-4 md:gap-6 md:flex-row">
                   <div className="flex-1">
                     <h3 className="mb-4 text-xl font-semibold">Trascrizione automatica con AI</h3>
@@ -153,7 +153,7 @@ export function HowItWorksSection() {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="analyze" className="mt-0">
+              <TabsContent value="analyze" className="mt-0 bg-card">
                 <div className="flex flex-col gap-4 md:gap-6 md:flex-row">
                   <div className="flex-1">
                     <h3 className="mb-4 text-xl font-semibold">Analisi intelligente con LLM</h3>
@@ -224,7 +224,7 @@ export function HowItWorksSection() {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="share" className="mt-0">
+              <TabsContent value="share" className="mt-0 bg-card">
                 <div className="flex flex-col gap-4 md:gap-6 md:flex-row">
                   <div className="flex-1">
                     <h3 className="mb-4 text-xl font-semibold">Condividi ed esporta facilmente</h3>

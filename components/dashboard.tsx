@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Header } from "@/components/dashboard/header"
 import { UploadSection } from "@/components/dashboard/upload-section"
@@ -21,6 +21,15 @@ export function Dashboard() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [transcriptId, setTranscriptId] = useState<string | null>(null)
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
+
+  useEffect(() => {
+    console.log("--- DASHBOARD STATE UPDATE ---");
+    console.log("Processing Status:", processingStatus);
+    console.log("Active Tab:", activeTab);
+    console.log("Results State:", results);
+    console.log("Transcript ID:", transcriptId);
+    console.log("-----------------------------");
+  }, [results, processingStatus, activeTab, transcriptId]);
 
   const handleSidebarToggle = (expanded: boolean) => {
     setSidebarExpanded(expanded);
@@ -108,12 +117,12 @@ export function Dashboard() {
           summary: result.riassunto,
           contentType: "meeting",
           decisions: result.decisioni || [],
-          tasks: (result.tasks || []).map((task: { descrizione: string; assegnato_a: string; scadenza?: string }) => ({
+          tasks: (result.tasks || []).map((task: { descrizione: string; assegnatario: string; scadenza?: string; priorita?: string; categoria?: string }) => ({
             task: task.descrizione,
-            assignee: task.assegnato_a,
+            assignee: task.assegnatario,
             deadline: task.scadenza || 'Non specificata',
-            priority: 'Media',
-            category: 'Generale',
+            priority: task.priorita || 'Media',
+            category: task.categoria || 'Generale',
           })),
           themes: result.temi_principali || [],
           participants: (result.partecipanti || []).map((participant: { nome: string; ruolo: string }) => ({

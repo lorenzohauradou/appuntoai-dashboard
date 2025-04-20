@@ -9,7 +9,7 @@ import { CtaSection } from "@/components/sections/cta-section"
 import { Footer } from "@/components/sections/footer"
 import { Navbar } from "@/components/navbar"
 import { BackgroundPattern } from "@/components/ui/background-pattern"
-
+import { RagVideoSection } from "@/components/sections/rag-video-section"
 export function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -19,6 +19,7 @@ export function LandingPage() {
         <HeroSection />
         <HowItWorksSection />
         <DemoSection />
+        <RagVideoSection />
         <ForWhoSection />
         <PricingSection />
         <FeaturesSection />
