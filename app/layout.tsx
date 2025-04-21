@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: "Appuntoai - Trasforma audio, video e testo in appunti strutturati",
   description:
     "Appuntoai utilizza l'intelligenza artificiale per trasformare le tue riunioni e lezioni in appunti strutturati, riassunti e task.",
+  icons: {
+    icon: "/appuntoai.ico",
+    shortcut: "/appuntoai.ico",
+  },
 }
 
 export default function RootLayout({
