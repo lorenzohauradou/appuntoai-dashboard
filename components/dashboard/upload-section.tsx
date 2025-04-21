@@ -124,7 +124,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
                     sfoglia
                   </span>
                 </p>
-                <p className="text-sm text-muted-foreground text-center">Supporta .mp4, .mov, .avi (max 500MB)</p>
+                <p className="text-sm text-muted-foreground text-center">Supporta .mp4, .mov, .avi</p>
                 <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
               </div>
             ) : (
@@ -165,7 +165,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
                     sfoglia
                   </span>
                 </p>
-                <p className="text-sm text-muted-foreground text-center">Supporta .mp3, .wav, .m4a, .ogg (max 100MB)</p>
+                <p className="text-sm text-muted-foreground text-center">Supporta .mp3, .wav, .m4a, .ogg</p>
                 <input ref={fileInputRef} type="file" accept="audio/*" className="hidden" onChange={handleFileChange} />
               </div>
             ) : (

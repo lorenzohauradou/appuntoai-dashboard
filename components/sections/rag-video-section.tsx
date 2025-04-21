@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { BackgroundPattern } from "@/components/ui/background-pattern"
-import { MessageSquare, PlayCircle, ArrowRight, ListTodo } from "lucide-react"
+import { MessageSquare, ArrowRight, ListTodo } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function RagVideoSection() {
@@ -43,7 +43,7 @@ export function RagVideoSection() {
                   <div>
                     <p className="font-semibold text-base mb-1">Chatta con il documento</p> 
                     <p className="text-sm text-muted-foreground">
-                      Chiedi qualsiasi cosa a una chat ai che conosce tutti i dettagli del tuo meeting!
+                      Chiedi qualsiasi cosa alla chat ai che conosce tutti i dettagli del tuo meeting!
                     </p>
                   </div>
                 </div>
