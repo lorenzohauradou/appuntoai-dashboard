@@ -28,7 +28,7 @@ export function HeroSection() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link href="/dashboard">
                 <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
-                  Prova Appuntoai gratis per 7 giorni
+                  Prova Appuntoai gratis
                 </Button>
               </Link>
             </div>

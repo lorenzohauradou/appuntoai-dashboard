@@ -15,7 +15,7 @@ export function CtaSection() {
           </p>
           <Link href="/dashboard">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-              Prova Appuntoai gratis per 7 giorni
+              Prova Appuntoai gratis
             </Button>
           </Link>
           <p className="mt-4 text-sm text-primary-foreground/80">

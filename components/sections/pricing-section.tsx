@@ -54,7 +54,7 @@ export function PricingSection() {
             <CardHeader>
               <CardTitle>Pro</CardTitle>
               <div className="mt-4 flex items-baseline text-5xl font-extrabold">
-                12€
+                19€
                 <span className="ml-1 text-lg font-medium text-muted-foreground">/ mese</span>
               </div>
               <CardDescription className="mt-4 h-10">Per professionisti e uso regolare</CardDescription>

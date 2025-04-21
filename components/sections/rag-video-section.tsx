@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { BackgroundPattern } from "@/components/ui/background-pattern"
-import { MessageSquare, PlayCircle, FileText, ArrowRight } from "lucide-react"
+import { MessageSquare, PlayCircle, ArrowRight, ListTodo } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function RagVideoSection() {
@@ -19,7 +19,7 @@ export function RagVideoSection() {
           {/* Video card principal e centrale */}
           <Card className="overflow-hidden shadow-lg mb-8">
             <div className="bg-primary p-4 text-white">
-              <h3 className="text-lg font-medium">Carica un video e chatta con il contenuto</h3>
+              <h3 className="text-lg font-medium"></h3>
             </div>
             <CardContent className="p-6">
               <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center mb-6">
@@ -29,34 +29,24 @@ export function RagVideoSection() {
                 </div>
               </div>
               
-              {/* Informazioni sulla chat sotto il video */}
-              <div className="flex flex-col md:flex-row gap-6 items-center">
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <FileText className="h-6 w-6 text-primary shrink-0 mt-1" />
-                    <div>
-                      <p className="font-medium">Analisi automatica</p>
-                      <p className="text-sm text-muted-foreground">
-                        Estrazione di decisioni, task e argomenti chiave dal tuo contenuto
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <MessageSquare className="h-6 w-6 text-primary shrink-0 mt-1" />
-                    <div>
-                      <p className="font-medium">Conversazioni intelligenti</p>
-                      <p className="text-sm text-muted-foreground">
-                        Fai domande specifiche e ottieni risposte basate sul contenuto del video
-                      </p>
-                    </div>
+              {/* Informazioni semplificate sotto il video */}
+              <div className="flex flex-col md:flex-row gap-6 items-center mt-6"> 
+                {/* Blocco Focus Task */}
+                <div className="flex-1 flex items-start gap-4 p-4 bg-slate-50 rounded-lg"> 
+                  <ListTodo className="h-8 w-8 text-primary shrink-0 mt-1" /> 
+                  <div>
+                    <p className="font-semibold text-base mb-1">Chatta con il documento</p> 
+                    <p className="text-sm text-muted-foreground">
+                      Parla con una chat ai che conosce tutto del tuo contenuto!
+                    </p>
                   </div>
                 </div>
                 
-                <div className="w-full md:w-auto">
+                 {/* Bottone Chat rimane */}
+                <div className="w-full md:w-auto md:ml-4"> 
                   <Button className="w-full md:w-auto" size="lg">
                     <MessageSquare className="mr-2 h-4 w-4" />
-                    Chatta con il documento
+                    Scopri di più
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
