@@ -23,50 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-
-interface MeetingResults {
-  contentType: "meeting";
-  summary: string;
-  decisions: string[];
-  tasks: {
-    task: string;
-    assignee: string;
-    deadline: string;
-    priority: string;
-    category: string;
-  }[];
-  themes: string[];
-  participants: {
-    name: string;
-    role: string;
-  }[];
-  transcript_id?: string;
-  suggested_questions?: string[];
-}
-
-interface LectureResults {
-  contentType: "lezione";
-  summary: string;
-  keyPoints: string[];
-  exercises: string[];
-  topics: string[];
-  participants: {
-    name: string;
-    role: string;
-  }[];
-  possibleQuestions: string[];
-  bibliography: string[];
-  teacher: string | null;
-  transcript_id?: string;
-  suggested_questions?: string[];
-}
-
-type ResultsType = MeetingResults | LectureResults;
-
-interface ResultsDisplayProps {
-  results: ResultsType;
-  onChatOpen: () => void;
-}
+import { MeetingResults, LectureResults, ResultsType, ResultsDisplayProps } from "./types"
 
 //  tipo più specifico per lo stile della priorità
 type PriorityStyle = {
@@ -75,7 +32,7 @@ type PriorityStyle = {
   className: string;
 }
 
-export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
+export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: ResultsDisplayProps) {
   // Log #1: Controlla le props ricevute all'inizio
   console.log("--- ResultsDisplay RENDER ---");
   console.log("Props ricevute:", results);
@@ -439,7 +396,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
   // Log #10: Controlla se il componente arriva a fare il return finale
   console.log("--- ResultsDisplay: Fine Render Function ---");
   return (
-    <div className="space-y-6">
+    <div id="results-export-area" className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Risultati dell'analisi</h1>
@@ -456,11 +413,11 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
               Chatta con il documento!
             </Button>
           )}
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={onDownload}>
             <Download className="h-4 w-4" />
             Scarica
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={onShare}>
             <Share2 className="h-4 w-4" />
             Condividi
           </Button>
