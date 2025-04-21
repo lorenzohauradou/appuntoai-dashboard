@@ -63,11 +63,11 @@ export function PricingSection() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">20 report al mese</span>
+                  <span className="text-sm">30 report al mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Trascrizione fino a 90 minuti</span>
+                  <span className="text-sm">Trascrizione fino a 120 minuti</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
@@ -124,7 +124,7 @@ export function PricingSection() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Funzionalità collaborative (presto)</span>
+                  <span className="text-sm">Funzionalità collaborative (in arrivo)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />

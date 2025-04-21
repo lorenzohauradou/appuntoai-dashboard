@@ -12,9 +12,10 @@ import { cn } from "@/lib/utils"
 
 interface UploadSectionProps {
   onUpload: (type: string, data: any) => void
+  processingStatus: string | null
 }
 
-export function UploadSection({ onUpload }: UploadSectionProps) {
+export function UploadSection({ onUpload, processingStatus }: UploadSectionProps) {
   const [activeTab, setActiveTab] = useState("video")
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -249,7 +250,10 @@ export function UploadSection({ onUpload }: UploadSectionProps) {
         <Button
           className="bg-primary text-white hover:bg-primary/90"
           onClick={handleUploadClick}
-          disabled={(activeTab !== "text" || !textInput) && !selectedFile}
+          disabled={
+            processingStatus === 'processing' ||
+            ((activeTab !== "text" || !textInput) && !selectedFile)
+          }
         >
           <Upload className="mr-2 h-4 w-4" />
           Elabora

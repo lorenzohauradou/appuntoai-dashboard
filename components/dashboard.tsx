@@ -217,7 +217,7 @@ export function Dashboard() {
       case "upload":
         return (
           <div className="space-y-6">
-            <UploadSection onUpload={handleUpload} />
+            <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />
             {processingStatus && <ProcessingStatus status={processingStatus} />}
             <RecentFiles />
           </div>
@@ -277,7 +277,7 @@ export function Dashboard() {
           </div>
         )
       default:
-        return <UploadSection onUpload={handleUpload} />
+        return <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />
     }
   }
 

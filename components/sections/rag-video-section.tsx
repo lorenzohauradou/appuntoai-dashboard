@@ -43,7 +43,7 @@ export function RagVideoSection() {
                   <div>
                     <p className="font-semibold text-base mb-1">Chatta con il documento</p> 
                     <p className="text-sm text-muted-foreground">
-                      Parla con una chat ai che conosce tutto del tuo contenuto!
+                      Chiedi qualsiasi cosa a una chat ai che conosce tutti i dettagli del tuo meeting!
                     </p>
                   </div>
                 </div>
