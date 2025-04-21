@@ -23,10 +23,16 @@ export function RagVideoSection() {
             </div>
             <CardContent className="p-6">
               <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center mb-6">
-                <div className="text-center">
-                  <PlayCircle className="h-20 w-20 mx-auto text-primary/60 mb-4" />
-                  <p className="text-sm text-muted-foreground">Il tuo video verrà trascritto e analizzato</p>
-                </div>
+                <video 
+                  className="w-full h-full rounded-lg object-cover"
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                >
+                  <source src="/showcase_video.mp4" type="video/mp4" />
+                  Il tuo browser non supporta il tag video.
+                </video>
               </div>
               
               {/* Informazioni semplificate sotto il video */}
