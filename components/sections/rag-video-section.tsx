@@ -1,9 +1,24 @@
+"use client";
+
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card"
 import { BackgroundPattern } from "@/components/ui/background-pattern"
 import { MessageSquare, ArrowRight, ListTodo } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function RagVideoSection() {
+  const [isVideoZoomed, setIsVideoZoomed] = useState(false);
+
+  const handleVideoClick = () => {
+    if (window.innerWidth < 768) {
+      setIsVideoZoomed(true);
+    }
+  };
+
+  const handleCloseZoom = () => {
+    setIsVideoZoomed(false);
+  };
+
   return (
     <section id="rag-video" className="relative py-16 md:py-24 overflow-hidden">
       <BackgroundPattern />
@@ -16,18 +31,20 @@ export function RagVideoSection() {
         </div>
 
         <div className="mx-auto max-w-[1000px]">
-          {/* Video card principal e centrale */}
           <Card className="overflow-hidden shadow-lg mb-8">
             <div className="bg-primary p-4 text-white">
-              <h3 className="text-lg font-medium"></h3>
+              <h3 className="text-lg font-medium">Video Meeting</h3>
             </div>
             <CardContent className="p-6">
-              <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center mb-6">
-                <video 
-                  className="w-full h-full rounded-lg object-cover"
-                  autoPlay 
-                  loop 
-                  muted 
+              <div
+                className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center mb-6 overflow-hidden md:cursor-default cursor-pointer"
+                onClick={handleVideoClick}
+              >
+                <video
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  loop
+                  muted
                   playsInline
                 >
                   <source src="/showcase_video.mp4" type="video/mp4" />
@@ -35,9 +52,27 @@ export function RagVideoSection() {
                 </video>
               </div>
               
-              {/* Informazioni semplificate sotto il video */}
+              {isVideoZoomed && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:hidden"
+                  onClick={handleCloseZoom}
+                >
+                  <video
+                    className="max-w-full max-h-full rounded-lg"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <source src="/showcase_video.mp4" type="video/mp4" />
+                    Il tuo browser non supporta il tag video.
+                  </video>
+                </div>
+              )}
+
               <div className="flex flex-col md:flex-row gap-6 items-center mt-6"> 
-                {/* Blocco Focus Task */}
                 <div className="flex-1 flex items-start gap-4 p-4 bg-slate-50 rounded-lg"> 
                   <ListTodo className="h-8 w-8 text-primary shrink-0 mt-1" /> 
                   <div>
@@ -48,7 +83,6 @@ export function RagVideoSection() {
                   </div>
                 </div>
                 
-                 {/* Bottone Chat rimane */}
                 <div className="w-full md:w-auto md:ml-4"> 
                   <Button className="w-full md:w-auto" size="lg">
                     <MessageSquare className="mr-2 h-4 w-4" />
@@ -60,7 +94,6 @@ export function RagVideoSection() {
             </CardContent>
           </Card>
           
-          {/* Esempi di domande */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
             <Card className="bg-slate-50 border-0 shadow-sm">
               <CardContent className="p-4">
