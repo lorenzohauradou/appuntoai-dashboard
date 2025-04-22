@@ -33,7 +33,6 @@ export function RagVideoSection() {
         <div className="mx-auto max-w-[1000px]">
           <Card className="overflow-hidden shadow-lg mb-8">
             <div className="bg-primary p-4 text-white">
-              <h3 className="text-lg font-medium">Video Meeting</h3>
             </div>
             <CardContent className="p-6">
               <div
