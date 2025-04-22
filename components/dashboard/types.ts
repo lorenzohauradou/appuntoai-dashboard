@@ -42,8 +42,21 @@ export interface LectureResults {
   suggested_questions?: string[];
 }
 
-// Tipo unione per entrambi i tipi di risultati
-export type ResultsType = MeetingResults | LectureResults;
+// Interfaccia per i risultati di interviste
+export interface InterviewResults {
+  contentType: "intervista";
+  summary: string;
+  questions: string[]; // Domande principali
+  answers: string[];   // Risposte significative
+  quotes: string[];    // Citazioni rilevanti
+  participants: Participant[];
+  themes: string[];      // Temi trattati
+  transcript_id?: string;
+  suggested_questions?: string[];
+}
+
+// Tipo unione per tutti i tipi di risultati
+export type ResultsType = MeetingResults | LectureResults | InterviewResults;
 
 // Interfaccia per le props del componente ResultsDisplay
 export interface ResultsDisplayProps {

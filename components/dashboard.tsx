@@ -16,11 +16,14 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { ResultsType } from "@/components/dashboard/types"
 
+// Definisci un tipo più specifico per le categorie valide
+type ContentCategory = "Meeting" | "Lezione" | "Intervista";
+
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>("upload")
   const [processingStatus, setProcessingStatus] = useState<string | null>(null)
   const [results, setResults] = useState<ResultsType | null>(null)
-  const [contentType, setContentType] = useState<"meeting" | "lezione" | "intervista">("meeting")
+  const [contentType, setContentType] = useState<ContentCategory>("Meeting")
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [transcriptId, setTranscriptId] = useState<string | null>(null)
@@ -113,9 +116,11 @@ export function Dashboard() {
     }
   }
 
-  const handleUpload = async (type: string, data: any) => {
+  const handleUpload = async (type: string, category: ContentCategory, data: any) => {
     setProcessingStatus("processing");
-    
+    setContentType(category);
+    console.log(`Upload avviato - Tipo: ${type}, Categoria: ${category}`);
+
     try {
       let file;
       
@@ -126,42 +131,19 @@ export function Dashboard() {
         file = data;
       }
       
-      const result = await analyzeMeeting(file);
+      const result = await analyzeMeeting(file, category);
       
       setTranscriptId(result.transcript_id);
       setSuggestedQuestions(result.suggested_questions || []);
-      
-      let documentType: "meeting" | "lezione" | "intervista" = "meeting";
-      
-      if ((result.possibili_domande_esame !== undefined && result.possibili_domande_esame !== null) || 
-          (result.concetti_chiave !== undefined && result.concetti_chiave !== null && result.concetti_chiave.length > 0)) {
-        documentType = "lezione";
-        console.log("Rilevato tipo: LEZIONE basato su possibili_domande_esame o concetti_chiave non nulli");
-      } 
-      else if ((result.decisioni !== undefined && result.decisioni !== null && result.decisioni.length > 0) || 
-               (result.temi_principali !== undefined && result.temi_principali !== null && result.temi_principali.length > 0)) {
-        documentType = "meeting";
-        console.log("Rilevato tipo: MEETING basato su decisioni o temi_principali non nulli");
-      } 
-      else if (result.tipo_contenuto === 'meeting') {
-        documentType = "meeting";
-        console.log("Rilevato tipo: MEETING basato su tipo_contenuto");
-      }
-      else if (result.domande_principali !== undefined && result.domande_principali !== null) {
-        documentType = "intervista";
-        console.log("Rilevato tipo: INTERVISTA basato su domande_principali");
-      }
-
-      setContentType(documentType);
-      
-      console.log("Tipo di contenuto rilevato:", documentType);
+            
+      console.log("Tipo di contenuto selezionato dall'utente:", category);
       console.log("Campi disponibili nell'API response:", Object.keys(result));
       
-      let formattedResults;
+      let formattedResults: ResultsType | null = null;
       
-      if (documentType === "lezione") {
+      if (category === "Lezione") {
         formattedResults = {
-          summary: result.riassunto,
+          summary: result.riassunto || "",
           contentType: "lezione" as const,
           keyPoints: result.concetti_chiave || [],
           exercises: result.esercizi || [],
@@ -172,18 +154,33 @@ export function Dashboard() {
           })),
           possibleQuestions: result.possibili_domande_esame || [],
           bibliography: result.bibliografia || [],
-          teacher: result.docente,
+          teacher: result.docente || null,
           transcript_id: result.transcript_id,
           suggested_questions: result.suggested_questions || [],
         };
+      } else if (category === "Intervista") {
+         formattedResults = {
+           summary: result.riassunto || "",
+           contentType: "intervista" as const,
+           questions: result.domande_principali || [],
+           answers: result.risposte_significative || [],
+           quotes: result.citazioni_rilevanti || [],
+           participants: (result.partecipanti || []).map((participant: { nome: string; ruolo: string }) => ({
+            name: participant.nome || "Non specificato",
+            role: participant.ruolo || 'Intervistatore/Intervistato',
+           })),
+           themes: result.temi_trattati || [],
+           transcript_id: result.transcript_id,
+           suggested_questions: result.suggested_questions || [],
+         };
       } else {
         formattedResults = {
-          summary: result.riassunto,
+          summary: result.riassunto || "",
           contentType: "meeting" as const,
           decisions: result.decisioni || [],
           tasks: (result.tasks || []).map((task: { descrizione: string; assegnatario: string; scadenza?: string; priorita?: string; categoria?: string }) => ({
-            task: task.descrizione,
-            assignee: task.assegnatario,
+            task: task.descrizione || "",
+            assignee: task.assegnatario || "",
             deadline: task.scadenza || 'Non specificata',
             priority: task.priorita || 'Media',
             category: task.categoria || 'Generale',
@@ -199,16 +196,19 @@ export function Dashboard() {
       }
       
       console.log("Risultati formattati:", formattedResults);
-      console.log("Tipo di contenuto in formattedResults:", formattedResults.contentType);
-      console.log("Decisioni incluse:", formattedResults.decisions ? formattedResults.decisions.length : "nessuna");
-      console.log("Temi inclusi:", formattedResults.themes ? formattedResults.themes.length : "nessuno");
       
       setResults(formattedResults);
       setProcessingStatus("completed");
       setActiveTab("results");
+
     } catch (error) {
-      console.error('Errore durante l\'elaborazione:', error);
+      console.error('Errore durante elaborazione:', error);
       setProcessingStatus("failed");
+      toast({ 
+        title: "Errore Elaborazione",
+        description: "Si è verificato un errore durante l'analisi del contenuto.",
+        variant: "destructive",
+      });
     }
   };
 

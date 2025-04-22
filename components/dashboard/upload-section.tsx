@@ -3,15 +3,20 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { FileVideo, FileAudio, FileText, Upload, X } from "lucide-react"
+import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
+
+// Definisci il tipo ContentCategory qui o importalo se è definito altrove
+type ContentCategory = "Meeting" | "Lezione" | "Intervista";
 
 interface UploadSectionProps {
-  onUpload: (type: string, data: any) => void
+  // Usa ContentCategory per il parametro category
+  onUpload: (type: string, category: ContentCategory, data: any) => void
   processingStatus: string | null
 }
 
@@ -20,6 +25,8 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [textInput, setTextInput] = useState("")
+  // Usa ContentCategory per lo stato
+  const [selectedCategory, setSelectedCategory] = useState<ContentCategory>("Meeting")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDrag = (e: React.DragEvent) => {
@@ -54,19 +61,19 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
     if (
       (activeTab === "video" && fileType === "video") ||
       (activeTab === "audio" && fileType === "audio") ||
-      (activeTab === "text" && file.name.endsWith(".txt"))
+      (activeTab === "text" && (file.name.endsWith(".txt") || file.type.startsWith("text/")))
     ) {
       setSelectedFile(file)
     } else {
-      alert("Il tipo di file non corrisponde alla scheda selezionata")
+      alert(`Il tipo di file non corrisponde alla scheda selezionata`)
     }
   }
 
   const handleUploadClick = () => {
     if (activeTab === "text" && textInput) {
-      onUpload("text", textInput)
+      onUpload("text", selectedCategory, textInput)
     } else if (selectedFile) {
-      onUpload(activeTab, selectedFile)
+      onUpload(activeTab, selectedCategory, selectedFile)
     }
   }
 
@@ -75,6 +82,12 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
+  }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    clearSelection()
+    setTextInput("")
   }
 
   return (
@@ -86,7 +99,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        <Tabs defaultValue="video" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue="video" value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid grid-cols-3 mb-6">
             <TabsTrigger value="video" className="data-[state=active]:bg-primary data-[state=active]:text-white">
               <FileVideo className="mr-2 h-4 w-4" />
@@ -101,6 +114,36 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
               Testo
             </TabsTrigger>
           </TabsList>
+
+          {/* Selezione della categoria */}
+          <div className="mb-6 p-6">
+            <div className="flex gap-2">
+              <Button 
+                variant={selectedCategory === "Meeting" ? "secondary" : "outline"}
+                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md hover:bg-gradient-to-r from-gray-200 to-gray-100"
+                onClick={() => setSelectedCategory("Meeting")}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Meeting
+              </Button>
+              <Button 
+                variant={selectedCategory === "Lezione" ? "secondary" : "outline"}
+                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md hover:bg-gradient-to-r from-gray-200 to-gray-100"
+                onClick={() => setSelectedCategory("Lezione")}
+              >
+                <GraduationCap className="mr-2 h-4 w-4" />
+                Lezione
+              </Button>
+              <Button 
+                variant={selectedCategory === "Intervista" ? "secondary" : "outline"}
+                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md hover:bg-gradient-to-r from-gray-200 to-gray-100"
+                onClick={() => setSelectedCategory("Intervista")}
+              >
+                <Mic2 className="mr-2 h-4 w-4" />
+                Intervista
+              </Button>
+            </div>
+          </div>
 
           <TabsContent value="video" className="mt-0">
             {!selectedFile ? (
@@ -206,7 +249,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
                     sfoglia
                   </span>
                 </p>
-                <input ref={fileInputRef} type="file" accept=".txt" className="hidden" onChange={handleFileChange} />
+                <input ref={fileInputRef} type="file" accept="text/*,.txt" className="hidden" onChange={handleFileChange} />
               </div>
 
               <div className="relative">
