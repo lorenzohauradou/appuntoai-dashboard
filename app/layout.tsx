@@ -6,6 +6,7 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://appuntoai.com'),
   title: "Appuntoai - Trasforma audio, video e testo in appunti strutturati con AI",
   description: "Appuntoai utilizza l'intelligenza artificiale per convertire automaticamente riunioni, lezioni e interviste in appunti strutturati, riassunti chiari e task organizzati. Risparmia tempo e aumenta la produttività.",
   keywords: "AI, appunti automatici, trascrizione, riassunti, intelligenza artificiale, produttività",

@@ -116,8 +116,8 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
           </TabsList>
 
           {/* Selezione della categoria */}
-          <div className="mb-6 p-6">
-            <div className="flex gap-2">
+          <div className="mb-6">
+            <div className="flex gap-2 flex-wrap">
               <Button 
                 variant={selectedCategory === "Meeting" ? "secondary" : "outline"}
                 className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md hover:bg-gradient-to-r from-gray-200 to-gray-100"
