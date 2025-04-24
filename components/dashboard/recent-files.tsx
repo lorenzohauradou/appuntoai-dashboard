@@ -142,10 +142,14 @@ export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesPro
 
   // Stato vuoto quando non ci sono file recenti
   const renderEmptyState = () => (
-    <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
-      <FileText className="h-12 w-12 mb-4 text-muted-foreground/60" />
-      <p className="mb-2">Nessun file elaborato recentemente</p>
-      <p className="text-sm">I file che elaborerai appariranno qui</p>
+    <div className="mt-6 p-8 border rounded-lg shadow-sm bg-white/50 flex flex-col items-center justify-center text-center">
+      <div className="w-16 h-16 mb-4 rounded-full bg-purple-100 flex items-center justify-center">
+        <FolderIcon className="h-6 w-6 text-primary" />
+      </div>
+      <h2 className="text-xl font-medium mb-2">Nessun file elaborato recentemente</h2>
+      <p className="text-muted-foreground max-w-md">
+        I file che elaborerai appariranno in questa sezione
+      </p>
     </div>
   );
 
