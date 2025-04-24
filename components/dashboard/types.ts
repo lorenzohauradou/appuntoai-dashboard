@@ -53,21 +53,15 @@ export interface LectureResults {
 export interface InterviewResults {
   contentType: "intervista";
   summary: string;
-  // Rimuovi i vecchi campi
-  // questions: string[];
-  // answers: string[];
-  // Aggiungi i nuovi campi che arrivano da AnalysisResponse
+  //campi che arrivano da AnalysisResponse
   domande_principali?: string[]; // Mantenuto per potenziale uso futuro, anche se mappato da punti_salienti
   risposte_chiave?: string[];   // Mantenuto per potenziale uso futuro, anche se mappato da punti_salienti
   punti_salienti?: string[];    // La lista di stringhe "D: ... - R: ..."
-  temi_principali?: string[];   // Nuovo nome per i temi
+  temi_principali?: string[];
   participants: Participant[];
-  intervistatore?: string | null; // Aggiunto
-  intervistato?: string | null;   // Aggiunto
+
   transcript_id?: string;
   suggested_questions?: string[];
-  // Rimuovi 'themes' se non più usato, 'temi_principali' è il campo corretto
-  // themes: string[];
 }
 
 // Tipo unione per tutti i tipi di risultati
