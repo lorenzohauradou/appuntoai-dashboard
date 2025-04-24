@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Header } from "@/components/dashboard/header"
 import { UploadSection } from "@/components/dashboard/upload-section"
@@ -14,35 +14,163 @@ import { ChatDialog } from "@/components/dashboard/chat-dialog"
 import { useToast } from "@/components/ui/use-toast"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { ResultsType } from "@/components/dashboard/types"
+import { ResultsType, MeetingResults } from "@/components/dashboard/types"
 
 // Definisci un tipo più specifico per le categorie valide
 type ContentCategory = "Meeting" | "Lezione" | "Intervista";
 
-// Interfaccia per un file recente (cronologia)
-interface RecentFile {
+// Tipo per i risultati grezzi dall'API (esempio, potrebbe essere più specifico)
+type RawApiResult = any; 
+
+// ---> DEFINISCI RecentFileRaw QUI <--- 
+interface RecentFileRaw {
   id: string;
   name: string;
   type: string;
   date: string;
   status: string;
-  resultsData: ResultsType | null; // Permetti null qui se la formattazione può fallire
+  rawData: RawApiResult; // Campo per i dati grezzi
 }
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>("upload")
   const [processingStatus, setProcessingStatus] = useState<string | null>(null)
-  const [results, setResults] = useState<ResultsType | null>(null)
-  const [contentType, setContentType] = useState<ContentCategory>("Meeting")
+  const [rawResults, setRawResults] = useState<RawApiResult | null>(null)
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [transcriptId, setTranscriptId] = useState<string | null>(null)
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
-  const [analysisHistory, setAnalysisHistory] = useState<RecentFile[]>([])
+  const [analysisHistory, setAnalysisHistory] = useState<RecentFileRaw[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const { toast } = useToast()
 
-  // Effetto per recuperare la cronologia delle analisi (ora chiamata Risultati)
+  // Funzione helper per formattare i risultati dell'API (sia freschi che dalla cronologia)
+  const formatApiResult = useCallback((result: RawApiResult): ResultsType | null => {
+    // ---> Manteniamo la versione ORIGINALE COMPLETA CON LOG <---
+    console.log("[[[ formatApiResult INIZIO ]]]"); 
+    if (!result) {
+      console.error("[[[ formatApiResult ERRORE: Input 'result' è null o undefined ]]]");
+      return { 
+        summary: "Errore: Dati API mancanti", 
+        contentType: 'meeting', 
+        decisions:[], 
+        tasks:[], 
+        themes:[], 
+        participants:[], 
+        transcript_id: undefined, 
+        suggested_questions: [] 
+      };
+    }
+
+    // Log Dettagliati dell'Input
+    console.log("[[[ formatApiResult Input 'result' RAW ]]]:", result);
+    try {
+      console.log("[[[ formatApiResult Input 'result' JSON.stringify ]]]:", JSON.stringify(result));
+    } catch (e) {
+      console.error("[[[ formatApiResult ERRORE JSON.stringify ]]]:", e);
+    }
+    console.log(`[[[ formatApiResult Check: typeof result = ${typeof result} ]]]`);
+    console.log(`[[[ formatApiResult Check: Chiavi presenti in result = ${Object.keys(result)} ]]]`);
+    console.log(`[[[ formatApiResult Check: typeof result.tipo_contenuto = ${typeof result.tipo_contenuto} ]]]`);
+    console.log(`[[[ formatApiResult Check: result.tipo_contenuto Raw = |${result.tipo_contenuto}| ]]]`); // Vediamo se ci sono spazi
+    console.log(`[[[ formatApiResult Check: Valore booleano di result.tipo_contenuto = ${!!result.tipo_contenuto} ]]]`);
+    console.log(`[[[ formatApiResult Check: Condizione if (!result.tipo_contenuto) = ${!result.tipo_contenuto} ]]]`);
+
+    // Condizione di Fallback
+    if (!result.tipo_contenuto) { // Semplifichiamo la condizione, dato che abbiamo già verificato !result
+      console.warn("[[[ formatApiResult WARN: 'result.tipo_contenuto' mancante o falsy. Eseguo fallback a 'meeting'. Input era:]]]", result);
+      const contentType = 'meeting'; // Explicitly set fallback type
+      const fallbackData: MeetingResults = { // Explicitly type as MeetingResults
+        summary: result?.riassunto || "Riassunto non disponibile",
+        contentType: contentType, // <-- Qui viene impostato 'meeting'
+        decisions: result?.decisioni || [],
+         tasks: (result?.tasks || []).map((task: any) => ({
+            task: task.descrizione || "",
+            assignee: task.assegnatario || "Non specificato",
+            deadline: task.scadenza || 'Non specificata',
+            priority: task.priorita || 'Media',
+            category: task.categoria || 'Generale',
+         })),
+         themes: result?.temi_principali || [],
+         participants: (result?.partecipanti || []).map((p: any) => ({ name: p.nome, role: p.ruolo })),
+         transcript_id: result?.transcript_id || undefined, // CORREZIONE: null -> undefined
+         suggested_questions: result?.suggested_questions || [],
+       };
+       console.log("[[[ formatApiResult FINE (Fallback) ]]]");
+       return fallbackData as ResultsType; // Cast to satisfy return type
+    }
+
+    // Codice normale
+    const category = result.tipo_contenuto;
+    console.log(`[[[ formatApiResult Categoria rilevata: ${category} ]]]`);
+
+    let formattedResults: ResultsType;
+
+     if (category === "lesson") {
+        console.log("[[[ formatApiResult Blocco 'lezione' ESEGUITO ]]]");
+        formattedResults = {
+          summary: result.riassunto || "",
+          contentType: "lezione" as const,
+          keyPoints: result.concetti_chiave || [],
+          exercises: (result.esercizi || []).map((ex: { descrizione: string; scadenza?: string; data_iso?: string }) => ({
+             description: ex.descrizione || "N/A",
+             deadline: ex.scadenza,
+             date_iso: ex.data_iso
+          })),
+          topics: result.argomenti || [],
+          participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
+            name: participant.nome || "Non specificato",
+            role: participant.ruolo || 'Docente/Relatore',
+          })),
+          possibleQuestions: result.possibili_domande_esame || [],
+          bibliography: result.bibliografia || [],
+          teacher: result.docente || null,
+          transcript_id: result.transcript_id,
+          suggested_questions: result.suggested_questions || [],
+        };
+      } else if (category === "interview") {
+         console.log("[[[ formatApiResult Blocco 'intervista' ESEGUITO ]]]");
+         formattedResults = {
+           summary: result.riassunto || "",
+           contentType: "intervista" as const,
+           questions: result.domande_principali || [],
+           answers: result.risposte_chiave || [],
+           participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
+            name: participant.nome || "Non specificato",
+            role: participant.ruolo || 'Intervistatore/Intervistato',
+           })),
+           themes: result.temi_principali || [],
+           transcript_id: result.transcript_id,
+           suggested_questions: result.suggested_questions || [],
+         };
+      } else {
+        console.log(`[[[ formatApiResult Blocco 'meeting' (default) ESEGUITO perché categoria è '${category}' ]]]`);
+        formattedResults = {
+          summary: result.riassunto || "",
+          contentType: "meeting" as const,
+          decisions: result.decisioni || [],
+          tasks: (result.tasks || []).map((task: { descrizione: string; assegnatario?: string; scadenza?: string; priorita?: string; categoria?: string }) => ({
+            task: task.descrizione || "",
+            assignee: task.assegnatario || "Non specificato",
+            deadline: task.scadenza || 'Non specificata',
+            priority: task.priorita || 'Media',
+            category: task.categoria || 'Generale',
+          })),
+          themes: result.temi_principali || [],
+          participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
+            name: participant.nome || "Non specificato",
+            role: participant.ruolo || 'Partecipante',
+          })),
+          transcript_id: result.transcript_id,
+          suggested_questions: result.suggested_questions || [],
+        };
+      }
+      console.log("[[[ formatApiResult Ritorno formattato: ]]]", formattedResults);
+      console.log("[[[ formatApiResult FINE (Normale) ]]]");
+      return formattedResults;
+  }, []);
+
+  // Effetto per recuperare la cronologia delle analisi
   useEffect(() => {
     const fetchAnalysisHistory = async () => {
       if (activeTab === "results" || activeTab === "upload") {
@@ -50,17 +178,18 @@ export function Dashboard() {
         try {
           const historyData = await getAnalysisHistory();
           
-          // Mappatura della risposta API al formato richiesto da RecentFiles
-          const formattedHistory = historyData.map((item: any) => ({
+          // --- MODIFICA: Mappatura per salvare i dati GREZZI ---
+          const rawHistory = historyData.map((item: any): RecentFileRaw => ({ // Tipo Raw
             id: item.transcript_id,
             name: item.title || "Analisi senza titolo",
             type: item.file_type || "text",
             date: new Date(item.created_at).toLocaleString('it-IT'),
             status: "Completato",
-            resultsData: formatApiResult(item.content) // Usa una funzione helper per formattare
+            rawData: item.content // <--- SALVA I DATI GREZZI
           }));
+          // -----------------------------------------------------
           
-          setAnalysisHistory(formattedHistory);
+          setAnalysisHistory(rawHistory);
         } catch (error) {
           console.error("Errore nel recupero della cronologia:", error);
           toast({
@@ -78,30 +207,38 @@ export function Dashboard() {
   }, [activeTab, toast]);
 
   useEffect(() => {
-    console.log("--- DASHBOARD STATE UPDATE ---");
+    console.log("--- DASHBOARD STATE UPDATE (useEffect) ---");
     console.log("Processing Status:", processingStatus);
     console.log("Active Tab:", activeTab);
-    console.log("Results State:", results);
+    // Logga i risultati GREZZI
+    console.log("Raw Results State (in useEffect):", JSON.stringify(rawResults, null, 2)); 
     console.log("Transcript ID:", transcriptId);
-    console.log("-----------------------------");
-  }, [results, processingStatus, activeTab, transcriptId]);
+    console.log("------------------------------------------");
+  }, [rawResults, processingStatus, activeTab, transcriptId]);
 
   const handleSidebarToggle = (expanded: boolean) => {
     setSidebarExpanded(expanded);
   }
 
   const handleChatOpen = () => {
-    setIsChatOpen(true);
+    if(transcriptId) {
+        setIsChatOpen(true);
+    } else {
+        console.warn("Tentativo di aprire la chat senza transcriptId valido");
+        toast({ title: "Attendi...", description: "ID trascrizione non ancora pronto." });
+    }
   }
 
-  // Handler per aprire la chat da un file della cronologia
   const handleHistoryChatOpen = (transcriptId: string) => {
     setTranscriptId(transcriptId);
     setIsChatOpen(true);
   }
 
-  const handleDownload = () => {
-    if (!results) return;
+  const handleDownload = (formattedData: ResultsType | null) => {
+    if (!formattedData) {
+      toast({ title: "Errore Download", description: "Dati formattati non disponibili.", variant: "destructive" });
+      return;
+    }
     
     const input = document.getElementById('results-export-area');
     if (!input) {
@@ -128,7 +265,7 @@ export function Dashboard() {
         });
 
         pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-        const filename = `appuntoai_results_${results.contentType || 'analisi'}.pdf`;
+        const filename = `appuntoai_results_${formattedData.contentType || 'analisi'}.pdf`;
         pdf.save(filename);
 
         buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'visible');
@@ -141,12 +278,15 @@ export function Dashboard() {
       });
   }
 
-  const handleShare = async () => {
-    if (!results || !results.summary) return;
+  const handleShare = async (formattedData: ResultsType | null) => {
+    if (!formattedData || !formattedData.summary) {
+         toast({ title: "Errore Condivisione", description: "Dati formattati o riassunto non disponibili.", variant: "destructive" });
+        return;
+    }
 
     const shareData = {
-      title: `Risultati Analisi AppuntoAI (${results.contentType})`,
-      text: results.summary, 
+      title: `Risultati Analisi AppuntoAI (${formattedData.contentType})`,
+      text: formattedData.summary,
     };
 
     try {
@@ -154,7 +294,7 @@ export function Dashboard() {
         await navigator.share(shareData);
         console.log("Condivisione completata o annullata tramite API Web Share");
       } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(results.summary);
+        await navigator.clipboard.writeText(formattedData.summary);
         toast({ title: "Riassunto copiato!", description: "Il riassunto è stato copiato negli appunti." });
       } else {
         toast({ title: "Condivisione non supportata", description: "Il tuo browser non supporta la condivisione o la copia negli appunti.", variant: "destructive" });
@@ -169,114 +309,15 @@ export function Dashboard() {
     }
   }
 
-  // Funzione helper per formattare i risultati dell'API (sia freschi che dalla cronologia)
-  const formatApiResult = (result: any): ResultsType | null => {
-    if (!result || !result.tipo_contenuto) {
-      console.warn("Dati API non validi o tipo_contenuto mancante:", result);
-      // Puoi decidere se restituire null o un oggetto di default
-      // In questo caso, proviamo a dedurre un tipo base se manca
-      // ma sarebbe meglio assicurarsi che tipo_contenuto sia sempre salvato
-      const contentType = result?.tipo_contenuto || 'meeting'; // Fallback a meeting
-       return {
-         summary: result?.riassunto || "Riassunto non disponibile",
-         contentType: contentType,
-         decisions: result?.decisioni || [],
-         tasks: (result?.tasks || []).map((task: any) => ({
-            task: task.descrizione || "",
-            assignee: task.assegnatario || "Non specificato",
-            deadline: task.scadenza || 'Non specificata',
-            priority: task.priorita || 'Media', // Assicurati che 'priorita' esista o gestisci il caso null/undefined
-            category: task.categoria || 'Generale',
-         })),
-         themes: result?.temi_principali || [],
-         participants: (result?.partecipanti || []).map((p: any) => ({ name: p.nome, role: p.ruolo })),
-         transcript_id: result?.transcript_id || null,
-         suggested_questions: result?.suggested_questions || [],
-         // Aggiungi qui altri campi specifici per tipo se necessario, 
-         // gestendo i casi in cui potrebbero mancare
-         keyPoints: result?.concetti_chiave || [], // Per lezione
-         exercises: (result?.esercizi || []).map((ex: any) => ({ description: ex.descrizione, deadline: ex.scadenza, date_iso: ex.data_iso })), // Per lezione
-         topics: result?.argomenti || [], // Per lezione
-         possibleQuestions: result?.possibili_domande_esame || [], // Per lezione
-         // ... altri campi specifici per intervista, etc.
-       };
-    }
-
-    const category = result.tipo_contenuto; // Dovrebbe essere 'meeting', 'lezione', 'intervista'
-
-    let formattedResults: ResultsType;
-
-     if (category === "lezione") {
-        formattedResults = {
-          summary: result.riassunto || "",
-          contentType: "lezione" as const,
-          keyPoints: result.concetti_chiave || [],
-          exercises: (result.esercizi || []).map((ex: { descrizione: string; scadenza?: string; data_iso?: string }) => ({
-             description: ex.descrizione || "N/A",
-             deadline: ex.scadenza,
-             date_iso: ex.data_iso
-          })),
-          topics: result.argomenti || [],
-          participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
-            name: participant.nome || "Non specificato",
-            role: participant.ruolo || 'Docente/Relatore',
-          })),
-          possibleQuestions: result.possibili_domande_esame || [],
-          bibliography: result.bibliografia || [],
-          teacher: result.docente || null,
-          transcript_id: result.transcript_id,
-          suggested_questions: result.suggested_questions || [],
-        };
-      } else if (category === "intervista") {
-         formattedResults = {
-           summary: result.riassunto || "",
-           contentType: "intervista" as const,
-           questions: result.domande_principali || [],
-           answers: result.risposte_chiave || [],
-           participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
-            name: participant.nome || "Non specificato",
-            role: participant.ruolo || 'Intervistatore/Intervistato',
-           })),
-           themes: result.temi_principali || [],
-           transcript_id: result.transcript_id,
-           suggested_questions: result.suggested_questions || [],
-         };
-      } else { // Default a meeting se non è lezione o intervista
-        formattedResults = {
-          summary: result.riassunto || "",
-          contentType: "meeting" as const,
-          decisions: result.decisioni || [],
-          tasks: (result.tasks || []).map((task: { descrizione: string; assegnatario?: string; scadenza?: string; priorita?: string; categoria?: string }) => ({
-            task: task.descrizione || "",
-            assignee: task.assegnatario || "Non specificato",
-            deadline: task.scadenza || 'Non specificata',
-            priority: task.priorita || 'Media', // Assicurati che 'priorita' sia presente nel DB
-            category: task.categoria || 'Generale',
-          })),
-          themes: result.temi_principali || [],
-          participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
-            name: participant.nome || "Non specificato",
-            role: participant.ruolo || 'Partecipante',
-          })),
-          transcript_id: result.transcript_id,
-          suggested_questions: result.suggested_questions || [],
-        };
-      }
-      return formattedResults;
-  }
-
-  // Handler per l'eliminazione di un file dalla cronologia
   const handleDeleteFile = async (transcriptIdToDelete: string) => {
-     // Aggiungi una conferma prima di eliminare
     if (!confirm("Sei sicuro di voler eliminare questa analisi? L'azione non può essere annullata.")) {
-      return; // L'utente ha annullato
+      return;
     }
 
     console.log(`Tentativo di eliminazione per ID: ${transcriptIdToDelete}`);
     try {
-      await deleteAnalysis(transcriptIdToDelete); // Chiama la funzione API
+      await deleteAnalysis(transcriptIdToDelete);
       
-      // Aggiorna lo stato rimuovendo il file
       setAnalysisHistory(prevHistory => 
         prevHistory.filter(file => file.id !== transcriptIdToDelete)
       );
@@ -298,12 +339,10 @@ export function Dashboard() {
 
   const handleUpload = async (type: string, category: ContentCategory, data: any) => {
     setProcessingStatus("processing");
-    setContentType(category);
-    console.log(`Upload avviato - Tipo: ${type}, Categoria: ${category}`);
+    console.log(`handleUpload: Avviato - Tipo: ${type}, Categoria Selezionata: ${category}`);
 
     try {
       let file;
-      
       if (type === "text") {
         const blob = new Blob([data], { type: 'text/plain' });
         file = new File([blob], "transcript.txt", { type: 'text/plain' });
@@ -311,85 +350,83 @@ export function Dashboard() {
         file = data;
       }
       
-      const result = await analyzeMeeting(file, category);
-      
-      setTranscriptId(result.transcript_id);
-      setSuggestedQuestions(result.suggested_questions || []);
-            
-      console.log("Tipo di contenuto selezionato dall'utente:", category);
-      console.log("Campi disponibili nell'API response:", Object.keys(result));
-      
-      let formattedResults: ResultsType | null = null;
-      
-      // Usa la funzione helper anche qui per consistenza
-      formattedResults = formatApiResult(result);
+      const result: RawApiResult = await analyzeMeeting(file, category);
+      console.log("handleUpload: Risultato GREZZO dalla API /analyze:", JSON.stringify(result, null, 2)); 
 
-      if (!formattedResults) {
-         console.error("Formattazione fallita per i risultati API:", result);
-         throw new Error("Impossibile formattare i risultati dell'analisi.");
-      }
-      
-      setResults(formattedResults);
+      setRawResults(result);
+
+      setTranscriptId(result?.transcript_id ?? null);
+      setSuggestedQuestions(result?.suggested_questions || []);
+
       setProcessingStatus("completed");
-
-      // Aggiorna la cronologia dopo un'analisi completata con successo
-      const fetchAnalysisHistory = async () => {
-        try {
-          const historyData = await getAnalysisHistory();
-          
-          const formattedHistory = historyData.map((item: any) => ({
-            id: item.transcript_id,
-            name: item.title || "Analisi senza titolo",
-            type: item.file_type || "text",
-            date: new Date(item.created_at).toLocaleString('it-IT'),
-            status: "Completato",
-            resultsData: formatApiResult(item.content) // Applica formattazione anche qui
-          }));
-          
-          setAnalysisHistory(formattedHistory);
-        } catch (error) {
-          console.error("Errore nell'aggiornamento della cronologia:", error);
-        }
-      };
-
-      fetchAnalysisHistory();
+      console.log("handleUpload: Stato 'rawResults' e 'processingStatus' aggiornati.");
 
     } catch (error) {
-      console.error('Errore durante elaborazione:', error);
-      setProcessingStatus("failed");
-      toast({ 
-        title: "Errore Elaborazione",
-        description: "Si è verificato un errore durante l'analisi del contenuto.",
-        variant: "destructive",
-      });
+       console.error('Errore durante elaborazione:', error);
+       setProcessingStatus("failed");
+       toast({ title: "Errore Critico", description: "Errore durante la formattazione dei risultati.", variant: "destructive" });
     }
   };
 
   const renderContent = () => {
     switch (activeTab) {
       case "upload":
+        const showResultsAfterUpload = processingStatus === 'completed' && rawResults;
+
         return (
           <div className="space-y-6">
-            <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />
-            {processingStatus && <ProcessingStatus status={processingStatus} />}
-            <RecentFiles 
-              files={analysisHistory} 
-              onOpenChat={handleHistoryChatOpen} 
-              onDelete={handleDeleteFile}
-            />
+            {!showResultsAfterUpload && (
+              <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />
+            )}
+
+            {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
+
+            {showResultsAfterUpload ? (
+              (() => {
+                console.log("--- renderContent: Tentativo formattazione per ResultsDisplay ---");
+                console.log("Dati grezzi da formattare:", JSON.stringify(rawResults, null, 2));
+                const formattedDisplayResults = formatApiResult(rawResults);
+
+                if (!formattedDisplayResults) {
+                  console.error("renderContent: Fallita formattazione di rawResults per ResultsDisplay.");
+                  toast({ title: "Errore Visualizzazione", description: "Impossibile formattare i risultati per la visualizzazione.", variant: "destructive" });
+                  setProcessingStatus("failed");
+                  setRawResults(null);
+                  return <ProcessingStatus status="failed" />;
+                }
+
+                console.log("--- renderContent: TENTATIVO RENDER ResultsDisplay ---");
+                console.log("Passando questa prop 'results' (formattata ora):", JSON.stringify(formattedDisplayResults, null, 2));
+                return (
+                  <ResultsDisplay
+                    key={formattedDisplayResults.transcript_id || Date.now()}
+                    results={formattedDisplayResults}
+                    onChatOpen={handleChatOpen}
+                    onDownload={() => handleDownload(formattedDisplayResults)}
+                    onShare={() => handleShare(formattedDisplayResults)}
+                  />
+                );
+              })()
+            ) : (
+              <>
+                {processingStatus === 'failed' && <ProcessingStatus status={processingStatus} />}
+                <RecentFiles
+                  files={analysisHistory}
+                  onOpenChat={handleHistoryChatOpen}
+                  onDelete={handleDeleteFile}
+                  formatApiResult={formatApiResult}
+                />
+              </>
+            )}
           </div>
         )
       case "results":
-        return <RecentFiles 
-                 files={analysisHistory} 
-                 onOpenChat={handleHistoryChatOpen} 
-                 onDelete={handleDeleteFile}
-               />
       case "history":
         return <RecentFiles 
                  files={analysisHistory} 
                  onOpenChat={handleHistoryChatOpen} 
                  onDelete={handleDeleteFile}
+                 formatApiResult={formatApiResult}
                />
       case "settings":
         return (
@@ -403,7 +440,7 @@ export function Dashboard() {
           </div>
         )
       default:
-        return <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />
+         return <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />;
     }
   }
 
@@ -423,7 +460,7 @@ export function Dashboard() {
           open={isChatOpen} 
           onOpenChange={setIsChatOpen}
           transcriptId={transcriptId}
-          suggestedQuestions={suggestedQuestions || []}
+          suggestedQuestions={suggestedQuestions}
         />
       )}
     </div>

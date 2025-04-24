@@ -9,26 +9,27 @@ import { ResultsDisplay } from "./results-display"
 import { useToast } from "@/components/ui/use-toast"
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { MeetingResults, LectureResults, ResultsType } from "./types"
+import { ResultsType } from "./types"
 
 // Interfaccia per un file recente
-interface RecentFile {
+export interface RecentFileRaw {
   id: string;
   name: string;
   type: string;
   date: string;
   status: string;
-  resultsData: ResultsType | null;
+  rawData: any;
 }
 
 // Interface per le props del componente
 interface RecentFilesProps {
-  files?: RecentFile[];
+  files?: RecentFileRaw[];
   onOpenChat?: (transcriptId: string) => void;
   onDelete?: (transcriptId: string) => void;
+  formatApiResult: (result: any) => ResultsType | null;
 }
 
-export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesProps) {
+export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult }: RecentFilesProps) {
   const [expandedFileId, setExpandedFileId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -66,9 +67,16 @@ export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesPro
     console.log(`Azione: Download risultati per file ${fileId}`);
     
     const file = files.find(f => f.id === fileId);
-    if (!file || !file.resultsData) {
+    if (!file || !file.rawData) {
       toast({ title: "Errore Download", description: "Dati del file non disponibili.", variant: "destructive" });
       return;
+    }
+    
+    // Formatta i dati prima di usarli
+    const formattedData = formatApiResult(file.rawData);
+    if (!formattedData) {
+        toast({ title: "Errore Download", description: "Impossibile formattare i dati per il download.", variant: "destructive" });
+        return;
     }
     
     toast({ title: "Generazione PDF in corso...", description: "Potrebbe richiedere qualche secondo." });
@@ -103,7 +111,7 @@ export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesPro
           });
           
           pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-          const filename = `appuntoai_results_${file.name}.pdf`;
+          const filename = `appuntoai_results_${formattedData.contentType || file.name}.pdf`;
           pdf.save(filename);
           
           buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'visible');
@@ -117,24 +125,39 @@ export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesPro
     }, 500);
   };
 
-  const handleSharePlaceholder = (fileId: string) => {
+  const handleSharePlaceholder = async (fileId: string) => {
     console.log(`Azione: Condividi risultati per file ${fileId}`);
     
     const file = files.find(f => f.id === fileId);
-    if (!file || !file.resultsData) {
+    if (!file || !file.rawData) {
       toast({ title: "Errore Condivisione", description: "Dati del file non disponibili.", variant: "destructive" });
       return;
     }
     
-    // Prova a condividere o copiare il riassunto
+    // Formatta i dati prima di usarli
+    const formattedData = formatApiResult(file.rawData);
+    if (!formattedData || !formattedData.summary) {
+        toast({ title: "Errore Condivisione", description: "Impossibile formattare i dati o riassunto mancante.", variant: "destructive" });
+        return;
+    }
+
+    // Prova a condividere o copiare il riassunto formattato
     try {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(file.resultsData.summary);
+      // Usa shareData con dati formattati
+      const shareData = {
+        title: `Risultati Analisi AppuntoAI (${formattedData.contentType})`,
+        text: formattedData.summary,
+      };
+      if (navigator.share) { // Tenta prima l'API Web Share
+          await navigator.share(shareData);
+          console.log("Condivisione via Web Share API riuscita o annullata.");
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(formattedData.summary);
         toast({ title: "Riassunto copiato!", description: "Il riassunto è stato copiato negli appunti." });
       } else {
         toast({ title: "Condivisione non supportata", description: "Il tuo browser non supporta la copia negli appunti.", variant: "destructive" });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Errore durante la condivisione:", err);
       toast({ title: "Errore di condivisione", description: "Non è stato possibile condividere il contenuto.", variant: "destructive" });
     }
@@ -174,61 +197,74 @@ export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesPro
           renderEmptyState()
         ) : (
           <div className="space-y-4">
-            {files.map((file) => (
-              <div key={file.id} className="flex flex-col p-3 rounded-lg border hover:bg-slate-50 transition-colors">
-                <div
-                  className="flex items-center justify-between w-full cursor-pointer"
-                  onClick={() => handleToggleExpand(file.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    {getIcon(file.type)}
-                    <div>
-                      <p className="font-medium">{file.name}</p>
-                      <p className="text-sm text-muted-foreground">{file.date}</p>
+            {files.map((file) => {
+              let formattedResultsForDisplay: ResultsType | null = null;
+              if (expandedFileId === file.id) {
+                  console.log(`RecentFiles: Formatting rawData for expanded file ${file.id}`);
+                  formattedResultsForDisplay = formatApiResult(file.rawData);
+                  if (!formattedResultsForDisplay) {
+                      console.error(`RecentFiles: Failed to format rawData for file ${file.id}`, file.rawData);
+                  }
+              }
+              
+              return (
+                <div key={file.id} className="flex flex-col p-3 rounded-lg border hover:bg-slate-50 transition-colors">
+                  <div
+                    className="flex items-center justify-between w-full cursor-pointer"
+                    onClick={() => handleToggleExpand(file.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {getIcon(file.type)}
+                      <div>
+                        <p className="font-medium">{file.name}</p>
+                        <p className="text-sm text-muted-foreground">{file.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">{file.status}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenuItem onClick={() => handleToggleExpand(file.id)}>
+                            {expandedFileId === file.id ? "Chiudi Risultati" : "Visualizza Risultati"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600 focus:text-red-700 focus:bg-red-50" 
+                            onClick={() => onDelete && onDelete(file.id)}
+                            disabled={!onDelete}
+                          >
+                            Elimina
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">{file.status}</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={() => handleToggleExpand(file.id)}>
-                          {expandedFileId === file.id ? "Chiudi Risultati" : "Visualizza Risultati"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDownloadPlaceholder(file.id)}>Scarica</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSharePlaceholder(file.id)}>Condividi</DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-red-600 focus:text-red-700 focus:bg-red-50" 
-                          onClick={() => onDelete && onDelete(file.id)}
-                          disabled={!onDelete}
-                        >
-                          Elimina
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                  
+                  {expandedFileId === file.id && formattedResultsForDisplay && (
+                    <div 
+                      className="mt-4 pt-4 border-t" 
+                      id={`results-export-area-${file.id}`}
+                    >
+                      <ResultsDisplay
+                        results={formattedResultsForDisplay}
+                        onChatOpen={() => handleChatOpenPlaceholder(file.id)}
+                        onDownload={() => handleDownloadPlaceholder(file.id)}
+                        onShare={() => handleSharePlaceholder(file.id)}
+                      />
+                    </div>
+                  )}
+                  {expandedFileId === file.id && !formattedResultsForDisplay && file.rawData && (
+                     <div className="mt-4 pt-4 border-t text-red-600 p-4">
+                        Errore nella formattazione dei dati per questo elemento della cronologia.
+                     </div>
+                  )}
                 </div>
-                
-                {/* Area espandibile per i risultati */}
-                {expandedFileId === file.id && file.resultsData && (
-                  <div 
-                    className="mt-4 pt-4 border-t" 
-                    id={`results-export-area-${file.id}`}
-                  >
-                    <ResultsDisplay
-                      results={file.resultsData}
-                      onChatOpen={() => handleChatOpenPlaceholder(file.id)}
-                      onDownload={() => handleDownloadPlaceholder(file.id)}
-                      onShare={() => handleSharePlaceholder(file.id)}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>
