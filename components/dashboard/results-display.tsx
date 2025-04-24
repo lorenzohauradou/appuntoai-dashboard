@@ -23,7 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MeetingResults, LectureResults, ResultsType, ResultsDisplayProps } from "./types"
+import { MeetingResults, LectureResults, InterviewResults, ResultsType, ResultsDisplayProps } from "./types"
 
 //  tipo più specifico per lo stile della priorità
 type PriorityStyle = {
@@ -82,7 +82,7 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
   // Determina i tab da mostrare in base al tipo di contenuto
   const renderTabs = () => {
     // Log #2: Verifica quale set di TabsList viene scelto
-    console.log("ResultsDisplay: renderTabs - ContentType =", results.contentType); 
+    console.log("ResultsDisplay: renderTabs - ContentType =", results.contentType);
     if (results.contentType === "lezione") {
       return (
         <TabsList className="flex flex-wrap md:grid md:grid-cols-6 mb-6">
@@ -107,6 +107,27 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
           <TabsTrigger value="questions" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             <HelpCircle className="mr-2 h-4 w-4" />
             Domande Esame
+          </TabsTrigger>
+          <TabsTrigger value="participants" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <Users className="mr-2 h-4 w-4" />
+            Partecipanti
+          </TabsTrigger>
+        </TabsList>
+      )
+    } else if (results.contentType === "intervista") {
+      return (
+        <TabsList className="flex flex-wrap md:grid md:grid-cols-4 mb-6">
+          <TabsTrigger value="summary" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <FileText className="mr-2 h-4 w-4" />
+            Riassunto
+          </TabsTrigger>
+          <TabsTrigger value="themes" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <Hash className="mr-2 h-4 w-4" />
+            Temi
+          </TabsTrigger>
+          <TabsTrigger value="punti_salienti" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Punti Salienti
           </TabsTrigger>
           <TabsTrigger value="participants" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             <Users className="mr-2 h-4 w-4" />
@@ -155,7 +176,11 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
           <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
             <CardHeader className="p-0 mb-4 pt-5">
               <CardTitle className="break-words">Riassunto</CardTitle>
-              <CardDescription className="break-words">Una sintesi del contenuto analizzato</CardDescription>
+              <CardDescription className="break-words">
+                {results.contentType === 'lezione' ? 'Una sintesi degli argomenti trattati nella lezione' :
+                 results.contentType === 'intervista' ? 'Una sintesi dei punti chiave emersi durante l\'intervista' :
+                 'Una sintesi del contenuto analizzato'}
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-0 w-full">
               <p className="text-lg break-words">{results.summary}</p>
@@ -168,8 +193,10 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
             <CardHeader className="p-0 mb-4 pt-5">
               <CardTitle className="break-words">Partecipanti</CardTitle>
               <CardDescription className="break-words">
-                {results.contentType === "lezione" 
-                  ? "Docenti e studenti coinvolti" 
+                {results.contentType === "lezione"
+                  ? "Docenti e studenti coinvolti"
+                  : results.contentType === "intervista"
+                  ? "Intervistatore/i e intervistato/i"
                   : "Le persone coinvolte e i loro ruoli"}
               </CardDescription>
             </CardHeader>
@@ -294,6 +321,60 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
           </TabsContent>
         </>
       )
+    } else if (results.contentType === "intervista") {
+      const interviewResults = results as InterviewResults;
+      // Log per debug
+      console.log("ResultsDisplay: Rendering Interview Content - Data:", interviewResults);
+      return (
+        <>
+          {commonTabs}
+
+          <TabsContent value="themes" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-5">
+                <CardTitle className="break-words">Temi Principali</CardTitle>
+                <CardDescription>Gli argomenti chiave emersi durante l'intervista</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 w-full">
+                <div className="flex flex-wrap gap-2 w-full">
+                  {interviewResults.temi_principali && interviewResults.temi_principali.length > 0 ? (
+                    interviewResults.temi_principali.map((theme, index) => (
+                      <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3.5 bg-primary-100 text-primary">
+                        {theme}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-4">Nessun tema principale identificato</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="punti_salienti" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-5">
+                <CardTitle className="break-words">Punti Salienti</CardTitle>
+                <CardDescription>Le domande e risposte più significative dell'intervista</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 w-full">
+                <ul className="space-y-4 w-full">
+                  {interviewResults.punti_salienti && interviewResults.punti_salienti.length > 0 ? (
+                    interviewResults.punti_salienti.map((punto, index) => (
+                      <li key={index} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
+                        <MessageSquare className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                        <span className="break-words">{punto}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-4">Nessun punto saliente identificato</p>
+                  )}
+                </ul>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </>
+      )
     } else {
       // Meeting e altri tipi
       const meetingResults = results as MeetingResults;
@@ -409,8 +490,10 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
         <div>
           <h1 className="text-2xl font-bold">Risultati dell'analisi</h1>
           <p className="text-muted-foreground">
-            {results.contentType === "lezione" 
-              ? "Ecco cosa abbiamo estratto dalla lezione" 
+            {results.contentType === "lezione"
+              ? "Ecco cosa abbiamo estratto dalla lezione"
+              : results.contentType === "intervista"
+              ? "Ecco cosa abbiamo trovato nella tua intervista"
               : "Ecco cosa abbiamo trovato nel tuo meeting"}
           </p>
         </div>

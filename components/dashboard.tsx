@@ -130,18 +130,22 @@ export function Dashboard() {
         };
       } else if (category === "interview") {
          console.log("[[[ formatApiResult Blocco 'intervista' ESEGUITO ]]]");
+         // Cast result to InterviewResults structure for type safety, assuming backend sends matching fields
+         const interviewData = result as any; // O definisci un tipo RawInterviewResult più specifico
          formattedResults = {
-           summary: result.riassunto || "",
+           summary: interviewData.riassunto || "",
            contentType: "intervista" as const,
-           questions: result.domande_principali || [],
-           answers: result.risposte_chiave || [],
-           participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
+           // definito in InterviewResults
+           domande_principali: interviewData.domande_principali || [],
+           risposte_chiave: interviewData.risposte_chiave || [],
+           punti_salienti: interviewData.punti_salienti || [],
+           temi_principali: interviewData.temi_principali || [], // Corretto da 'themes'
+           participants: (interviewData.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
             name: participant.nome || "Non specificato",
             role: participant.ruolo || 'Intervistatore/Intervistato',
            })),
-           themes: result.temi_principali || [],
-           transcript_id: result.transcript_id,
-           suggested_questions: result.suggested_questions || [],
+           transcript_id: interviewData.transcript_id,
+           suggested_questions: interviewData.suggested_questions || [],
          };
       } else {
         console.log(`[[[ formatApiResult Blocco 'meeting' (default) ESEGUITO perché categoria è '${category}' ]]]`);

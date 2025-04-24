@@ -49,16 +49,25 @@ export interface LectureResults {
   suggested_questions?: string[];
 }
 
-// Interfaccia per i risultati di interviste
+// Interfaccia per i risultati di interviste - AGGIORNATA
 export interface InterviewResults {
   contentType: "intervista";
   summary: string;
-  questions: string[]; // Domande principali
-  answers: string[];   // Risposte chiave (nome corretto)
+  // Rimuovi i vecchi campi
+  // questions: string[];
+  // answers: string[];
+  // Aggiungi i nuovi campi che arrivano da AnalysisResponse
+  domande_principali?: string[]; // Mantenuto per potenziale uso futuro, anche se mappato da punti_salienti
+  risposte_chiave?: string[];   // Mantenuto per potenziale uso futuro, anche se mappato da punti_salienti
+  punti_salienti?: string[];    // La lista di stringhe "D: ... - R: ..."
+  temi_principali?: string[];   // Nuovo nome per i temi
   participants: Participant[];
-  themes: string[];      // Temi principali (nome corretto)
+  intervistatore?: string | null; // Aggiunto
+  intervistato?: string | null;   // Aggiunto
   transcript_id?: string;
   suggested_questions?: string[];
+  // Rimuovi 'themes' se non più usato, 'temi_principali' è il campo corretto
+  // themes: string[];
 }
 
 // Tipo unione per tutti i tipi di risultati
