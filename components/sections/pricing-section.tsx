@@ -102,7 +102,7 @@ export function PricingSection() {
               ) : (
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-1">
-                    <div className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                    <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                       Più economico
                     </div>
                     <span className="text-sm line-through text-muted-foreground">168€/anno</span>
@@ -111,7 +111,7 @@ export function PricingSection() {
                     134€
                     <span className="ml-1 text-lg font-medium text-muted-foreground">/ anno</span>
                   </div>
-                  <div className="mt-1 text-sm text-green-700 font-medium">Risparmi 34€ (20%)</div>
+                  <div className="mt-1 text-sm text-primary font-medium">Risparmi 34€ (20%)</div>
                 </div>
               )}
               <CardDescription className="mt-4 h-10">Per professionisti e uso regolare</CardDescription>
@@ -135,8 +135,8 @@ export function PricingSection() {
                   <span className="text-sm">Esportazione in tutti i formati</span>
                 </li>
                 {billingPeriod === "yearly" && (
-                  <li className="flex items-start gap-2 font-medium text-green-700">
-                    <Clock className="mt-1 h-4 w-4 text-green-700 flex-shrink-0" />
+                  <li className="flex items-start gap-2 font-medium text-primary">
+                    <Clock className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-sm">Archivio esteso (12 mesi)</span>
                   </li>
                 )}
@@ -172,7 +172,7 @@ export function PricingSection() {
               ) : (
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-1">
-                    <div className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                    <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                       Più economico
                     </div>
                     <span className="text-sm line-through text-muted-foreground">348€/anno</span>
@@ -181,7 +181,7 @@ export function PricingSection() {
                     278€
                     <span className="ml-1 text-lg font-medium text-muted-foreground">/ anno</span>
                   </div>
-                  <div className="mt-1 text-sm text-green-700 font-medium">Risparmi 70€ (20%)</div>
+                  <div className="mt-1 text-sm text-primary font-medium">Risparmi 70€ (20%)</div>
                 </div>
               )}
               <CardDescription className="mt-4 h-10">Per team e analisi interattive</CardDescription>
@@ -217,8 +217,8 @@ export function PricingSection() {
                   <span className="text-xs">Workflow di approvazione</span>
                 </li>
                 {billingPeriod === "yearly" && (
-                  <li className="flex items-start gap-2 font-medium text-green-700">
-                    <Clock className="mt-1 h-4 w-4 text-green-700 flex-shrink-0" />
+                  <li className="flex items-start gap-2 font-medium text-primary">
+                    <Clock className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-sm">Archivio esteso (24 mesi)</span>
                   </li>
                 )}
