@@ -21,7 +21,7 @@ import {
   Loader2
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { sendChatMessage } from "@/lib/api"
+import { sendChatMessage, getChatHistory } from "@/lib/api"
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -45,6 +45,7 @@ export function ChatDialog({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [sources, setSources] = useState<string[]>([]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -54,14 +55,46 @@ export function ChatDialog({
     }
   };
 
+  // Effetto per caricare la cronologia chat quando il dialogo viene aperto
   useEffect(() => {
-    if (open) {
-      // Reset chat quando viene aperto
-      setMessages([]);
-      setChatId(undefined);
-      setSources([]);
-    }
-  }, [open]);
+    const fetchChatHistory = async () => {
+      if (open && transcriptId) {
+        setIsLoadingHistory(true);
+        try {
+          // Chiama la nuova funzione API per recuperare la cronologia della chat
+          const history = await getChatHistory(transcriptId);
+          
+          if (history && history.messages && history.messages.length > 0) {
+            setMessages(history.messages);
+            setChatId(history.chat_id);
+            
+            // Se ci sono fonti nella risposta, le impostiamo
+            if (history.sources) {
+              setSources(history.sources);
+            } else {
+              setSources([]);
+            }
+          } else {
+            // Nessuna cronologia trovata, inizializza una chat vuota
+            setMessages([]);
+            setChatId(undefined);
+            setSources([]);
+          }
+        } catch (error) {
+          console.error("Errore nel recupero della cronologia chat:", error);
+          setMessages([]);
+          setChatId(undefined);
+          setSources([]);
+        } finally {
+          setIsLoadingHistory(false);
+          // Facciamo scorrere in fondo dopo aver caricato i messaggi
+          setTimeout(scrollToBottom, 100);
+        }
+      }
+    };
+
+    fetchChatHistory();
+  }, [open, transcriptId]);
 
   useEffect(() => {
     // Usa un timeout per assicurarsi che il rendering sia completato
@@ -94,7 +127,7 @@ export function ChatDialog({
       setMessages(prev => [...prev, { role: "assistant", content: response.response }]);
       
       // Aggiorna le fonti
-      setSources(response.sources);
+      setSources(response.sources || []);
     } catch (error) {
       console.error("Errore nell'invio del messaggio:", error);
       setMessages(prev => [...prev, { 
@@ -103,6 +136,14 @@ export function ChatDialog({
       }]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Invia messaggio quando si preme Enter (senza Shift)
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
@@ -134,7 +175,12 @@ export function ChatDialog({
             overscrollBehavior: "contain"
           }}
         >
-          {messages.length === 0 ? (
+          {isLoadingHistory ? (
+            <div className="py-4 text-center text-muted-foreground h-full flex flex-col justify-center items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+              <p>Caricamento della cronologia chat...</p>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="py-4 text-center text-muted-foreground h-full flex flex-col justify-center">
               <p className="mb-6">Inizia facendo una domanda sul documento</p>
               <div className="grid grid-cols-1 gap-2 mt-2">
@@ -202,13 +248,13 @@ export function ChatDialog({
               placeholder="Scrivi un messaggio..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-              disabled={isLoading}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading || isLoadingHistory}
               className="flex-1"
             />
             <Button 
               onClick={handleSend} 
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isLoadingHistory}
               className="h-10 w-10 p-2 shrink-0"
             >
               {isLoading ? (

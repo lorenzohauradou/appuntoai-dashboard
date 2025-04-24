@@ -13,21 +13,24 @@ import { MeetingResults, LectureResults, ResultsType } from "./types"
 
 // Interfaccia per un file recente
 interface RecentFile {
-  id: number;
+  id: string;
   name: string;
   type: string;
   date: string;
   status: string;
-  resultsData: ResultsType;
+  resultsData: ResultsType | null;
 }
 
-export function RecentFiles() {
-  const [expandedFileId, setExpandedFileId] = useState<number | null>(null);
-  const { toast } = useToast();
+// Interface per le props del componente
+interface RecentFilesProps {
+  files?: RecentFile[];
+  onOpenChat?: (transcriptId: string) => void;
+  onDelete?: (transcriptId: string) => void;
+}
 
-  // Array di file recenti - inizialmente vuoto
-  // In futuro, questo verrà popolato da dati reali dal database
-  const recentFiles: RecentFile[] = [];
+export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesProps) {
+  const [expandedFileId, setExpandedFileId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -42,21 +45,27 @@ export function RecentFiles() {
     }
   };
 
-  const handleToggleExpand = (fileId: number) => {
+  const handleToggleExpand = (fileId: string) => {
     console.log(`Toggling file expansion for ID: ${fileId}`);
     setExpandedFileId(prevId => (prevId === fileId ? null : fileId));
   };
 
   // Funzioni per ResultsDisplay
-  const handleChatOpenPlaceholder = (fileId: number) => {
+  const handleChatOpenPlaceholder = (fileId: string) => {
     console.log(`Azione: Apri chat per file ${fileId}`);
-    toast({ title: "Funzionalità chat", description: `La chat per questo file storico non è ancora implementata.` });
+    
+    // Se esiste un handler per aprire la chat, lo chiamiamo
+    if (onOpenChat) {
+      onOpenChat(fileId);
+    } else {
+      toast({ title: "Funzionalità chat", description: `La chat per questo file storico non è ancora implementata.` });
+    }
   };
 
-  const handleDownloadPlaceholder = (fileId: number) => {
+  const handleDownloadPlaceholder = (fileId: string) => {
     console.log(`Azione: Download risultati per file ${fileId}`);
     
-    const file = recentFiles.find(f => f.id === fileId);
+    const file = files.find(f => f.id === fileId);
     if (!file || !file.resultsData) {
       toast({ title: "Errore Download", description: "Dati del file non disponibili.", variant: "destructive" });
       return;
@@ -108,10 +117,10 @@ export function RecentFiles() {
     }, 500);
   };
 
-  const handleSharePlaceholder = (fileId: number) => {
+  const handleSharePlaceholder = (fileId: string) => {
     console.log(`Azione: Condividi risultati per file ${fileId}`);
     
-    const file = recentFiles.find(f => f.id === fileId);
+    const file = files.find(f => f.id === fileId);
     if (!file || !file.resultsData) {
       toast({ title: "Errore Condivisione", description: "Dati del file non disponibili.", variant: "destructive" });
       return;
@@ -147,11 +156,11 @@ export function RecentFiles() {
         <CardDescription>I tuoi file elaborati di recente</CardDescription>
       </CardHeader>
       <CardContent>
-        {recentFiles.length === 0 ? (
+        {files.length === 0 ? (
           renderEmptyState()
         ) : (
           <div className="space-y-4">
-            {recentFiles.map((file) => (
+            {files.map((file) => (
               <div key={file.id} className="flex flex-col p-3 rounded-lg border hover:bg-slate-50 transition-colors">
                 <div
                   className="flex items-center justify-between w-full cursor-pointer"
@@ -178,14 +187,20 @@ export function RecentFiles() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDownloadPlaceholder(file.id)}>Scarica</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleSharePlaceholder(file.id)}>Condividi</DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">Elimina</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-red-600 focus:text-red-700 focus:bg-red-50" 
+                          onClick={() => onDelete && onDelete(file.id)}
+                          disabled={!onDelete}
+                        >
+                          Elimina
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
                 
                 {/* Area espandibile per i risultati */}
-                {expandedFileId === file.id && (
+                {expandedFileId === file.id && file.resultsData && (
                   <div className="mt-4 pt-4 border-t" id={`results-export-area-${file.id}`}>
                     <ResultsDisplay
                       results={file.resultsData}

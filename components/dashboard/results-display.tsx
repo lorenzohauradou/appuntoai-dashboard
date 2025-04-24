@@ -41,6 +41,16 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
   const [activeTab, setActiveTab] = useState(results.contentType === "lezione" ? "summary" : "summary")
 
   const getPriorityStyles = (priority: string): PriorityStyle => {
+    // Verifichiamo che priority sia una stringa valida prima di chiamare toLowerCase()
+    if (!priority) {
+      // Caso di default se priority è undefined, null o una stringa vuota
+      return {
+        variant: "outline",
+        icon: null,
+        className: "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100",
+      };
+    }
+    
     switch (priority.toLowerCase()) {
       case "alta":
         return {
@@ -251,7 +261,7 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
                     {lectureResults.exercises.map((exercise, index) => (
                       <li key={index} className="flex items-start gap-3 p-3 rounded-lg border">
                         <BookOpen className="h-5 w-5 text-green-600 mt-0.5" />
-                        <span>{exercise}</span>
+                        <span>{exercise.description}</span>
                       </li>
                     ))}
                   </ul>

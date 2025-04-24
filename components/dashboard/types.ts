@@ -15,6 +15,13 @@ export interface Task {
   category: string;
 }
 
+// Tipi per gli esercizi
+export interface Exercise {
+  description: string;
+  deadline?: string; // Opzionale come nel backend
+  date_iso?: string; // Opzionale come nel backend
+}
+
 // Interfaccia per i risultati di meeting
 export interface MeetingResults {
   contentType: "meeting";
@@ -32,7 +39,7 @@ export interface LectureResults {
   contentType: "lezione";
   summary: string;
   keyPoints: string[];
-  exercises: string[];
+  exercises: Exercise[];
   topics: string[];
   participants: Participant[];
   possibleQuestions: string[];
@@ -47,10 +54,9 @@ export interface InterviewResults {
   contentType: "intervista";
   summary: string;
   questions: string[]; // Domande principali
-  answers: string[];   // Risposte significative
-  quotes: string[];    // Citazioni rilevanti
+  answers: string[];   // Risposte chiave (nome corretto)
   participants: Participant[];
-  themes: string[];      // Temi trattati
+  themes: string[];      // Temi principali (nome corretto)
   transcript_id?: string;
   suggested_questions?: string[];
 }
