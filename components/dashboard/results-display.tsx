@@ -85,7 +85,7 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
     console.log("ResultsDisplay: renderTabs - ContentType =", results.contentType); 
     if (results.contentType === "lezione") {
       return (
-        <TabsList className="grid grid-cols-2 md:grid-cols-6 mb-6">
+        <TabsList className="flex flex-wrap md:grid md:grid-cols-6 mb-6">
           <TabsTrigger value="summary" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             <FileText className="mr-2 h-4 w-4" />
             Riassunto
@@ -117,7 +117,7 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
     } else {
       // Meeting e altri tipi
       return (
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-6">
+        <TabsList className="flex flex-wrap md:grid md:grid-cols-5 mb-6">
           <TabsTrigger value="summary" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             <FileText className="mr-2 h-4 w-4" />
             Riassunto
@@ -151,33 +151,33 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
     // Contenuto comune a tutti i tipi
     const commonTabs = (
       <>
-        <TabsContent value="summary" className="mt-0">
-          <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle>Riassunto</CardTitle>
-              <CardDescription>Una sintesi del contenuto analizzato</CardDescription>
+        <TabsContent value="summary" className="mt-8 w-full">
+          <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+            <CardHeader className="p-0 mb-4 pt-5">
+              <CardTitle className="break-words">Riassunto</CardTitle>
+              <CardDescription className="break-words">Una sintesi del contenuto analizzato</CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
-              <p className="text-lg">{results.summary}</p>
+            <CardContent className="p-0 w-full">
+              <p className="text-lg break-words">{results.summary}</p>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="participants" className="mt-0">
-          <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle>Partecipanti</CardTitle>
-              <CardDescription>
+        <TabsContent value="participants" className="mt-8 w-full">
+          <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+            <CardHeader className="p-0 mb-4 pt-5">
+              <CardTitle className="break-words">Partecipanti</CardTitle>
+              <CardDescription className="break-words">
                 {results.contentType === "lezione" 
                   ? "Docenti e studenti coinvolti" 
                   : "Le persone coinvolte e i loro ruoli"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {results.participants && results.participants.length > 0 ? ( // Aggiunto check esplicito per results.participants
+            <CardContent className="p-0 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                {results.participants && results.participants.length > 0 ? (
                   results.participants.map((participant, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
+                    <div key={index} className="flex items-center gap-3 p-3 rounded-lg border w-full">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary">
                         {participant.name ? participant.name.charAt(0) : "?"}
                       </div>
@@ -204,17 +204,17 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
         <>
           {commonTabs}
           
-          <TabsContent value="keyPoints" className="mt-0">
-            <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle>Concetti Chiave</CardTitle>
-                <CardDescription>I concetti fondamentali della lezione</CardDescription>
+          <TabsContent value="keyPoints" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-5">
+                <CardTitle className="break-words">Concetti Chiave</CardTitle>
+                <CardDescription className="break-words">I concetti fondamentali della lezione</CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="flex flex-wrap gap-2">
+              <CardContent className="p-0 w-full">
+                <div className="flex flex-wrap gap-2 w-full">
                   {lectureResults.keyPoints.length > 0 ? (
                     lectureResults.keyPoints.map((concept, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3 bg-primary-100 text-primary">
+                      <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3.5 bg-primary-100 text-primary">
                         {concept}
                       </Badge>
                     ))
@@ -226,19 +226,19 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
             </Card>
           </TabsContent>
 
-          <TabsContent value="topics" className="mt-0">
-            <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle>Argomenti</CardTitle>
-                <CardDescription>Gli argomenti trattati durante la lezione</CardDescription>
+          <TabsContent value="topics" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-5">
+                <CardTitle className="break-words">Argomenti</CardTitle>
+                <CardDescription className="break-words">Gli argomenti trattati durante la lezione</CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <ul className="space-y-4">
+              <CardContent className="p-0 w-full">
+                <ul className="space-y-4 w-full">
                   {lectureResults.topics.length > 0 ? (
                     lectureResults.topics.map((topic, index) => (
-                      <li key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <Book className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <span>{topic}</span>
+                      <li key={index} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
+                        <Book className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <span className="break-words">{topic}</span>
                       </li>
                     ))
                   ) : (
@@ -250,18 +250,18 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
           </TabsContent>
 
           {lectureResults.exercises.length > 0 && (
-            <TabsContent value="exercises" className="mt-0">
-              <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-                <CardHeader className="p-0 mb-4">
-                  <CardTitle>Esercizi</CardTitle>
+            <TabsContent value="exercises" className="mt-8 w-full">
+              <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+                <CardHeader className="p-0 mb-4 pt-5">
+                  <CardTitle className="break-words">Esercizi</CardTitle>
                   <CardDescription>Esercizi e attività pratiche menzionate</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <ul className="space-y-4">
+                  <ul className="space-y-4 w-full">
                     {lectureResults.exercises.map((exercise, index) => (
-                      <li key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <BookOpen className="h-5 w-5 text-green-600 mt-0.5" />
-                        <span>{exercise.description}</span>
+                      <li key={index} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
+                        <BookOpen className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="break-words">{exercise.description}</span>
                       </li>
                     ))}
                   </ul>
@@ -270,19 +270,19 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
             </TabsContent>
           )}
 
-          <TabsContent value="questions" className="mt-0">
-            <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle>Possibili Domande d'Esame</CardTitle>
-                <CardDescription>Domande che potrebbero emergere da questo contenuto</CardDescription>
+          <TabsContent value="questions" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-5">
+                <CardTitle className="break-words">Possibili Domande d'Esame</CardTitle>
+                <CardDescription className="break-words">Domande che potrebbero emergere da questo contenuto</CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <ul className="space-y-4">
+              <CardContent className="p-0 w-full">
+                <ul className="space-y-4 w-full">
                   {lectureResults.possibleQuestions.length > 0 ? (
                     lectureResults.possibleQuestions.map((question, index) => (
-                      <li key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <HelpCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-                        <span>{question}</span>
+                      <li key={index} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
+                        <HelpCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                        <span className="break-words">{question}</span>
                       </li>
                     ))
                   ) : (
@@ -303,19 +303,19 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
         <>
           {commonTabs}
           
-          <TabsContent value="decisions" className="mt-0">
-            <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle>Decisioni prese</CardTitle>
-                <CardDescription>Le decisioni chiave identificate nel contenuto</CardDescription>
+          <TabsContent value="decisions" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-5">
+                <CardTitle className="break-words">Decisioni prese</CardTitle>
+                <CardDescription className="break-words">Le decisioni chiave identificate nel contenuto</CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <ul className="space-y-4">
-                  {meetingResults.decisions && meetingResults.decisions.length > 0 ? ( // Aggiunto check esplicito
+              <CardContent className="p-0 w-full">
+                <ul className="space-y-4 w-full">
+                  {meetingResults.decisions && meetingResults.decisions.length > 0 ? (
                     meetingResults.decisions.map((decision, index) => (
-                      <li key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                        <span>{decision}</span>
+                      <li key={index} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="break-words">{decision}</span>
                       </li>
                     ))
                   ) : (
@@ -326,21 +326,21 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
             </Card>
           </TabsContent>
 
-          <TabsContent value="tasks" className="mt-0">
-            <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle>Task identificati</CardTitle>
+          <TabsContent value="tasks" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-5">
+                <CardTitle className="break-words">Task identificati</CardTitle>
                 <CardDescription>Attività da completare con assegnatari e scadenze</CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="space-y-4">
-                  {meetingResults.tasks && meetingResults.tasks.length > 0 ? ( // Aggiunto check esplicito
+              <CardContent className="p-0 w-full">
+                <div className="space-y-4 w-full px-1">
+                  {meetingResults.tasks && meetingResults.tasks.length > 0 ? (
                     meetingResults.tasks.map((task, index) => {
                       const priorityStyles = getPriorityStyles(task.priority);
                       return (
-                        <div key={index} className="p-4 rounded-lg border bg-white shadow-sm">
+                        <div key={index} className="p-5 md:p-6 rounded-lg border bg-white shadow-sm overflow-hidden w-full">
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
-                            <h3 className="font-semibold text-lg flex-1">
+                            <h3 className="font-semibold text-lg flex-1 break-words overflow-hidden leading-snug">
                               <span className="text-primary mr-2">Task {index + 1}:</span>
                               {task.task}
                             </h3>
@@ -349,9 +349,9 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
                               {task.priority || "Non specificata"}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1 text-sm mt-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm mt-2">
                             <div className="flex items-center gap-1.5">
-                              <Users className="h-4 w-4 text-muted-foreground" />
+                              <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                               <span className="text-muted-foreground">Assegnato a:</span>
                               <span className="font-medium">{task.assignee || "Non specificato"}</span>
                             </div>
@@ -377,17 +377,17 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
             </Card>
           </TabsContent>
 
-          <TabsContent value="themes" className="mt-0">
-            <Card className="border-0 shadow-md bg-white p-14 md:p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle>Temi principali</CardTitle>
+          <TabsContent value="themes" className="mt-8 w-full">
+            <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
+              <CardHeader className="p-0 mb-4 pt-8">
+                <CardTitle className="break-words">Temi principali</CardTitle>
                 <CardDescription>Gli argomenti chiave discussi</CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="flex flex-wrap gap-2">
+              <CardContent className="p-0 w-full">
+                <div className="flex flex-wrap gap-2 w-full">
                   {meetingResults.themes && meetingResults.themes.length > 0 ? ( // Aggiunto check esplicito
                     meetingResults.themes.map((theme, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3 bg-primary-100 text-primary">
+                      <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3.5 bg-primary-100 text-primary">
                         {theme}
                       </Badge>
                     ))
@@ -403,11 +403,9 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
     }
   }
 
-  // Log #10: Controlla se il componente arriva a fare il return finale
-  console.log("--- ResultsDisplay: Fine Render Function ---");
   return (
-    <div id="results-export-area" className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div id="results-export-area" className="w-full space-y-6 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
         <div>
           <h1 className="text-2xl font-bold">Risultati dell'analisi</h1>
           <p className="text-muted-foreground">
@@ -416,7 +414,7 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
               : "Ecco cosa abbiamo trovato nel tuo meeting"}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {results.transcript_id && (
             <Button onClick={onChatOpen} className="gap-2 bg-primary text-white">
               <MessageSquare className="h-4 w-4" />

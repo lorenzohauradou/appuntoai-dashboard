@@ -201,7 +201,10 @@ export function RecentFiles({ files = [], onOpenChat, onDelete }: RecentFilesPro
                 
                 {/* Area espandibile per i risultati */}
                 {expandedFileId === file.id && file.resultsData && (
-                  <div className="mt-4 pt-4 border-t" id={`results-export-area-${file.id}`}>
+                  <div 
+                    className="mt-4 pt-4 border-t" 
+                    id={`results-export-area-${file.id}`}
+                  >
                     <ResultsDisplay
                       results={file.resultsData}
                       onChatOpen={() => handleChatOpenPlaceholder(file.id)}
