@@ -31,7 +31,6 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
   const navItems = [
     { id: "upload", label: "Carica File", icon: FileUp },
     { id: "results", label: "Risultati", icon: FileText },
-    { id: "history", label: "Cronologia", icon: History },
     { id: "settings", label: "Impostazioni", icon: Settings },
   ]
 

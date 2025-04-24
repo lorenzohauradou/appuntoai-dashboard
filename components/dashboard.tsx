@@ -42,10 +42,10 @@ export function Dashboard() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const { toast } = useToast()
 
-  // Effetto per recuperare la cronologia delle analisi
+  // Effetto per recuperare la cronologia delle analisi (ora chiamata Risultati)
   useEffect(() => {
     const fetchAnalysisHistory = async () => {
-      if (activeTab === "history" || activeTab === "upload") {
+      if (activeTab === "results" || activeTab === "upload") {
         setIsLoadingHistory(true);
         try {
           const historyData = await getAnalysisHistory();
@@ -331,7 +331,6 @@ export function Dashboard() {
       
       setResults(formattedResults);
       setProcessingStatus("completed");
-      setActiveTab("results");
 
       // Aggiorna la cronologia dopo un'analisi completata con successo
       const fetchAnalysisHistory = async () => {
@@ -381,46 +380,11 @@ export function Dashboard() {
           </div>
         )
       case "results":
-        return results ? (
-          <ResultsDisplay 
-            results={results} 
-            onChatOpen={handleChatOpen} 
-            onDownload={handleDownload}
-            onShare={handleShare}
-          />
-        ) : (
-          <div className="container max-w-4xl mx-auto py-8">
-            <div className="space-y-6" id="results-placeholder">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl font-bold">Risultati dell'analisi</h1>
-                  <p className="text-muted-foreground">
-                    Ecco il riepilogo dettagliato della tua analisi
-                  </p>
-                </div>
-              </div>
-              
-              <div className="mt-12 p-8 border rounded-lg shadow-sm bg-white/50 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 mb-4 rounded-full bg-purple-100 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                  </svg>
-                </div>
-                <h2 className="text-xl font-medium mb-2">Nessun documento analizzato</h2>
-                <p className="text-muted-foreground max-w-md">
-                  Carica un documento dalla sezione "Carica File" per vedere qui i risultati dell'analisi
-                </p>
-                <button 
-                  className="mt-6 px-4 py-2 rounded-md bg-primary text-white font-medium"
-                  onClick={() => setActiveTab("upload")}
-                >
-                  Vai a Carica File
-                </button>
-              </div>
-            </div>
-          </div>
-        )
+        return <RecentFiles 
+                 files={analysisHistory} 
+                 onOpenChat={handleHistoryChatOpen} 
+                 onDelete={handleDeleteFile}
+               />
       case "history":
         return <RecentFiles 
                  files={analysisHistory} 
