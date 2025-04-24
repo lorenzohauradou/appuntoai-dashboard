@@ -76,7 +76,7 @@ export function Header() {
               </span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuContent align="end" className="w-80 hidden">
             <DropdownMenuLabel>Notifiche</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="max-h-80 overflow-auto">
