@@ -44,7 +44,6 @@ export interface LectureResults {
   participants: Participant[];
   possibleQuestions: string[];
   bibliography: string[];
-  teacher: string | null;
   transcript_id?: string;
   suggested_questions?: string[];
 }
@@ -73,4 +72,14 @@ export interface ResultsDisplayProps {
   onChatOpen: () => void;
   onDownload: () => void;
   onShare: () => void;
+}
+
+export interface RecentFileRaw {
+  id: string;
+  name: string;
+  type: string; // File type like 'audio', 'video', 'text'
+  contentType?: string; // <<< ADDED: Analysis type like 'meeting', 'lesson', 'interview'
+  date: string;
+  status: string;
+  rawData: any;
 } 

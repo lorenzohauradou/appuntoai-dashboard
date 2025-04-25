@@ -27,6 +27,7 @@ interface RecentFileRaw {
   id: string;
   name: string;
   type: string;
+  contentType: string | undefined;
   date: string;
   status: string;
   rawData: RawApiResult; // Campo per i dati grezzi
@@ -124,7 +125,6 @@ export function Dashboard() {
           })),
           possibleQuestions: result.possibili_domande_esame || [],
           bibliography: result.bibliografia || [],
-          teacher: result.docente || null,
           transcript_id: result.transcript_id,
           suggested_questions: result.suggested_questions || [],
         };
@@ -182,16 +182,18 @@ export function Dashboard() {
         try {
           const historyData = await getAnalysisHistory();
           
-          // --- MODIFICA: Mappatura per salvare i dati GREZZI ---
-          const rawHistory = historyData.map((item: any): RecentFileRaw => ({ // Tipo Raw
+          // --- MODIFICA: Mappatura per salvare i dati GREZZI e il TIPO CONTENUTO ---
+          const rawHistory = historyData.map((item: any): RecentFileRaw => ({
             id: item.transcript_id,
             name: item.title || "Analisi senza titolo",
-            type: item.file_type || "text",
+            type: item.file_type || "text", 
+            // Estrai contentType da item.content, gestendo casi null/undefined
+            contentType: item.content?.tipo_contenuto || undefined,
             date: new Date(item.created_at).toLocaleString('it-IT'),
             status: "Completato",
-            rawData: item.content // <--- SALVA I DATI GREZZI
+            rawData: item.content // Salva i dati grezzi
           }));
-          // -----------------------------------------------------
+          // --------------------------------------------------------------------------
           
           setAnalysisHistory(rawHistory);
         } catch (error) {

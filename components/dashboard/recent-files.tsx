@@ -9,17 +9,8 @@ import { ResultsDisplay } from "./results-display"
 import { useToast } from "@/components/ui/use-toast"
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { ResultsType } from "./types"
-
-// Interfaccia per un file recente
-export interface RecentFileRaw {
-  id: string;
-  name: string;
-  type: string;
-  date: string;
-  status: string;
-  rawData: any;
-}
+import { ResultsType, RecentFileRaw } from "./types"
+import { Badge } from "@/components/ui/badge"
 
 // Interface per le props del componente
 interface RecentFilesProps {
@@ -50,6 +41,21 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
     console.log(`Toggling file expansion for ID: ${fileId}`);
     setExpandedFileId(prevId => (prevId === fileId ? null : fileId));
   };
+
+  // --- NUOVA FUNZIONE HELPER PER STILE BADGE TIPO ---
+  const getTypeStyle = (contentType?: string): { text: string; className: string } => {
+    switch (contentType) {
+      case 'meeting':
+        return { text: 'Meeting', className: 'bg-blue-100 text-blue-700' };
+      case 'lesson':
+        return { text: 'Lezione', className: 'bg-purple-100 text-purple-700' };
+      case 'interview':
+        return { text: 'Intervista', className: 'bg-yellow-100 text-yellow-700' };
+      default:
+        return { text: 'N/D', className: 'bg-gray-100 text-gray-700' }; // Stile per tipo sconosciuto
+    }
+  };
+  // -----------------------------------------------------
 
   // Funzioni per ResultsDisplay
   const handleChatOpenPlaceholder = (fileId: string) => {
@@ -198,6 +204,10 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
         ) : (
           <div className="space-y-4">
             {files.map((file) => {
+              // --- AGGIUNTA: Ottieni stile per il tipo ---
+              const typeStyle = getTypeStyle(file.contentType);
+              // -----------------------------------------
+
               let formattedResultsForDisplay: ResultsType | null = null;
               if (expandedFileId === file.id) {
                   console.log(`RecentFiles: Formatting rawData for expanded file ${file.id}`);
@@ -221,7 +231,15 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">{file.status}</span>
+                       {/* --- AGGIUNTA: Badge per il tipo --- */}
+                       <Badge className={`text-xs px-2 py-1 ${typeStyle.className}`}>
+                         {typeStyle.text}
+                       </Badge>
+                       {/* ----------------------------------- */}
+                      {/* Badge dello stato esistente */}
+                      <Badge className="text-xs text-green-600 bg-green-100 px-2 py-1">
+                        {file.status}
+                      </Badge>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
