@@ -9,7 +9,6 @@ import { ResultsDisplay } from "@/components/dashboard/results-display"
 import { RecentFiles } from "@/components/dashboard/recent-files"
 import { BackgroundPattern } from "@/components/ui/background-pattern"
 import { cn } from "@/lib/utils"
-import { analyzeMeeting, sendChatMessage, getAnalysisHistory, deleteAnalysis } from "@/lib/api"
 import { ChatDialog } from "@/components/dashboard/chat-dialog"
 import { useToast } from "@/components/ui/use-toast"
 import html2canvas from 'html2canvas';
@@ -180,9 +179,22 @@ export function Dashboard() {
       if (activeTab === "results" || activeTab === "upload") {
         setIsLoadingHistory(true);
         try {
-          const historyData = await getAnalysisHistory();
+          // --- MODIFICA: Usa fetch per chiamare la API Route --- 
+          const response = await fetch('/api/analyses/history', {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+          });
+
+          if (!response.ok) {
+            let errorDetail = `Errore HTTP: ${response.status}`;
+            try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
+            throw new Error(errorDetail);
+          }
+
+          const historyData = await response.json();
+          // -----------------------------------------------------
           
-          // --- MODIFICA: Mappatura per salvare i dati GREZZI e il TIPO CONTENUTO ---
+          // --- MODIFICA: Mappatura per salvare i dati GREZZI e il TIPO CONTENUTO --- 
           const rawHistory = historyData.map((item: any): RecentFileRaw => ({
             id: item.transcript_id,
             name: item.title || "Analisi senza titolo",
@@ -322,7 +334,25 @@ export function Dashboard() {
 
     console.log(`Tentativo di eliminazione per ID: ${transcriptIdToDelete}`);
     try {
-      await deleteAnalysis(transcriptIdToDelete);
+      // --- MODIFICA: Usa fetch per chiamare la API Route DELETE --- 
+      const response = await fetch(`/api/analyses/${transcriptIdToDelete}`, {
+        method: 'DELETE',
+      });
+
+      // Gestisci la risposta (204 No Content per successo senza corpo)
+      if (response.status === 204) {
+        console.log(`Analisi ${transcriptIdToDelete} eliminata con successo (204).`);
+      } else if (response.ok) {
+        // Altro status OK (es. 200 con messaggio)
+        const data = await response.json().catch(() => null);
+        console.log(`Analisi ${transcriptIdToDelete} eliminata con successo (${response.status}):`, data);
+      } else {
+        // Errore
+        let errorDetail = `Errore eliminazione: ${response.status}`;
+        try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
+        throw new Error(errorDetail);
+      }
+      // ---------------------------------------------------------
       
       setAnalysisHistory(prevHistory => 
         prevHistory.filter(file => file.id !== transcriptIdToDelete)
@@ -353,11 +383,44 @@ export function Dashboard() {
         const blob = new Blob([data], { type: 'text/plain' });
         file = new File([blob], "transcript.txt", { type: 'text/plain' });
       } else {
-        file = data;
+        file = data; // Assumiamo che 'data' sia già un oggetto File per tipi audio/video
       }
       
-      const result: RawApiResult = await analyzeMeeting(file, category);
-      console.log("handleUpload: Risultato GREZZO dalla API /analyze:", JSON.stringify(result, null, 2)); 
+      // --- MODIFICA: Prepara FormData e usa fetch per chiamare la API Route --- 
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Mappa categoria frontend a backend 
+      const categoryMap: { [key in ContentCategory]: string } = {
+        "Meeting": "Meeting", // Assumiamo che questi siano i valori attesi dal backend
+        "Lezione": "lesson",   // Modificato da "Lesson" a "lesson" come usato in formatApiResult
+        "Intervista": "interview" // Modificato da "Interview" a "interview"
+      };
+      const backendCategory = categoryMap[category];
+      if (backendCategory) {
+          formData.append('content_type', backendCategory);
+          console.log(`Mapping frontend category '${category}' to backend '${backendCategory}'`);
+      } else {
+          console.warn(`Categoria frontend '${category}' non mappata, invio come non specificata.`);
+          formData.append('content_type', category); 
+      }
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        body: formData,
+        // Non impostare Content-Type manualmente per FormData
+      });
+
+      if (!response.ok) {
+        let errorDetail = `Errore HTTP: ${response.status}`;
+        try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
+        throw new Error(errorDetail);
+      }
+      
+      const result: RawApiResult = await response.json();
+      // -------------------------------------------------------------------------
+
+      console.log("handleUpload: Risultato GREZZO dalla API Route /api/analyze:", JSON.stringify(result, null, 2)); 
 
       setRawResults(result);
 

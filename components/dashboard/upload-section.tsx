@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
 
 // Definisci il tipo ContentCategory qui o importalo se è definito altrove
 type ContentCategory = "Meeting" | "Lezione" | "Intervista";

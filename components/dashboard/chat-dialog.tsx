@@ -1,4 +1,3 @@
-// components/dashboard/chat-dialog.tsx
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -21,7 +20,6 @@ import {
   Loader2
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { sendChatMessage, getChatHistory } from "@/lib/api"
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -61,34 +59,56 @@ export function ChatDialog({
       if (open && transcriptId) {
         setIsLoadingHistory(true);
         try {
-          // Chiama la nuova funzione API per recuperare la cronologia della chat
-          const history = await getChatHistory(transcriptId);
-          
-          if (history && history.messages && history.messages.length > 0) {
-            setMessages(history.messages);
-            setChatId(history.chat_id);
-            
-            // Se ci sono fonti nella risposta, le impostiamo
-            if (history.sources) {
-              setSources(history.sources);
-            } else {
-              setSources([]);
+          // API route GET per recuperare la cronologia
+          const historyResponse = await fetch(`/api/chat/history/${transcriptId}`, {
+            method: "GET",
+            headers: {
+              'Accept': 'application/json' 
             }
+          });
+
+          console.log("History fetch response:", historyResponse);
+
+          // Controlla se la richiesta all'API route è andata a buon fine
+          if (!historyResponse.ok) { 
+             let errorData = { detail: `Errore HTTP: ${historyResponse.status}` };
+             try {
+                // Prova a leggere il corpo dell'errore restituito dall'API route
+                errorData = await historyResponse.json();
+             } catch (e) { 
+                // Se il corpo non è JSON, usa lo status text
+                errorData.detail = historyResponse.statusText || errorData.detail;
+             } 
+             // Lancia un errore che verrà catturato dal blocco catch
+             throw new Error(errorData.detail || `Errore ${historyResponse.status} nel recupero cronologia`);
+          }
+
+          // Leggi il corpo JSON solo se la risposta è ok
+          const historyData = await historyResponse.json(); 
+
+          console.log("Parsed history data:", historyData);
+          
+          // La route restituisce { messages: [], ... } se non c'è storia
+          if (historyData && historyData.messages && historyData.messages.length > 0) {
+            setMessages(historyData.messages);
+            setChatId(historyData.chat_id); // Assicurati che chat_id sia nel payload
+            setSources(historyData.sources || []);
           } else {
-            // Nessuna cronologia trovata, inizializza una chat vuota
+            // Inizializza chat vuota se non ci sono messaggi
             setMessages([]);
             setChatId(undefined);
             setSources([]);
           }
-        } catch (error) {
-          console.error("Errore nel recupero della cronologia chat:", error);
-          setMessages([]);
+        } catch (error: any) { // Tipizza error
+          console.error("Errore nel recupero della cronologia chat:", error.message);
+          setMessages([]); // Resetta stato in caso di errore
           setChatId(undefined);
           setSources([]);
+          // TODO: Mostrare un messaggio di errore all'utente nella UI?
         } finally {
           setIsLoadingHistory(false);
-          // Facciamo scorrere in fondo dopo aver caricato i messaggi
-          setTimeout(scrollToBottom, 100);
+          // Scrolla in fondo dopo il caricamento (anche se vuoto)
+          setTimeout(scrollToBottom, 100); 
         }
       }
     };
@@ -116,18 +136,27 @@ export function ChatDialog({
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
 
     try {
-      const response = await sendChatMessage(transcriptId, userMessage, chatId);
+      // const response = await sendChatMessage(transcriptId, userMessage, chatId);
+      const response = await fetch("/api/send-chat-message", {
+        method: "POST",
+        body: JSON.stringify({ transcriptId, message: userMessage, chatId })
+      });
+
+      const responseData = await response.json();
+
+      console.log(responseData);
+      
       
       // Aggiorna chatId se è la prima risposta
       if (!chatId) {
-        setChatId(response.chat_id);
+        setChatId(responseData.chat_id);
       }
       
       // Aggiungi il messaggio dell'assistente
-      setMessages(prev => [...prev, { role: "assistant", content: response.response }]);
+      setMessages(prev => [...prev, { role: "assistant", content: responseData.response }]);
       
       // Aggiorna le fonti
-      setSources(response.sources || []);
+      setSources(responseData.sources || []);
     } catch (error) {
       console.error("Errore nell'invio del messaggio:", error);
       setMessages(prev => [...prev, { 

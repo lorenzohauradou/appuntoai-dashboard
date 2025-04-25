@@ -49,7 +49,7 @@ export async function analyzeMeeting(file: File, category?: string) {
 // chat
 export async function sendChatMessage(transcriptId: string, message: string, chatId?: string) {
   try {
-    const response = await fetch('http://localhost:8000/chat', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_URL}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ export async function getAnalysisHistory() {
 export async function getChatHistory(transcriptId: string) {
   try {
     // Assicurati che l'URL corrisponda al tuo endpoint backend
-    const response = await fetch(`http://localhost:8000/chat/history/${transcriptId}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_URL}/chat/history/${transcriptId}`, {
       method: 'GET',
       // Aggiungi headers se necessario (es. per autenticazione)
     });

@@ -42,7 +42,7 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
     setExpandedFileId(prevId => (prevId === fileId ? null : fileId));
   };
 
-  // --- NUOVA FUNZIONE HELPER PER STILE BADGE TIPO ---
+  // --- STILE BADGE TIPO ---
   const getTypeStyle = (contentType?: string): { text: string; className: string } => {
     switch (contentType) {
       case 'meeting':
@@ -52,10 +52,9 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
       case 'interview':
         return { text: 'Intervista', className: 'bg-yellow-100 text-yellow-700' };
       default:
-        return { text: 'N/D', className: 'bg-gray-100 text-gray-700' }; // Stile per tipo sconosciuto
+        return { text: 'N/D', className: 'bg-gray-100 text-gray-700' };
     }
   };
-  // -----------------------------------------------------
 
   // Funzioni per ResultsDisplay
   const handleChatOpenPlaceholder = (fileId: string) => {
