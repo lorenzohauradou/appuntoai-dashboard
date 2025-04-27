@@ -91,7 +91,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
 
   return (
     <Card className="border-0 shadow-lg bg-white overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg grid md:grid-cols-2 items-start justify-between">
+      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg grid grid-cols-1 md:grid-cols-2 items-start justify-between">
         <div>
           <CardTitle className="text-2xl text-center md:text-left mb-3">Carica il tuo contenuto</CardTitle>
           <CardDescription className="text-primary-100 hidden md:block">
@@ -100,9 +100,9 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
         </div>
         
         {/* Card informativa sullo stato delle selezioni */}
-        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6 md:p-3 shadow-lg border border-white/30 min-w-48 ">
+        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-white/30 w-full md:w-auto">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center md:justify-start gap-2">
               <div className="w-2 h-2 rounded-full bg-white"></div>
               <p className="text-sm text-white/80">Formato: 
                 <span className="font-semibold ml-1">{
@@ -112,7 +112,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center md:justify-start gap-2">
               <div className={cn("w-2 h-2 rounded-full", 
                 selectedCategory === "Meeting" ? "bg-blue-300" :
                 selectedCategory === "Lezione" ? "bg-pink-300" : 
@@ -127,7 +127,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center md:justify-start gap-2">
               <div className="w-2 h-2 rounded-full bg-white"></div>
               <p className="text-sm text-white/80">Stato: 
                 <span className="font-semibold ml-1">{
