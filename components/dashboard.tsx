@@ -46,7 +46,6 @@ export function Dashboard() {
 
   // Funzione helper per formattare i risultati dell'API (sia freschi che dalla cronologia)
   const formatApiResult = useCallback((result: RawApiResult): ResultsType | null => {
-    // ---> Manteniamo la versione ORIGINALE COMPLETA CON LOG <---
     console.log("[[[ formatApiResult INIZIO ]]]"); 
     if (!result) {
       console.error("[[[ formatApiResult ERRORE: Input 'result' è null o undefined ]]]");
@@ -62,45 +61,13 @@ export function Dashboard() {
       };
     }
 
-    // Log Dettagliati dell'Input
     console.log("[[[ formatApiResult Input 'result' RAW ]]]:", result);
     try {
       console.log("[[[ formatApiResult Input 'result' JSON.stringify ]]]:", JSON.stringify(result));
     } catch (e) {
       console.error("[[[ formatApiResult ERRORE JSON.stringify ]]]:", e);
     }
-    console.log(`[[[ formatApiResult Check: typeof result = ${typeof result} ]]]`);
-    console.log(`[[[ formatApiResult Check: Chiavi presenti in result = ${Object.keys(result)} ]]]`);
-    console.log(`[[[ formatApiResult Check: typeof result.tipo_contenuto = ${typeof result.tipo_contenuto} ]]]`);
-    console.log(`[[[ formatApiResult Check: result.tipo_contenuto Raw = |${result.tipo_contenuto}| ]]]`); // Vediamo se ci sono spazi
-    console.log(`[[[ formatApiResult Check: Valore booleano di result.tipo_contenuto = ${!!result.tipo_contenuto} ]]]`);
-    console.log(`[[[ formatApiResult Check: Condizione if (!result.tipo_contenuto) = ${!result.tipo_contenuto} ]]]`);
 
-    // Condizione di Fallback
-    if (!result.tipo_contenuto) { // Semplifichiamo la condizione, dato che abbiamo già verificato !result
-      console.warn("[[[ formatApiResult WARN: 'result.tipo_contenuto' mancante o falsy. Eseguo fallback a 'meeting'. Input era:]]]", result);
-      const contentType = 'meeting'; // Explicitly set fallback type
-      const fallbackData: MeetingResults = { // Explicitly type as MeetingResults
-        summary: result?.riassunto || "Riassunto non disponibile",
-        contentType: contentType, // <-- Qui viene impostato 'meeting'
-        decisions: result?.decisioni || [],
-         tasks: (result?.tasks || []).map((task: any) => ({
-            task: task.descrizione || "",
-            assignee: task.assegnatario || "Non specificato",
-            deadline: task.scadenza || 'Non specificata',
-            priority: task.priorita || 'Media',
-            category: task.categoria || 'Generale',
-         })),
-         themes: result?.temi_principali || [],
-         participants: (result?.partecipanti || []).map((p: any) => ({ name: p.nome, role: p.ruolo })),
-         transcript_id: result?.transcript_id || undefined, // CORREZIONE: null -> undefined
-         suggested_questions: result?.suggested_questions || [],
-       };
-       console.log("[[[ formatApiResult FINE (Fallback) ]]]");
-       return fallbackData as ResultsType; // Cast to satisfy return type
-    }
-
-    // Codice normale
     const category = result.tipo_contenuto;
     console.log(`[[[ formatApiResult Categoria rilevata: ${category} ]]]`);
 
@@ -179,7 +146,6 @@ export function Dashboard() {
       if (activeTab === "results" || activeTab === "upload") {
         setIsLoadingHistory(true);
         try {
-          // --- MODIFICA: Usa fetch per chiamare la API Route --- 
           const response = await fetch('/api/analyses/history', {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
@@ -192,20 +158,15 @@ export function Dashboard() {
           }
 
           const historyData = await response.json();
-          // -----------------------------------------------------
-          
-          // --- MODIFICA: Mappatura per salvare i dati GREZZI e il TIPO CONTENUTO --- 
           const rawHistory = historyData.map((item: any): RecentFileRaw => ({
             id: item.transcript_id,
             name: item.title || "Analisi senza titolo",
             type: item.file_type || "text", 
-            // Estrai contentType da item.content, gestendo casi null/undefined
             contentType: item.content?.tipo_contenuto || undefined,
             date: new Date(item.created_at).toLocaleString('it-IT'),
             status: "Completato",
-            rawData: item.content // Salva i dati grezzi
+            rawData: item.content
           }));
-          // --------------------------------------------------------------------------
           
           setAnalysisHistory(rawHistory);
         } catch (error) {
@@ -225,7 +186,7 @@ export function Dashboard() {
   }, [activeTab, toast]);
 
   useEffect(() => {
-    console.log("--- DASHBOARD STATE UPDATE (useEffect) ---");
+
     console.log("Processing Status:", processingStatus);
     console.log("Active Tab:", activeTab);
     // Logga i risultati GREZZI
@@ -334,7 +295,6 @@ export function Dashboard() {
 
     console.log(`Tentativo di eliminazione per ID: ${transcriptIdToDelete}`);
     try {
-      // --- MODIFICA: Usa fetch per chiamare la API Route DELETE --- 
       const response = await fetch(`/api/analyses/${transcriptIdToDelete}`, {
         method: 'DELETE',
       });
@@ -343,7 +303,6 @@ export function Dashboard() {
       if (response.status === 204) {
         console.log(`Analisi ${transcriptIdToDelete} eliminata con successo (204).`);
       } else if (response.ok) {
-        // Altro status OK (es. 200 con messaggio)
         const data = await response.json().catch(() => null);
         console.log(`Analisi ${transcriptIdToDelete} eliminata con successo (${response.status}):`, data);
       } else {
@@ -352,7 +311,6 @@ export function Dashboard() {
         try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
         throw new Error(errorDetail);
       }
-      // ---------------------------------------------------------
       
       setAnalysisHistory(prevHistory => 
         prevHistory.filter(file => file.id !== transcriptIdToDelete)
@@ -383,18 +341,17 @@ export function Dashboard() {
         const blob = new Blob([data], { type: 'text/plain' });
         file = new File([blob], "transcript.txt", { type: 'text/plain' });
       } else {
-        file = data; // Assumiamo che 'data' sia già un oggetto File per tipi audio/video
+        file = data;
       }
       
-      // --- MODIFICA: Prepara FormData e usa fetch per chiamare la API Route --- 
       const formData = new FormData();
       formData.append('file', file);
 
       // Mappa categoria frontend a backend 
       const categoryMap: { [key in ContentCategory]: string } = {
-        "Meeting": "Meeting", // Assumiamo che questi siano i valori attesi dal backend
-        "Lezione": "lesson",   // Modificato da "Lesson" a "lesson" come usato in formatApiResult
-        "Intervista": "interview" // Modificato da "Interview" a "interview"
+        "Meeting": "Meeting",
+        "Lezione": "lesson",
+        "Intervista": "interview" 
       };
       const backendCategory = categoryMap[category];
       if (backendCategory) {

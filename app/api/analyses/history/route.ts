@@ -4,23 +4,16 @@ export async function GET() {
   try {
     // Usa la variabile d'ambiente per l'URL del backend
     const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL;
-    if (!workerUrl) {
-      console.error("URL del worker non configurato (NEXT_PUBLIC_WORKER_URL)");
-      return NextResponse.json({ detail: 'Configurazione server incompleta' }, { status: 500 });
-    }
-    const backendUrl = `${workerUrl}/analyses/history`; // URL completo
+    const backendUrl = `${workerUrl}/analyses/history`;
 
-    console.log(`Recupero cronologia analisi da ${backendUrl}`);
 
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        // Aggiungere altri header se necessari
       },
     });
 
-    console.log("Risposta cronologia analisi dal backend:", response.status, response.statusText);
 
     if (!response.ok) {
       let errorDetail = `Errore dal backend: ${response.status}`;

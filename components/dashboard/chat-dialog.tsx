@@ -6,7 +6,6 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogFooter,
   DialogDescription
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -146,8 +145,6 @@ export function ChatDialog({
 
       console.log(responseData);
       
-      
-      // Aggiorna chatId se è la prima risposta
       if (!chatId) {
         setChatId(responseData.chat_id);
       }

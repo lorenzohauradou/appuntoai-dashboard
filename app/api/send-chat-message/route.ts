@@ -2,7 +2,6 @@ export async function POST(request: Request) {
     
 // export async function sendChatMessage(transcriptId: string, message: string, chatId?: string) {
     try {
-
       const { transcriptId, message, chatId } = await request.json();
       const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_URL}/chat`, {
         method: 'POST',

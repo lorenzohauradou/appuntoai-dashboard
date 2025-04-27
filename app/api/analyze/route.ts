@@ -21,13 +21,12 @@ export async function POST(request: NextRequest) {
        console.log("Inoltro al backend senza content_type specificato.");
     }
 
-    // Usa la variabile d'ambiente per l'URL del backend
     const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL;
     if (!workerUrl) {
       console.error("URL del worker non configurato (NEXT_PUBLIC_WORKER_URL)");
       return NextResponse.json({ detail: 'Configurazione server incompleta' }, { status: 500 });
     }
-    const backendUrl = `${workerUrl}/analyze`; // Costruisci l'URL completo
+    const backendUrl = `${workerUrl}/analyze`;
 
     console.log(`Inoltro richiesta analyze a ${backendUrl}`);
 
@@ -35,8 +34,6 @@ export async function POST(request: NextRequest) {
     const response = await fetch(backendUrl, {
       method: 'POST',
       body: backendFormData,
-      // Non impostare Content-Type quando usi FormData, il browser/fetch lo fa automaticamente
-      // con il boundary corretto.
     });
 
     console.log("Risposta ricevuta dal backend:", response.status, response.statusText);
