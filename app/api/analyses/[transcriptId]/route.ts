@@ -19,10 +19,6 @@ export async function DELETE(
   try {
     const response = await fetch(backendUrl, {
       method: 'DELETE',
-      headers: {
-        // Non necessario per DELETE di solito
-        // 'Content-Type': 'application/json', 
-      },
     });
 
     console.log("Risposta eliminazione analisi dal backend:", response.status, response.statusText);

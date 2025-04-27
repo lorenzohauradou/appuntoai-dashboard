@@ -90,12 +90,55 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
   }
 
   return (
-    <Card className="border-0 shadow-lg bg-white">
-      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg">
-        <CardTitle className="text-2xl">Carica il tuo contenuto</CardTitle>
-        <CardDescription className="text-primary-100">
-          Carica un file video, audio o inserisci direttamente il testo
-        </CardDescription>
+    <Card className="border-0 shadow-lg bg-white overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg grid md:grid-cols-2 items-start justify-between">
+        <div>
+          <CardTitle className="text-2xl">Carica il tuo contenuto</CardTitle>
+          <CardDescription className="text-primary-100">
+            Carica un file video, audio o inserisci direttamente il testo
+          </CardDescription>
+        </div>
+        
+        {/* Card informativa sullo stato delle selezioni */}
+        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6 md:p-3 shadow-lg border border-white/30 min-w-48 ">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-white"></div>
+              <p className="text-sm text-white/80">Formato: 
+                <span className="font-semibold ml-1">{
+                  activeTab === "video" ? "Video" : 
+                  activeTab === "audio" ? "Audio" : "Testo"
+                }</span>
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className={cn("w-2 h-2 rounded-full", 
+                selectedCategory === "Meeting" ? "bg-blue-300" :
+                selectedCategory === "Lezione" ? "bg-pink-300" : 
+                "bg-yellow-300"
+              )}></div>
+              <p className="text-sm text-white/80">Tipo: 
+                <span className={cn("font-semibold ml-1",
+                  selectedCategory === "Meeting" ? "text-blue-100" :
+                  selectedCategory === "Lezione" ? "text-purple-100" : 
+                  "text-yellow-100"  
+                )}>{selectedCategory}</span>
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-white"></div>
+              <p className="text-sm text-white/80">Stato: 
+                <span className="font-semibold ml-1">{
+                  selectedFile ? "File selezionato" : 
+                  textInput ? "Testo inserito" : 
+                  "In attesa..."
+                }</span>
+              </p>
+            </div>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="p-6">
         <Tabs defaultValue="video" value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -117,25 +160,25 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
           {/* Selezione della categoria */}
           <div className="mb-6">
             <div className="flex gap-2 flex-wrap">
-              <Button 
+              <Button
                 variant={selectedCategory === "Meeting" ? "secondary" : "outline"}
-                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md hover:bg-gradient-to-r from-gray-200 to-gray-100"
+                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
                 onClick={() => setSelectedCategory("Meeting")}
               >
                 <Users className="mr-2 h-4 w-4" />
                 Meeting
               </Button>
-              <Button 
+              <Button
                 variant={selectedCategory === "Lezione" ? "secondary" : "outline"}
-                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md hover:bg-gradient-to-r from-gray-200 to-gray-100"
+                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
                 onClick={() => setSelectedCategory("Lezione")}
               >
                 <GraduationCap className="mr-2 h-4 w-4" />
                 Lezione
               </Button>
-              <Button 
+              <Button
                 variant={selectedCategory === "Intervista" ? "secondary" : "outline"}
-                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md hover:bg-gradient-to-r from-gray-200 to-gray-100"
+                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
                 onClick={() => setSelectedCategory("Intervista")}
               >
                 <Mic2 className="mr-2 h-4 w-4" />
