@@ -13,7 +13,7 @@ import { ChatDialog } from "@/components/dashboard/chat-dialog"
 import { useToast } from "@/components/ui/use-toast"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { ResultsType, MeetingResults } from "@/components/dashboard/types"
+import { ResultsType } from "@/components/dashboard/types"
 
 // Definisci un tipo più specifico per le categorie valide
 type ContentCategory = "Meeting" | "Lezione" | "Intervista";
