@@ -93,8 +93,8 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
     <Card className="border-0 shadow-lg bg-white overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg grid md:grid-cols-2 items-start justify-between">
         <div>
-          <CardTitle className="text-2xl">Carica il tuo contenuto</CardTitle>
-          <CardDescription className="text-primary-100">
+          <CardTitle className="text-2xl text-center md:text-left mb-3">Carica il tuo contenuto</CardTitle>
+          <CardDescription className="text-primary-100 hidden md:block">
             Carica un file video, audio o inserisci direttamente il testo
           </CardDescription>
         </div>
