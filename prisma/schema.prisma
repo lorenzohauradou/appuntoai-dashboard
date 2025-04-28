@@ -82,7 +82,7 @@ model Authenticator {
 model Analysis {
   id            String    @id @default(cuid()) 
   transcriptId  String
-  content       String[]
+  content       Json
   createdAt     DateTime  @default(now())
 
   transcript Transcription @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
@@ -94,7 +94,7 @@ model ChatHistory {
   chatId        String
   messages      String[]
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   transcript Transcription @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
 }
@@ -113,7 +113,7 @@ model Transcription {
   fileType           FileType
   userId             String
   createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  updatedAt          DateTime  @default(now()) @updatedAt
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   analyses     Analysis[]

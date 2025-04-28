@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Importa auth per recuperare la sessione
+import { auth } from "@/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    // --- Recupera la sessione e l'ID utente ---
+    const session = await auth();
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      // Se l'utente non è loggato, restituisci errore
+      return NextResponse.json({ detail: 'Autenticazione richiesta' }, { status: 401 });
+    }
+    // --- Fine recupero sessione ---
+
     // Estrai FormData dalla richiesta
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -20,6 +32,10 @@ export async function POST(request: NextRequest) {
     } else {
        console.log("Inoltro al backend senza content_type specificato.");
     }
+    // --- Aggiungi user_id al FormData ---
+    backendFormData.append('user_id', userId);
+    console.log(`Inoltro al backend con user_id: ${userId}`);
+    // --- Fine aggiunta user_id ---
 
     const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL;
     if (!workerUrl) {

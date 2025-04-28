@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Transcription" ALTER COLUMN "updatedAt" SET DEFAULT CURRENT_TIMESTAMP;

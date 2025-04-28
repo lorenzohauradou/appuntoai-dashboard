@@ -3,7 +3,9 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2 } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { useRouter } from 'next/navigation'
+import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
@@ -27,6 +29,10 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
   // Usa ContentCategory per lo stato
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory>("Meeting")
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Usa hook per sessione e router
+  const { data: session, status: sessionStatus } = useSession()
+  const router = useRouter()
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -88,6 +94,37 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
     clearSelection()
     setTextInput("")
   }
+
+  // Logica separata per l'effettivo upload (chiamata quando l'utente è autenticato)
+  const triggerUpload = () => {
+    if (activeTab === "text" && textInput) {
+      onUpload("text", selectedCategory, textInput)
+    } else if (selectedFile) {
+      onUpload(activeTab, selectedCategory, selectedFile)
+    }
+  }
+
+  // Nuovo gestore per il click sul pulsante "Elabora"
+  const handleProcessClick = () => {
+    if (sessionStatus === 'loading') {
+      // Non fare nulla se la sessione sta ancora caricando
+      return;
+    }
+
+    if (sessionStatus === 'unauthenticated') {
+      // Reindirizza alla pagina di login se non autenticato
+      router.push('/login');
+    } else if (sessionStatus === 'authenticated') {
+      // Se autenticato, procedi con l'upload effettivo
+      triggerUpload();
+    }
+  }
+
+  // Calcola se il bottone deve essere disabilitato
+  const isButtonDisabled = 
+    sessionStatus === 'loading' || // Disabilita se la sessione sta caricando
+    processingStatus === 'processing' || // Disabilita se già in elaborazione
+    ((activeTab !== "text" || !textInput) && !selectedFile); // Disabilita se non c'è input/file
 
   return (
     <Card className="border-0 shadow-lg bg-white overflow-hidden">
@@ -334,14 +371,25 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
       <CardFooter className="flex justify-end border-t p-6">
         <Button
           className="bg-primary text-white hover:bg-primary/90"
-          onClick={handleUploadClick}
-          disabled={
-            processingStatus === 'processing' ||
-            ((activeTab !== "text" || !textInput) && !selectedFile)
-          }
+          onClick={handleProcessClick}
+          disabled={isButtonDisabled}
         >
-          <Upload className="mr-2 h-4 w-4" />
-          Elabora
+          {sessionStatus === 'loading' ? (
+             <>
+               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+               Verifica...
+             </>
+           ) : processingStatus === 'processing' ? (
+             <>
+               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+               Elaborazione...
+             </>
+           ) : (
+            <>
+              <Upload className="mr-2 h-4 w-4" />
+              {sessionStatus === 'unauthenticated' ? 'Accedi per Elaborare' : 'Elabora'}
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>
