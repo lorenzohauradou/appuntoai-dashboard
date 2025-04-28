@@ -16,13 +16,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Appuntoai - Appunti strutturati con AI",
     description: "Trasforma audio, video e testo in appunti strutturati con intelligenza artificiale",
-    images: ['/og-image.png'],
+    images: ['/appuntoai_logo.png'],
   },
   twitter: {
     card: "summary_large_image",
     title: "Appuntoai - Appunti strutturati con AI",
     description: "Trasforma audio, video e testo in appunti strutturati con AI",
-    images: ['/twitter-image.png'],
+    images: ['/appuntoai_logo.png'],
   },
   icons: {
     icon: "/appuntoai.ico",
