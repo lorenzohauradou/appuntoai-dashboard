@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
-import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2, Loader2 } from "lucide-react"
+import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2, Loader2, Clock, FileCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
@@ -189,53 +189,12 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
 
   return (
     <Card className="border-0 shadow-lg bg-white overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg grid grid-cols-1 md:grid-cols-2 items-start justify-between">
+      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg items-start justify-between">
         <div>
           <CardTitle className="text-2xl text-center md:text-left mb-3">Carica il tuo contenuto</CardTitle>
           <CardDescription className="text-primary-100 hidden md:block">
             Carica un file video, audio o inserisci direttamente il testo
           </CardDescription>
-        </div>
-        
-        {/* Card informativa sullo stato delle selezioni */}
-        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-white/30 w-full md:w-auto">
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-center md:justify-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-white"></div>
-              <p className="text-sm text-white/80">Formato: 
-                <span className="font-semibold ml-1">{
-                  activeTab === "video" ? "Video" : 
-                  activeTab === "audio" ? "Audio" : "Testo"
-                }</span>
-              </p>
-            </div>
-            
-            <div className="flex items-center justify-center md:justify-start gap-2">
-              <div className={cn("w-2 h-2 rounded-full", 
-                selectedCategory === "Meeting" ? "bg-blue-300" :
-                selectedCategory === "Lezione" ? "bg-pink-300" : 
-                "bg-yellow-300"
-              )}></div>
-              <p className="text-sm text-white/80">Tipo: 
-                <span className={cn("font-semibold ml-1",
-                  selectedCategory === "Meeting" ? "text-blue-100" :
-                  selectedCategory === "Lezione" ? "text-purple-100" : 
-                  "text-yellow-100"  
-                )}>{selectedCategory}</span>
-              </p>
-            </div>
-            
-            <div className="flex items-center justify-center md:justify-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-white"></div>
-              <p className="text-sm text-white/80">Stato: 
-                <span className="font-semibold ml-1">{
-                  selectedFile ? "File selezionato" : 
-                  textInput ? "Testo inserito" : 
-                  "In attesa..."
-                }</span>
-              </p>
-            </div>
-          </div>
         </div>
       </CardHeader>
       <CardContent className="p-6">
@@ -429,7 +388,95 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-end border-t p-6">
+      <CardFooter className="flex justify-between items-center border-t p-6">
+        {/* Contenitore per le card informative (mobile e desktop) */}
+        <div>
+          {/* Card informativa - Versione Mobile */}
+          <div className="block md:hidden bg-slate-50 rounded-lg p-4 shadow-sm border border-slate-200">
+            <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2">
+              <div className="flex items-center text-slate-500">
+                 {activeTab === "video" && <FileVideo className="h-4 w-4" />}
+                 {activeTab === "audio" && <FileAudio className="h-4 w-4" />}
+                 {activeTab === "text" && <FileText className="h-4 w-4" />}
+                 <span className="ml-2 text-sm font-medium">Formato:</span>
+              </div>
+              <p className="text-sm font-semibold text-slate-700">
+                {activeTab === "video" ? "Video" : 
+                 activeTab === "audio" ? "Audio" : "Testo"}
+              </p>
+
+              <div className="flex items-center text-slate-500">
+                 <div className={cn("w-2.5 h-2.5 rounded-full mr-2", 
+                  selectedCategory === "Meeting" ? "bg-blue-500" :
+                  selectedCategory === "Lezione" ? "bg-primary" : 
+                  "bg-yellow-500"
+                )}></div>
+                 <span className="text-sm font-medium">Tipo:</span>
+              </div>
+              <p className={cn("text-sm font-semibold",
+                  selectedCategory === "Meeting" ? "text-blue-700" :
+                  selectedCategory === "Lezione" ? "text-primary" : 
+                  "text-yellow-700"  
+                )}>
+                {selectedCategory}
+              </p>
+              
+              <div className="flex items-center text-slate-500">
+                 {!selectedFile && !textInput && <Clock className="h-4 w-4" /> } 
+                 {(selectedFile || textInput) && <FileCheck className="h-4 w-4 text-green-600" /> }
+                 <span className="ml-2 text-sm font-medium">Stato:</span>
+              </div>
+              <p className="text-sm font-semibold text-slate-700">
+                  {selectedFile ? "File pronto" : 
+                   textInput ? "Testo pronto" : 
+                   "In attesa..."}
+               </p>
+            </div>
+          </div>
+          {/* Card informativa - Versione Desktop (spostata qui) */}
+          <div className="hidden md:block min-w-[350px] bg-slate-50 rounded-lg p-4 shadow-sm border border-slate-200">
+            <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-sm">
+              <div className="flex items-center text-slate-500">
+                {activeTab === "video" && <FileVideo className="h-4 w-4" />} 
+                {activeTab === "audio" && <FileAudio className="h-4 w-4" />}
+                {activeTab === "text" && <FileText className="h-4 w-4" />}
+                <span className="ml-2 font-medium">Formato:</span>
+              </div>
+              <p className="font-semibold text-slate-700">
+                {activeTab === "video" ? "Video" : 
+                 activeTab === "audio" ? "Audio" : "Testo"}
+              </p>
+
+              <div className="flex items-center text-slate-500">
+                <div className={cn("w-2.5 h-2.5 rounded-full mr-2", 
+                  selectedCategory === "Meeting" ? "bg-blue-500" :
+                  selectedCategory === "Lezione" ? "bg-pink-500" : 
+                  "bg-yellow-500"
+                )}></div>
+                <span className="font-medium">Tipo:</span>
+              </div>
+              <p className={cn("font-semibold",
+                  selectedCategory === "Meeting" ? "text-blue-700" :
+                  selectedCategory === "Lezione" ? "text-purple-700" : 
+                  "text-yellow-700"  
+                )}>
+                {selectedCategory}
+              </p>
+              
+              <div className="flex items-center text-slate-500">
+                 {!selectedFile && !textInput && <Clock className="h-4 w-4" /> } 
+                 {(selectedFile || textInput) && <FileCheck className="h-4 w-4 text-green-600" /> }
+                 <span className="ml-2 font-medium">Stato:</span>
+              </div>
+              <p className="font-semibold text-slate-700">
+                  {selectedFile ? "File pronto" : 
+                   textInput ? "Testo pronto" : 
+                   "In attesa..."}
+               </p>
+            </div>
+          </div>
+        </div>
+
         <Button
           className="bg-primary text-white hover:bg-primary/90"
           onClick={handleProcessClick}
