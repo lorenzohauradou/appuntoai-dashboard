@@ -136,7 +136,6 @@ export function Dashboard() {
         };
       }
       console.log("[[[ formatApiResult Ritorno formattato: ]]]", formattedResults);
-      console.log("[[[ formatApiResult FINE (Normale) ]]]");
       return formattedResults;
   }, []);
 
@@ -192,7 +191,6 @@ export function Dashboard() {
     // Logga i risultati GREZZI
     console.log("Raw Results State (in useEffect):", JSON.stringify(rawResults, null, 2)); 
     console.log("Transcript ID:", transcriptId);
-    console.log("------------------------------------------");
   }, [rawResults, processingStatus, activeTab, transcriptId]);
 
   const handleSidebarToggle = (expanded: boolean) => {
