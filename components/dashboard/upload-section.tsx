@@ -388,11 +388,9 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-between items-center border-t p-6">
-        {/* Contenitore per le card informative (mobile e desktop) */}
-        <div>
-          {/* Card informativa - Versione Mobile */}
-          <div className="block md:hidden bg-slate-50 rounded-lg p-4 shadow-sm border border-slate-200">
+      <CardFooter className="flex flex-col md:flex-row md:justify-between md:items-center border-t p-6 gap-4 md:gap-0">
+        <div className="order-2 md:order-1 w-full">
+          <div className="block md:hidden mt-4 max-w-md mx-auto bg-slate-50 rounded-lg p-4 shadow-sm border border-slate-200">
             <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2">
               <div className="flex items-center text-slate-500">
                  {activeTab === "video" && <FileVideo className="h-4 w-4" />}
@@ -433,13 +431,13 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
                </p>
             </div>
           </div>
-          {/* Card informativa - Versione Desktop (spostata qui) */}
-          <div className="hidden md:block min-w-[350px] bg-slate-50 rounded-lg p-4 shadow-sm border border-slate-200">
+          {/* Card informativa - Versione Desktop */}
+          <div className="hidden md:block max-w-[350px] bg-slate-50 rounded-lg p-4 shadow-sm border border-slate-200">
             <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-sm">
               <div className="flex items-center text-slate-500">
                 {activeTab === "video" && <FileVideo className="h-4 w-4" />} 
-                {activeTab === "audio" && <FileAudio className="h-4 w-4" />}
-                {activeTab === "text" && <FileText className="h-4 w-4" />}
+                {activeTab === "audio" && <FileAudio className="h-4 w-4" />} 
+                {activeTab === "text" && <FileText className="h-4 w-4" />} 
                 <span className="ml-2 font-medium">Formato:</span>
               </div>
               <p className="font-semibold text-slate-700">
@@ -449,15 +447,15 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
 
               <div className="flex items-center text-slate-500">
                 <div className={cn("w-2.5 h-2.5 rounded-full mr-2", 
-                  selectedCategory === "Meeting" ? "bg-blue-500" :
-                  selectedCategory === "Lezione" ? "bg-pink-500" : 
+                  selectedCategory === "Meeting" ? "bg-blue-500" : 
+                  selectedCategory === "Lezione" ? "bg-pink-500" : // Nota: Qui potrebbe esserci un colore diverso da mobile, verificare se intenzionale
                   "bg-yellow-500"
                 )}></div>
                 <span className="font-medium">Tipo:</span>
               </div>
-              <p className={cn("font-semibold",
-                  selectedCategory === "Meeting" ? "text-blue-700" :
-                  selectedCategory === "Lezione" ? "text-purple-700" : 
+              <p className={cn("font-semibold", 
+                  selectedCategory === "Meeting" ? "text-blue-700" : 
+                  selectedCategory === "Lezione" ? "text-purple-700" : // Nota: Qui potrebbe esserci un colore diverso da mobile, verificare se intenzionale
                   "text-yellow-700"  
                 )}>
                 {selectedCategory}
@@ -477,28 +475,30 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
           </div>
         </div>
 
-        <Button
-          className="bg-primary text-white hover:bg-primary/90"
-          onClick={handleProcessClick}
-          disabled={isButtonDisabled}
-        >
-          {sessionStatus === 'loading' ? (
-             <>
-               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-               Verifica...
-             </>
-           ) : processingStatus === 'processing' ? (
-             <>
-               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-               Elaborazione...
-             </>
-           ) : (
-            <>
-              <Upload className="mr-2 h-4 w-4" />
-              {sessionStatus === 'unauthenticated' ? 'Accedi' : 'Elabora'}
-            </>
-          )}
-        </Button>
+        <div className="order-1 md:order-2 w-full flex justify-center md:w-auto md:justify-start">
+          <Button
+            className="bg-primary text-white hover:bg-primary/90"
+            onClick={handleProcessClick}
+            disabled={isButtonDisabled}
+          >
+            {sessionStatus === 'loading' ? (
+               <>
+                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                 Verifica...
+               </>
+             ) : processingStatus === 'processing' ? (
+               <>
+                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                 Elaborazione...
+               </>
+             ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                {sessionStatus === 'unauthenticated' ? 'Accedi' : 'Elabora'}
+              </>
+            )}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   )
