@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2, Loader2 } from "lucide-react"
@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/components/ui/use-toast"
 
 // Definisci il tipo ContentCategory qui o importalo se è definito altrove
 type ContentCategory = "Meeting" | "Lezione" | "Intervista";
@@ -33,6 +34,45 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
   // Usa hook per sessione e router
   const { data: session, status: sessionStatus } = useSession()
   const router = useRouter()
+  const { toast } = useToast()
+
+  // Effetto per controllare localStorage al montaggio
+  useEffect(() => {
+    const pendingInfoRaw = localStorage.getItem('pendingUploadInfo');
+    if (pendingInfoRaw) {
+      try {
+        const info = JSON.parse(pendingInfoRaw);
+        console.log("Trovate informazioni pending:", info);
+
+        let description = "";
+        if (info.fileName) {
+          description = `Sembra che volessi elaborare il file "${info.fileName}". Per favore, caricalo di nuovo.`
+        } else if (info.text) {
+          description = "Sembra che volessi elaborare del testo. Incollalo di nuovo e clicca Elabora."
+          // Se vuoi ripopolare il campo textInput:
+          setTextInput(info.text);
+          setActiveTab(info.type);
+          setSelectedCategory(info.category);
+        }
+
+        if (description) {
+          toast({
+            title: "Bentornato!",
+            description: description,
+            duration: 7000, // Durata più lunga per dare tempo di leggere
+          });
+        }
+
+      } catch (e) {
+        console.error("Errore nel parsing di pendingUploadInfo:", e);
+      } finally {
+        // Pulisce localStorage indipendentemente dall'esito del parsing
+        localStorage.removeItem('pendingUploadInfo');
+      }
+    }
+    // Esegui solo al montaggio iniziale del componente
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Array dipendenze vuoto per eseguire solo una volta
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -107,15 +147,36 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
   // Nuovo gestore per il click sul pulsante "Elabora"
   const handleProcessClick = () => {
     if (sessionStatus === 'loading') {
-      // Non fare nulla se la sessione sta ancora caricando
       return;
     }
 
     if (sessionStatus === 'unauthenticated') {
-      // Reindirizza alla pagina di login se non autenticato
+      // --- SALVA INTENZIONE PRIMA DI REDIRECT ---
+      try { // Usa try/catch per localStorage
+        if (selectedFile) {
+          localStorage.setItem('pendingUploadInfo', JSON.stringify({
+            type: activeTab,
+            category: selectedCategory,
+            fileName: selectedFile.name 
+          }));
+          console.log('Info file salvate in localStorage:', selectedFile.name);
+        } else if (activeTab === 'text' && textInput) {
+           localStorage.setItem('pendingUploadInfo', JSON.stringify({
+            type: activeTab,
+            category: selectedCategory,
+            // Salva solo una parte del testo per evitare problemi di dimensione
+            textPreview: textInput.substring(0, 50) + (textInput.length > 50 ? '...' : '') 
+          }));
+           console.log('Info testo salvate in localStorage');
+        }
+      } catch (error) {
+        console.error("Errore nel salvataggio in localStorage:", error);
+        // Non bloccare il redirect anche se localStorage fallisce
+      }
+      // --- FINE SALVATAGGIO INTENZIONE ---
+      
       router.push('/login');
     } else if (sessionStatus === 'authenticated') {
-      // Se autenticato, procedi con l'upload effettivo
       triggerUpload();
     }
   }
