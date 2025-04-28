@@ -495,7 +495,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
            ) : (
             <>
               <Upload className="mr-2 h-4 w-4" />
-              {sessionStatus === 'unauthenticated' ? 'Accedi per Elaborare' : 'Elabora'}
+              {sessionStatus === 'unauthenticated' ? 'Accedi' : 'Elabora'}
             </>
           )}
         </Button>
