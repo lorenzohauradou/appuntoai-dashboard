@@ -29,7 +29,7 @@ export function PricingSection() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm">Trascrizione fino a 30 minuti</span>
+                  <span className="text-sm">Trascrizione fino a 60 minuti</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
