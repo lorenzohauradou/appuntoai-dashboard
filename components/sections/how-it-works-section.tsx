@@ -20,7 +20,7 @@ export function HowItWorksSection() {
               <div className="mb-3 rounded-full bg-primary/10 p-3">
                 <UploadCloud className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle>1. Registra o Carica</CardTitle>
+              <CardTitle>Registra o Carica</CardTitle>
               <CardDescription className="mt-2 px-2">
                 Inserisci facilmente i tuoi contenuti audio, video o testuali.
               </CardDescription>
@@ -52,7 +52,7 @@ export function HowItWorksSection() {
               <div className="mb-3 rounded-full bg-primary/10 p-3">
                 <BrainCircuit className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle>2. Analisi Intelligente AI</CardTitle>
+              <CardTitle>Analisi Intelligente AI</CardTitle>
               <CardDescription className="mt-2 px-2">
                 La nostra AI trascrive, riassume ed estrae informazioni chiave.
               </CardDescription>
@@ -60,19 +60,19 @@ export function HowItWorksSection() {
             <CardContent className="flex-1 mt-2 pt-0 flex flex-col items-center">
                <ul className="space-y-2 text-sm text-muted-foreground text-center">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Trascrizione accurata</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Riassunti automatici</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Estrazione Task</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Identificazione Decisioni</span>
                 </li>
               </ul>
@@ -84,7 +84,7 @@ export function HowItWorksSection() {
               <div className="mb-3 rounded-full bg-primary/10 p-3">
                 <Share2 className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle>3. Esporta e Condividi</CardTitle>
+              <CardTitle>Esporta e Condividi</CardTitle>
               <CardDescription className="mt-2 px-2">
                 Accedi ai risultati e condividili nel formato che preferisci.
               </CardDescription>
@@ -92,19 +92,19 @@ export function HowItWorksSection() {
             <CardContent className="flex-1 mt-2 pt-0 flex flex-col items-center">
               <ul className="space-y-2 text-sm text-muted-foreground text-center">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Esporta in PDF, Word...</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Condividi via Link</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Integrazioni (Notion, etc.)</span>
                 </li>
                  <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>Collabora con il Team</span>
                 </li>
               </ul>

@@ -36,14 +36,6 @@ export function FaqSection() {
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
-              <AccordionTrigger>Posso integrare Appuntoai con altri strumenti?</AccordionTrigger>
-              <AccordionContent>
-                Sì, offriamo integrazioni con strumenti popolari come Google Workspace, Microsoft Office, Notion, Slack
-                e molti altri. Inoltre, con il piano API white-label, puoi integrare le nostre funzionalità direttamente
-                nella tua applicazione.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-5">
               <AccordionTrigger>Quanto è accurata la trascrizione?</AccordionTrigger>
               <AccordionContent>
                 La nostra tecnologia di trascrizione ha un'accuratezza superiore al 99% per audio di buona qualità.
@@ -51,12 +43,16 @@ export function FaqSection() {
                 specialistica, ma continuiamo a migliorare costantemente i nostri modelli.
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="item-6">
+            <AccordionItem value="item-5">
+              <AccordionTrigger>Le mie analisi sono sempre consultabili?</AccordionTrigger>
+              <AccordionContent>
+                Assolutamente sì, puoi sempre consultare le tue analisi in qualsiasi momento. Anche la chat si ricorderà sempre del tuo contenuto!
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-6" className="hidden">
               <AccordionTrigger>Posso modificare i risultati generati dall'AI?</AccordionTrigger>
               <AccordionContent>
-                Certamente! Tutti i risultati generati dall'AI sono completamente modificabili. Puoi correggere la
-                trascrizione, modificare il riassunto, aggiungere o rimuovere task e decisioni, e personalizzare
-                qualsiasi aspetto dell'output secondo le tue esigenze.
+                Funzionalità in fase di sviluppo.
               </AccordionContent>
             </AccordionItem>
           </Accordion>

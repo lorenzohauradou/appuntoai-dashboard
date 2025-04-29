@@ -116,7 +116,7 @@ export function DemoSection() {
     switch (selectedInputType) {
       case 'Meeting':
         return {
-          defaultTab: "summary",
+          defaultTab: "tasks",
           tabs: [
             { value: "summary", label: "Riassunto", Icon: Brain },
             { value: "decisions", label: "Decisioni", Icon: CheckCircle },
@@ -200,9 +200,9 @@ export function DemoSection() {
             </Card>
 
             {/* Output Section - Wrapped in Card */}
-            <Card className="overflow-hidden"> {/* Card wrapper for the entire output section */}
+            <Card className="overflow-hidden">
               {/* Output Header */}
-              <div className="bg-primary p-4 text-white"> {/* Removed rounded-t-lg */}
+              <div className="bg-primary p-4 text-white">
                 <h3 className="text-lg font-medium">Risultato Analisi</h3>
               </div>
 

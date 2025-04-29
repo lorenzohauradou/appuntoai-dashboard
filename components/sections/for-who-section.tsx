@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Briefcase, School, Presentation, Headphones, Video } from "lucide-react"
+import { Users, Briefcase, School, Presentation, Headphones, Mic } from "lucide-react"
 
 export function ForWhoSection() {
   return (
@@ -35,8 +35,7 @@ export function ForWhoSection() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Trasforma le lezioni e i seminari in appunti strutturati. Concentrati sul comprendere invece che sul
-                trascrivere freneticamente.
+                Trasforma le lezioni in appunti strutturati. Oltre a trascrivere, estrai i concetti chiave e crea domande aperte per testare la tua comprensione.
               </p>
             </CardContent>
           </Card>
@@ -63,22 +62,20 @@ export function ForWhoSection() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Trasforma i tuoi podcast in articoli, post di blog o newsletter. Estrai i punti chiave per i tuoi
-                ascoltatori.
+                Rileva i punti chiave dei tuoi podcast e crea un riassunto per ogni episodio.
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <Video className="mb-2 h-8 w-8 text-primary" />
-              <CardTitle>Videomaker</CardTitle>
-              <CardDescription>YouTuber e creatori di video</CardDescription>
+              <Mic className="mb-2 h-8 w-8 text-primary" />
+              <CardTitle>Giornalisti</CardTitle>
+              <CardDescription>Intervistatori</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Genera trascrizioni accurate dei tuoi video. Crea sottotitoli e descrizioni dettagliate per migliorare
-                la SEO.
+                Estrai i punti chiave dalle tue interviste, assegnando nomi e opinioni per ogni intervistato.
               </p>
             </CardContent>
           </Card>
