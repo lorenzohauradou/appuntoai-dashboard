@@ -4,8 +4,51 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Check, MessageSquare } from "lucide-react"
 import Link from "next/link"
+import { loadStripe } from '@stripe/stripe-js';
+import { useState } from "react";
+
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
+
+async function handleSubscription(plan: 'pro' | 'business', setLoading: (loading: boolean) => void) {
+  setLoading(true);
+
+  if (!stripePromise) {
+    console.error('Chiave pubblicabile Stripe non configurata.');
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ plan }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.url) {
+      window.location.href = data.url;
+    } else {
+      console.error('Errore dalla API:', data.error || 'Errore sconosciuto');
+      setLoading(false);
+      alert(`Errore durante l'avvio del pagamento: ${data.error || 'Riprova più tardi.'}`);
+    }
+  } catch (error) {
+    console.error('Errore durante la chiamata API:', error);
+    setLoading(false);
+    alert('Si è verificato un errore di rete. Riprova più tardi.');
+  }
+}
 
 export function PricingSection() {
+  const [isLoadingPro, setIsLoadingPro] = useState(false);
+  const [isLoadingBusiness, setIsLoadingBusiness] = useState(false);
+
   return (
     <section id="prezzi" className="bg-slate-50 py-16 md:py-24">
       <div className="container">
@@ -90,9 +133,14 @@ export function PricingSection() {
               </ul>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
-              <Link href="/dashboard" className="w-full">
-                <Button variant="outline" className="w-full">Scegli Pro</Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => handleSubscription('pro', setIsLoadingPro)}
+                disabled={isLoadingPro || !stripePromise}
+              >
+                {isLoadingPro ? 'Caricamento...' : 'Scegli Pro'}
+              </Button>
               <p className="text-xs text-center text-muted-foreground">
                 Garanzia soddisfatti o rimborsati di 14 giorni
               </p>
@@ -111,7 +159,7 @@ export function PricingSection() {
                 29€
                 <span className="ml-1 text-lg font-medium text-muted-foreground">/ mese</span>
               </div>
-              <CardDescription className="mt-4 h-10">Per team e analisi interattive</CardDescription>
+              <CardDescription className="mt-4 h-10">Per team e organizzazioni</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3">
@@ -150,9 +198,13 @@ export function PricingSection() {
               </ul>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
-              <Link href="/dashboard" className="w-full">
-                <Button className="w-full bg-primary text-white hover:bg-primary/90">Scegli Business</Button>
-              </Link>
+              <Button 
+                className="w-full bg-primary text-white hover:bg-primary/90"
+                onClick={() => handleSubscription('business', setIsLoadingBusiness)}
+                disabled={isLoadingBusiness || !stripePromise}
+              >
+                {isLoadingBusiness ? 'Caricamento...' : 'Scegli Business'}
+              </Button>
               <p className="text-xs text-center text-muted-foreground">
                 Garanzia soddisfatti o rimborsati di 14 giorni
               </p>
