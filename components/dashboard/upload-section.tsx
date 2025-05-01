@@ -18,11 +18,10 @@ type ContentCategory = "Meeting" | "Lezione" | "Intervista";
 
 interface UploadSectionProps {
   // Usa ContentCategory per il parametro category
-  onUpload: (type: string, category: ContentCategory, data: any) => void
   processingStatus: string | null
 }
 
-export function UploadSection({ onUpload, processingStatus }: UploadSectionProps) {
+export function UploadSection({ processingStatus }: UploadSectionProps) {
   const [activeTab, setActiveTab] = useState("video")
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -30,6 +29,7 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
   // Usa ContentCategory per lo stato
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory>("Meeting")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isProcessing, setIsProcessing] = useState(false); // Stato locale per feedback caricamento
 
   // Usa hook per sessione e router
   const { data: session, status: sessionStatus } = useSession()
@@ -59,19 +59,16 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
           toast({
             title: "Bentornato!",
             description: description,
-            duration: 7000, // Durata più lunga per dare tempo di leggere
+            duration: 7000,
           });
         }
 
       } catch (e) {
         console.error("Errore nel parsing di pendingUploadInfo:", e);
       } finally {
-        // Pulisce localStorage indipendentemente dall'esito del parsing
         localStorage.removeItem('pendingUploadInfo');
       }
     }
-    // Esegui solo al montaggio iniziale del componente
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Array dipendenze vuoto per eseguire solo una volta
 
   const handleDrag = (e: React.DragEvent) => {
@@ -101,24 +98,32 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
   }
 
   const handleFile = (file: File) => {
-    // Check if file type matches the active tab
-    const fileType = file.type.split("/")[0]
-    if (
-      (activeTab === "video" && fileType === "video") ||
-      (activeTab === "audio" && fileType === "audio") ||
-      (activeTab === "text" && (file.name.endsWith(".txt") || file.type.startsWith("text/")))
-    ) {
-      setSelectedFile(file)
+    const fileType = file.type.split("/")[0];
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    
+    // Controlli più specifici, puoi aggiustare le estensioni/mime type se necessario
+    const isValidVideo = activeTab === "video" && (fileType === "video" || ['mp4', 'mov', 'avi', 'webm', 'mkv'].includes(extension ?? ''));
+    const isValidAudio = activeTab === "audio" && (fileType === "audio" || ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac'].includes(extension ?? ''));
+    const isValidText = activeTab === "text" && (file.type.startsWith("text/") || ['txt', 'md', 'rtf', 'csv'].includes(extension ?? '')); // Aggiungi altri tipi testo se vuoi
+
+    if (isValidVideo || isValidAudio || isValidText) {
+      setSelectedFile(file);
+      setTextInput(""); // Pulisce l'area di testo se si carica un file di testo
     } else {
-      alert(`Il tipo di file non corrisponde alla scheda selezionata`)
+       toast({
+         title: "Formato non supportato",
+         description: `Il file "${file.name}" non è un ${activeTab} valido o supportato.`,
+         variant: "destructive",
+       });
+       clearSelection(); // Pulisce la selezione
     }
-  }
+  };
 
   const handleUploadClick = () => {
     if (activeTab === "text" && textInput) {
-      onUpload("text", selectedCategory, textInput)
+      handleActualUpload()
     } else if (selectedFile) {
-      onUpload(activeTab, selectedCategory, selectedFile)
+      handleActualUpload()
     }
   }
 
@@ -135,57 +140,139 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
     setTextInput("")
   }
 
-  // Logica separata per l'effettivo upload (chiamata quando l'utente è autenticato)
-  const triggerUpload = () => {
-    if (activeTab === "text" && textInput) {
-      onUpload("text", selectedCategory, textInput)
-    } else if (selectedFile) {
-      onUpload(activeTab, selectedCategory, selectedFile)
+  // --- NUOVA FUNZIONE PER GESTIRE L'UPLOAD REALE ---
+  const handleActualUpload = async () => {
+    // Determina cosa inviare: file o testo
+    const dataToSend = selectedFile || textInput;
+    if (!dataToSend) {
+      toast({ title: "Nessun contenuto", description: "Seleziona un file o inserisci del testo.", variant: "destructive" });
+      return;
     }
-  }
 
-  // Nuovo gestore per il click sul pulsante "Elabora"
+    setIsProcessing(true); // Avvia feedback caricamento
+
+    try {
+      let body: BodyInit;
+      const headers: HeadersInit = {};
+
+      if (dataToSend instanceof File) {
+        // Se è un file, usa FormData
+        const formData = new FormData();
+        formData.append('file', dataToSend); // L'API backend si aspetta 'file'
+        formData.append('category', selectedCategory);
+        formData.append('type', activeTab); // Può essere utile all'API
+        body = formData;
+        // Non impostare Content-Type manualmente per FormData
+      } else {
+        // Se è testo, usa JSON
+        body = JSON.stringify({ text: dataToSend, category: selectedCategory, type: activeTab });
+        headers['Content-Type'] = 'application/json';
+      }
+
+      // Chiama la tua API backend
+      const response = await fetch('/api/process-transcription', {
+        method: 'POST',
+        headers: headers,
+        body: body,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Successo!
+        console.log("Elaborazione completata:", result);
+        toast({
+          title: "Successo!",
+          description: result.message || "Contenuto elaborato correttamente."
+        });
+        clearSelection(); // Pulisce l'input dopo successo
+        setTextInput("");
+        // Qui potresti aggiornare la UI, es. ricaricare lista trascrizioni
+        // onUploadSuccess?.(); // Se hai una prop per questo
+        // router.refresh(); // Ricarica i dati server-side per la pagina corrente
+      } else {
+        // Gestione errori specifici e generici
+        if (response.status === 403 && result.error === "LIMIT_REACHED") {
+          // Limite raggiunto
+          console.warn("Limite trascrizioni raggiunto.");
+          toast({
+            title: "Limite Raggiunto",
+            description: result.message || "Hai esaurito le tue analisi gratuite.",
+            variant: "destructive",
+            duration: 9000,
+          });
+          // Reindirizza a Stripe se l'URL è disponibile
+          if (result.checkoutUrl) {
+            window.location.href = result.checkoutUrl;
+            return;
+          } else {
+            toast({
+              title: "Errore Upgrade",
+              description: "Non è stato possibile generare il link per l'upgrade. Contatta il supporto.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          // Altri errori 
+          console.error("Errore API:", response.status, result);
+          toast({
+            title: "Errore Elaborazione",
+            description: result.error || result.message || "Si è verificato un errore imprevisto.",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      // Errore di rete o eccezione JS
+      console.error("Errore fetch o JS:", error);
+      toast({
+        title: "Errore di Rete",
+        description: "Impossibile comunicare con il server. Riprova più tardi.",
+        variant: "destructive",
+      });
+    } finally {
+       // Assicura che lo stato di caricamento venga resettato
+       // tranne in caso di redirect a Stripe
+       if (typeof window !== 'undefined' && !window.location.href.startsWith('https://checkout.stripe.com')) {
+         setIsProcessing(false);
+       }
+    }
+  };
+
   const handleProcessClick = () => {
-    if (sessionStatus === 'loading') {
+    if (sessionStatus === 'loading' || isProcessing) {
       return;
     }
 
     if (sessionStatus === 'unauthenticated') {
-      // --- SALVA INTENZIONE PRIMA DI REDIRECT ---
-      try { // Usa try/catch per localStorage
+      try { 
         if (selectedFile) {
           localStorage.setItem('pendingUploadInfo', JSON.stringify({
             type: activeTab,
             category: selectedCategory,
             fileName: selectedFile.name 
           }));
-          console.log('Info file salvate in localStorage:', selectedFile.name);
         } else if (activeTab === 'text' && textInput) {
            localStorage.setItem('pendingUploadInfo', JSON.stringify({
             type: activeTab,
             category: selectedCategory,
-            // Salva solo una parte del testo per evitare problemi di dimensione
             textPreview: textInput.substring(0, 50) + (textInput.length > 50 ? '...' : '') 
           }));
-           console.log('Info testo salvate in localStorage');
         }
       } catch (error) {
-        console.error("Errore nel salvataggio in localStorage:", error);
-        // Non bloccare il redirect anche se localStorage fallisce
+        console.error("Errore salvataggio localStorage:", error);
       }
-      // --- FINE SALVATAGGIO INTENZIONE ---
-      
       router.push('/login');
     } else if (sessionStatus === 'authenticated') {
-      triggerUpload();
+      //  fetch all'API
+      handleActualUpload(); 
     }
   }
-
-  // Calcola se il bottone deve essere disabilitato
-  const isButtonDisabled = 
-    sessionStatus === 'loading' || // Disabilita se la sessione sta caricando
-    processingStatus === 'processing' || // Disabilita se già in elaborazione
-    ((activeTab !== "text" || !textInput) && !selectedFile); // Disabilita se non c'è input/file
+  
+  const isButtonDisabled =
+    sessionStatus === 'loading' ||
+    isProcessing || // Usa lo stato locale
+    ((activeTab !== "text" || !textInput) && !selectedFile);
 
   return (
     <Card className="border-0 shadow-lg bg-white overflow-hidden">
@@ -448,14 +535,14 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
               <div className="flex items-center text-slate-500">
                 <div className={cn("w-2.5 h-2.5 rounded-full mr-2", 
                   selectedCategory === "Meeting" ? "bg-blue-500" : 
-                  selectedCategory === "Lezione" ? "bg-pink-500" : // Nota: Qui potrebbe esserci un colore diverso da mobile, verificare se intenzionale
+                  selectedCategory === "Lezione" ? "bg-pink-500" :
                   "bg-yellow-500"
                 )}></div>
                 <span className="font-medium">Tipo:</span>
               </div>
               <p className={cn("font-semibold", 
                   selectedCategory === "Meeting" ? "text-blue-700" : 
-                  selectedCategory === "Lezione" ? "text-purple-700" : // Nota: Qui potrebbe esserci un colore diverso da mobile, verificare se intenzionale
+                  selectedCategory === "Lezione" ? "text-purple-700" :
                   "text-yellow-700"  
                 )}>
                 {selectedCategory}
@@ -477,25 +564,30 @@ export function UploadSection({ onUpload, processingStatus }: UploadSectionProps
 
         <div className="order-1 md:order-2 w-full flex justify-center md:w-auto md:justify-start">
           <Button
-            className="bg-primary text-white hover:bg-primary/90"
+            className="bg-primary text-white hover:bg-primary/90 min-w-[120px]" // Aggiunto min-width per evitare troppo resizing
             onClick={handleProcessClick}
             disabled={isButtonDisabled}
           >
-            {sessionStatus === 'loading' ? (
+            {isProcessing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Elaboro...
+              </>
+            ) : sessionStatus === 'loading' ? (
                <>
                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                  Verifica...
                </>
-             ) : processingStatus === 'processing' ? (
+            ) : sessionStatus === 'unauthenticated' ? (
                <>
-                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                 Elaborazione...
+                 <Upload className="mr-2 h-4 w-4" />
+                 Accedi
                </>
-             ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                {sessionStatus === 'unauthenticated' ? 'Accedi' : 'Elabora'}
-              </>
+            ) : ( // Autenticato e non in elaborazione
+               <>
+                 <Upload className="mr-2 h-4 w-4" />
+                 Elabora
+               </>
             )}
           </Button>
         </div>
