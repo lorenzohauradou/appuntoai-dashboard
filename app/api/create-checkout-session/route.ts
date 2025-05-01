@@ -1,5 +1,7 @@
 import { getStripeInstance } from '@/lib/stripe';
 import { NextResponse } from 'next/server';
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 const DOMAIN = process.env.NEXT_PUBLIC_APP_URL; 
 
@@ -9,6 +11,15 @@ const PRICE_IDS = {
 };
 
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    console.log("Tentativo creazione checkout non autorizzato.");
+    return NextResponse.json({ error: 'Autenticazione richiesta.' }, { status: 401 });
+  }
+  const userId = session.user.id;
+  const userEmail = session.user.email;
+  console.log(`Richiesta checkout da user: ${userId} (${userEmail})`);
+
   const stripe = getStripeInstance();
 
   try {
@@ -23,7 +34,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const session = await stripe.checkout.sessions.create({
+    let stripeCustomerId: string | null = null;
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { stripeCustomerId: true },
+      });
+      stripeCustomerId = user?.stripeCustomerId ?? null;
+      console.log(`Stripe Customer ID per ${userId}: ${stripeCustomerId}`);
+    } catch (dbError) {
+      console.error(`Errore DB nel recupero stripeCustomerId per user ${userId}:`, dbError);
+    }
+
+    const checkoutSession = await stripe.checkout.sessions.create({
       line_items: [
         {
           price: priceId, 
@@ -31,16 +54,22 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'subscription',
-      //  http://localhost:3000/dashboard?success=true (o il valore di NEXT_PUBLIC_APP_URL)
       success_url: `${DOMAIN}/dashboard?success=true`, 
       cancel_url: `${DOMAIN}/prezzi?canceled=true`,   
       automatic_tax: { enabled: true }, 
       allow_promotion_codes: true,     
+      client_reference_id: userId,
+      metadata: {
+        userId: userId,
+      },
+      customer: stripeCustomerId || undefined,
+      customer_email: !stripeCustomerId ? userEmail || undefined : undefined,
     });
 
-    return NextResponse.json({ url: session.url });
+    console.log(`Sessione checkout creata: ${checkoutSession.id} per user ${userId}`);
+    return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
-    console.error('Errore durante la creazione della sessione Stripe:', error); 
+    console.error(`Errore durante la creazione della sessione Stripe per user ${userId}:`, error);
     const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
     return NextResponse.json(
       { error: 'Errore interno durante la creazione della sessione di checkout.', details: errorMessage },

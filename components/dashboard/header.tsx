@@ -13,8 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
+import { useSession, signOut } from "next-auth/react"
+import { useRouter } from 'next/navigation'
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function Header() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
       <div className="flex items-center gap-2 md:hidden pl-10">
@@ -63,9 +69,25 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <Link href="/" className="text-sm font-medium text-muted-foreground md:block hidden hover:text-foreground">
-          Torna alla home
-        </Link>
+        {status === "loading" ? (
+          <Skeleton className="h-9 w-20" />
+        ) : status === "authenticated" ? (
+          <Button
+            variant="ghost"
+            className="text-sm font-medium"
+            onClick={() => signOut({ callbackUrl: '/' })}
+          >
+            Esci
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            className="text-sm font-medium"
+            onClick={() => router.push('/login')}
+          >
+            Accedi
+          </Button>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -95,25 +117,36 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-user.jpg" alt="User" />
-                <AvatarFallback className="bg-primary text-white">U</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Il mio account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profilo</DropdownMenuItem>
-            <DropdownMenuItem>Abbonamento</DropdownMenuItem>
-            <DropdownMenuItem>Impostazioni</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Esci</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {status === "authenticated" && session?.user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar className="h-8 w-8">
+                  {session.user.image ? (
+                    <AvatarImage src={session.user.image} alt={session.user.name ?? "User"} />
+                  ) : null}
+                  <AvatarFallback className="bg-primary text-white">
+                     {session.user.name ? session.user.name.charAt(0).toUpperCase() : 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{session.user.name || session.user.email || "Il mio Account"}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Profilo</DropdownMenuItem>
+              <DropdownMenuItem>Abbonamento</DropdownMenuItem>
+              <DropdownMenuItem>Impostazioni</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })} className="text-red-600 focus:text-red-700 focus:bg-red-50">
+                 Esci
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+        {status === 'unauthenticated' && (
+            <></>
+        )}
       </div>
     </header>
   )

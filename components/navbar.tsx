@@ -5,12 +5,21 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const router = useRouter()
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen)
+  }
+
+  const navigateToLogin = () => {
+    router.push('/login')
+    if (mobileMenuOpen) {
+      toggleMobileMenu()
+    }
   }
 
   return (
@@ -79,11 +88,13 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex md:items-center md:gap-4">
-          <Link href="/dashboard">
-            <Button variant="ghost" className="text-sm font-medium">
-              Accedi
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            className="text-sm font-medium"
+            onClick={navigateToLogin}
+          >
+            Accedi
+          </Button>
           <Link href="/dashboard">
             <Button className="bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
           </Link>
@@ -116,11 +127,13 @@ export function Navbar() {
             FAQ
           </Link>
           <div className="flex flex-col gap-2 pt-4">
-            <Link href="/dashboard" onClick={toggleMobileMenu}>
-              <Button variant="outline" className="w-full">
-                Accedi
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={navigateToLogin}
+            >
+              Accedi
+            </Button>
             <Link href="/dashboard" onClick={toggleMobileMenu}>
               <Button className="w-full bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
             </Link>

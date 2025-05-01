@@ -6,19 +6,51 @@ import { Check, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { loadStripe } from '@stripe/stripe-js';
 import { useState } from "react";
+import { useSession, signIn } from "next-auth/react";
+import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : null;
 
-async function handleSubscription(plan: 'pro' | 'business', setLoading: (loading: boolean) => void) {
+async function handleSubscription(
+    plan: 'pro' | 'business',
+    setLoading: (loading: boolean) => void,
+    sessionStatus: string,
+    router: ReturnType<typeof useRouter>
+) {
+  console.log("handleSubscription chiamato per piano:", plan, "Stato Sessione:", sessionStatus);
+
   setLoading(true);
+
+  if (sessionStatus !== 'authenticated') {
+      console.log("Utente non autenticato, mostro toast (sonner).");
+      toast.error("Autenticazione Richiesta", {
+          description: "Accedi o registrati per poter sottoscrivere un piano.",
+          action: {
+              label: "Accedi",
+              onClick: () => router.push('/login'),
+          },
+      });
+      setLoading(false);
+      console.log("handleSubscription terminato (non autenticato).");
+      return;
+  }
+
+  console.log("Utente autenticato, controllo Stripe Promise...");
 
   if (!stripePromise) {
     console.error('Chiave pubblicabile Stripe non configurata.');
+    toast.error("Errore Configurazione", {
+         description: "Il sistema di pagamento non è configurato correttamente."
+    });
     setLoading(false);
+    console.log("handleSubscription terminato (Stripe non configurato).");
     return;
   }
+
+  console.log("Stripe configurato, avvio fetch a /api/create-checkout-session...");
 
   try {
     const response = await fetch('/api/create-checkout-session', {
@@ -28,24 +60,46 @@ async function handleSubscription(plan: 'pro' | 'business', setLoading: (loading
       },
       body: JSON.stringify({ plan }),
     });
+    console.log("Fetch completata, status:", response.status);
 
     const data = await response.json();
+    console.log("Dati ricevuti dalla API:", data);
 
     if (response.ok && data.url) {
+      console.log("Risposta OK, reindirizzo a:", data.url);
       window.location.href = data.url;
     } else {
-      console.error('Errore dalla API:', data.error || 'Errore sconosciuto');
+      console.error('Errore dalla API:', data.error || 'Errore sconosciuto', "Status:", response.status);
+      if (response.status === 401) {
+           console.log("Errore 401 ricevuto, mostro toast autenticazione.");
+           toast.error("Errore Autenticazione", {
+               description: data.error || "Sessione scaduta. Effettua nuovamente l'accesso.",
+               action: {
+                   label: "Accedi",
+                   onClick: () => router.push('/login'),
+               },
+           });
+      } else {
+          console.log("Errore generico pagamento, mostro toast.");
+          toast.error("Errore Pagamento", {
+              description: `Errore: ${data.error || 'Riprova più tardi.'}`
+          });
+      }
       setLoading(false);
-      alert(`Errore durante l'avvio del pagamento: ${data.error || 'Riprova più tardi.'}`);
     }
   } catch (error) {
-    console.error('Errore durante la chiamata API:', error);
+    console.error('Errore durante la chiamata API (catch):', error);
+    toast.error("Errore di Rete", {
+        description: 'Si è verificato un errore di rete. Riprova più tardi.'
+    });
     setLoading(false);
-    alert('Si è verificato un errore di rete. Riprova più tardi.');
   }
+  console.log("Fine esecuzione handleSubscription (se non reindirizzato).");
 }
 
 export function PricingSection() {
+  const { status: sessionStatus } = useSession();
+  const router = useRouter();
   const [isLoadingPro, setIsLoadingPro] = useState(false);
   const [isLoadingBusiness, setIsLoadingBusiness] = useState(false);
 
@@ -112,7 +166,7 @@ export function PricingSection() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">30 report al mese</span>
+                  <span className="text-sm">20 report al mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
@@ -136,7 +190,7 @@ export function PricingSection() {
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => handleSubscription('pro', setIsLoadingPro)}
+                onClick={() => handleSubscription('pro', setIsLoadingPro, sessionStatus, router)}
                 disabled={isLoadingPro || !stripePromise}
               >
                 {isLoadingPro ? 'Caricamento...' : 'Scegli Pro'}
@@ -165,7 +219,7 @@ export function PricingSection() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">100 report al mese</span>
+                  <span className="text-sm">80 report al mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
@@ -200,7 +254,7 @@ export function PricingSection() {
             <CardFooter className="flex flex-col gap-2">
               <Button 
                 className="w-full bg-primary text-white hover:bg-primary/90"
-                onClick={() => handleSubscription('business', setIsLoadingBusiness)}
+                onClick={() => handleSubscription('business', setIsLoadingBusiness, sessionStatus, router)}
                 disabled={isLoadingBusiness || !stripePromise}
               >
                 {isLoadingBusiness ? 'Caricamento...' : 'Scegli Business'}

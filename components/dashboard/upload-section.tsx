@@ -12,16 +12,19 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/components/ui/use-toast"
+import { ResultsType } from "@/components/dashboard/types"; 
 
 // Definisci il tipo ContentCategory qui o importalo se è definito altrove
-type ContentCategory = "Meeting" | "Lezione" | "Intervista";
+type ContentCategory = "Meeting" | "Lesson" | "Interview";
 
 interface UploadSectionProps {
   // Usa ContentCategory per il parametro category
   processingStatus: string | null
+  onAnalysisComplete: (results: ResultsType) => void
+  formatApiResult: (result: any) => ResultsType | null
 }
 
-export function UploadSection({ processingStatus }: UploadSectionProps) {
+export function UploadSection({ processingStatus, onAnalysisComplete, formatApiResult }: UploadSectionProps) {
   const [activeTab, setActiveTab] = useState("video")
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -187,9 +190,22 @@ export function UploadSection({ processingStatus }: UploadSectionProps) {
         });
         clearSelection(); // Pulisce l'input dopo successo
         setTextInput("");
-        // Qui potresti aggiornare la UI, es. ricaricare lista trascrizioni
-        // onUploadSuccess?.(); // Se hai una prop per questo
-        // router.refresh(); // Ricarica i dati server-side per la pagina corrente
+
+        // Formatta i risultati usando la funzione passata dal Dashboard
+        const formattedResults = formatApiResult(result.results); // Usa result.results!
+        if (formattedResults) {
+            console.log("UploadSection: Risultati formattati, chiamo onAnalysisComplete", formattedResults);
+            onAnalysisComplete(formattedResults); // Passa i risultati formattati al Dashboard
+        } else {
+            console.error("UploadSection: Fallita formattazione risultati da API.");
+            toast({
+                title: "Errore Formattazione Risultati",
+                description: "Impossibile mostrare i risultati correttamente.",
+                variant: "destructive",
+            });
+             // Potresti voler impostare uno stato di errore specifico qui
+             // setIsProcessing('failed'); o simile, se gestito
+        }
       } else {
         // Gestione errori specifici e generici
         if (response.status === 403 && result.error === "LIMIT_REACHED") {
@@ -268,7 +284,7 @@ export function UploadSection({ processingStatus }: UploadSectionProps) {
       handleActualUpload(); 
     }
   }
-  
+
   const isButtonDisabled =
     sessionStatus === 'loading' ||
     isProcessing || // Usa lo stato locale
@@ -313,17 +329,17 @@ export function UploadSection({ processingStatus }: UploadSectionProps) {
                 Meeting
               </Button>
               <Button
-                variant={selectedCategory === "Lezione" ? "secondary" : "outline"}
+                variant={selectedCategory === "Lesson" ? "secondary" : "outline"}
                 className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
-                onClick={() => setSelectedCategory("Lezione")}
+                onClick={() => setSelectedCategory("Lesson")}
               >
                 <GraduationCap className="mr-2 h-4 w-4" />
                 Lezione
               </Button>
               <Button
-                variant={selectedCategory === "Intervista" ? "secondary" : "outline"}
+                variant={selectedCategory === "Interview" ? "secondary" : "outline"}
                 className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
-                onClick={() => setSelectedCategory("Intervista")}
+                onClick={() => setSelectedCategory("Interview")}
               >
                 <Mic2 className="mr-2 h-4 w-4" />
                 Intervista
@@ -493,17 +509,17 @@ export function UploadSection({ processingStatus }: UploadSectionProps) {
               <div className="flex items-center text-slate-500">
                  <div className={cn("w-2.5 h-2.5 rounded-full mr-2", 
                   selectedCategory === "Meeting" ? "bg-blue-500" :
-                  selectedCategory === "Lezione" ? "bg-primary" : 
+                  selectedCategory === "Lesson" ? "bg-primary" : 
                   "bg-yellow-500"
                 )}></div>
                  <span className="text-sm font-medium">Tipo:</span>
               </div>
               <p className={cn("text-sm font-semibold",
                   selectedCategory === "Meeting" ? "text-blue-700" :
-                  selectedCategory === "Lezione" ? "text-primary" : 
+                  selectedCategory === "Lesson" ? "text-primary" : 
                   "text-yellow-700"  
                 )}>
-                {selectedCategory}
+                {selectedCategory === "Lesson" ? "Lezione" : selectedCategory === "Interview" ? "Intervista" : "Meeting"}
               </p>
               
               <div className="flex items-center text-slate-500">
@@ -535,17 +551,17 @@ export function UploadSection({ processingStatus }: UploadSectionProps) {
               <div className="flex items-center text-slate-500">
                 <div className={cn("w-2.5 h-2.5 rounded-full mr-2", 
                   selectedCategory === "Meeting" ? "bg-blue-500" : 
-                  selectedCategory === "Lezione" ? "bg-pink-500" :
+                  selectedCategory === "Lesson" ? "bg-pink-500" :
                   "bg-yellow-500"
                 )}></div>
                 <span className="font-medium">Tipo:</span>
               </div>
               <p className={cn("font-semibold", 
                   selectedCategory === "Meeting" ? "text-blue-700" : 
-                  selectedCategory === "Lezione" ? "text-purple-700" :
+                  selectedCategory === "Lesson" ? "text-purple-700" :
                   "text-yellow-700"  
                 )}>
-                {selectedCategory}
+                {selectedCategory === "Lesson" ? "Lezione" : selectedCategory === "Interview" ? "Intervista" : "Meeting"}
               </p>
               
               <div className="flex items-center text-slate-500">
@@ -571,7 +587,7 @@ export function UploadSection({ processingStatus }: UploadSectionProps) {
             {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Elaboro...
+                Elaborazione in corso...
               </>
             ) : sessionStatus === 'loading' ? (
                <>
@@ -581,7 +597,7 @@ export function UploadSection({ processingStatus }: UploadSectionProps) {
             ) : sessionStatus === 'unauthenticated' ? (
                <>
                  <Upload className="mr-2 h-4 w-4" />
-                 Accedi
+                 Accedi per analizzare
                </>
             ) : ( // Autenticato e non in elaborazione
                <>

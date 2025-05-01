@@ -14,6 +14,11 @@ import { useToast } from "@/components/ui/use-toast"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { ResultsType } from "@/components/dashboard/types"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { CheckCircle } from "lucide-react"
+
 
 // Definisci un tipo più specifico per le categorie valide
 type ContentCategory = "Meeting" | "Lezione" | "Intervista";
@@ -44,7 +49,50 @@ export function Dashboard() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const { toast } = useToast()
 
-  // Funzione helper per formattare i risultati dell'API (sia freschi che dalla cronologia)
+  // --- DEFINIZIONE DI fetchAnalysisHistory (prima di usarla) ---
+  const fetchAnalysisHistory = useCallback(async () => {
+    // Non impostare isLoadingHistory qui se viene chiamato da useEffect
+    // Impostalo solo se è una funzione chiamata da un bottone ad es.
+    // setIsLoadingHistory(true); // Rimuovi o sposta se necessario
+    try {
+      console.log("Fetching analysis history..."); // Aggiunto log
+      const response = await fetch('/api/analyses/history', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (!response.ok) {
+        let errorDetail = `Errore HTTP: ${response.status}`;
+        try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
+        throw new Error(errorDetail);
+      }
+
+      const historyData = await response.json();
+      const rawHistory = historyData.map((item: any): RecentFileRaw => ({
+         id: item.transcript_id,
+         name: item.title || "Analisi senza titolo",
+         type: item.file_type || "text",
+         contentType: item.content?.tipo_contenuto || undefined,
+         date: new Date(item.created_at).toLocaleString('it-IT'),
+         status: "Completato",
+         rawData: item.content // Salva i dati grezzi
+      }));
+
+      setAnalysisHistory(rawHistory);
+       console.log("Analysis history fetched and set:", rawHistory); // Aggiunto log
+    } catch (error) {
+      console.error("Errore nel recupero della cronologia:", error);
+      toast({
+        title: "Errore Cronologia",
+        description: "Impossibile caricare la cronologia delle analisi.",
+        variant: "destructive",
+      });
+    } finally {
+       // setIsLoadingHistory(false); // Rimuovi o sposta se necessario
+    }
+  }, [toast]);
+
+  // --- DEFINIZIONE DI formatApiResult (prima di usarla) ---
   const formatApiResult = useCallback((result: RawApiResult): ResultsType | null => {
     console.log("[[[ formatApiResult INIZIO ]]]"); 
     if (!result) {
@@ -139,50 +187,25 @@ export function Dashboard() {
       return formattedResults;
   }, []);
 
-  // Effetto per recuperare la cronologia delle analisi
-  useEffect(() => {
-    const fetchAnalysisHistory = async () => {
-      if (activeTab === "results" || activeTab === "upload") {
-        setIsLoadingHistory(true);
-        try {
-          const response = await fetch('/api/analyses/history', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
-          });
-
-          if (!response.ok) {
-            let errorDetail = `Errore HTTP: ${response.status}`;
-            try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
-            throw new Error(errorDetail);
-          }
-
-          const historyData = await response.json();
-          const rawHistory = historyData.map((item: any): RecentFileRaw => ({
-            id: item.transcript_id,
-            name: item.title || "Analisi senza titolo",
-            type: item.file_type || "text", 
-            contentType: item.content?.tipo_contenuto || undefined,
-            date: new Date(item.created_at).toLocaleString('it-IT'),
-            status: "Completato",
-            rawData: item.content
-          }));
-          
-          setAnalysisHistory(rawHistory);
-        } catch (error) {
-          console.error("Errore nel recupero della cronologia:", error);
-          toast({
-            title: "Errore Cronologia",
-            description: "Impossibile caricare la cronologia delle analisi.",
-            variant: "destructive",
-          });
-        } finally {
-          setIsLoadingHistory(false);
-        }
-      }
-    };
-
+  // --- DEFINIZIONE DI handleAnalysisComplete (prima di usarla) ---
+  const handleAnalysisComplete = useCallback((results: ResultsType) => {
+    console.log("Dashboard: Analysis complete, showing results.", results);
+    setRawResults(results);
+    setProcessingStatus("completed");
+    setSuggestedQuestions(results.suggested_questions || []);
+    setTranscriptId(results.transcript_id || null);
     fetchAnalysisHistory();
-  }, [activeTab, toast]);
+  }, [fetchAnalysisHistory]);
+
+  // Effetto per recuperare la cronologia iniziale
+  useEffect(() => {
+    const initialFetch = async () => {
+        setIsLoadingHistory(true); // Imposta caricamento qui
+        await fetchAnalysisHistory();
+        setIsLoadingHistory(false); // Togli caricamento qui
+    }
+    initialFetch();
+  }, [fetchAnalysisHistory]);
 
   useEffect(() => {
 
@@ -329,117 +352,76 @@ export function Dashboard() {
     }
   };
 
-  const handleUpload = async (type: string, category: ContentCategory, data: any) => {
-    setProcessingStatus("processing");
-    console.log(`handleUpload: Avviato - Tipo: ${type}, Categoria Selezionata: ${category}`);
-
-    try {
-      let file;
-      if (type === "text") {
-        const blob = new Blob([data], { type: 'text/plain' });
-        file = new File([blob], "transcript.txt", { type: 'text/plain' });
-      } else {
-        file = data;
-      }
-      
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Mappa categoria frontend a backend 
-      const categoryMap: { [key in ContentCategory]: string } = {
-        "Meeting": "Meeting",
-        "Lezione": "lesson",
-        "Intervista": "interview" 
-      };
-      const backendCategory = categoryMap[category];
-      if (backendCategory) {
-          formData.append('content_type', backendCategory);
-          console.log(`Mapping frontend category '${category}' to backend '${backendCategory}'`);
-      } else {
-          console.warn(`Categoria frontend '${category}' non mappata, invio come non specificata.`);
-          formData.append('content_type', category); 
-      }
-
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        body: formData,
-        // Non impostare Content-Type manualmente per FormData
-      });
-
-      if (!response.ok) {
-        let errorDetail = `Errore HTTP: ${response.status}`;
-        try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
-        throw new Error(errorDetail);
-      }
-      
-      const result: RawApiResult = await response.json();
-      // -------------------------------------------------------------------------
-
-      console.log("handleUpload: Risultato GREZZO dalla API Route /api/analyze:", JSON.stringify(result, null, 2)); 
-
-      setRawResults(result);
-
-      setTranscriptId(result?.transcript_id ?? null);
-      setSuggestedQuestions(result?.suggested_questions || []);
-
-      setProcessingStatus("completed");
-      console.log("handleUpload: Stato 'rawResults' e 'processingStatus' aggiornati.");
-
-    } catch (error) {
-       console.error('Errore durante elaborazione:', error);
-       setProcessingStatus("failed");
-       toast({ title: "Errore Critico", description: "Errore durante la formattazione dei risultati.", variant: "destructive" });
-    }
-  };
-
   const renderContent = () => {
+    console.log("--- renderContent ---"); // DEBUG
+    console.log("Active Tab:", activeTab); // DEBUG
+    console.log("Processing Status:", processingStatus); // DEBUG
+    console.log("Raw Results State:", rawResults ? 'Present' : 'null'); // DEBUG
+    console.log("Is Loading History:", isLoadingHistory); // DEBUG
+
     switch (activeTab) {
       case "upload":
+        // Questa condizione determina se mostrare i NUOVI risultati
         const showResultsAfterUpload = processingStatus === 'completed' && rawResults;
+        console.log("Show Results After Upload?:", showResultsAfterUpload); // DEBUG
 
         return (
           <div className="space-y-6">
+            {/* Se NON dobbiamo mostrare i risultati NUOVI, mostriamo Upload o Processing */}
             {!showResultsAfterUpload && (
-              <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />
+              <>
+                {processingStatus !== 'processing' && ( // Mostra UploadSection solo se NON sta processando
+                  <UploadSection
+                    onAnalysisComplete={handleAnalysisComplete}
+                    formatApiResult={formatApiResult}
+                    processingStatus={processingStatus}
+                  />
+                )}
+                {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
+              </>
             )}
 
-            {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
-
+            {/* Se DOBBIAMO mostrare i risultati NUOVI */}
             {showResultsAfterUpload ? (
-              (() => {
-                console.log("--- renderContent: Tentativo formattazione per ResultsDisplay ---");
-                console.log("Dati grezzi da formattare:", JSON.stringify(rawResults, null, 2));
-                const formattedDisplayResults = formatApiResult(rawResults);
+              <div className="animate-fadeIn">
+                {/* Abbiamo già i risultati formattati in rawResults! */}
+                {/* Rimuoviamo la chiamata RIDONDANTE a formatApiResult */}
+                <Alert className="mb-6 border-green-500 bg-green-50 text-green-800">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <AlertTitle className="font-semibold">Elaborazione Completata!</AlertTitle>
+                  <AlertDescription>
+                    I risultati della tua analisi sono pronti qui sotto.
+                  </AlertDescription>
+                </Alert>
 
-                if (!formattedDisplayResults) {
-                  console.error("renderContent: Fallita formattazione di rawResults per ResultsDisplay.");
-                  toast({ title: "Errore Visualizzazione", description: "Impossibile formattare i risultati per la visualizzazione.", variant: "destructive" });
-                  setProcessingStatus("failed");
-                  setRawResults(null);
-                  return <ProcessingStatus status="failed" />;
-                }
-
-                console.log("--- renderContent: TENTATIVO RENDER ResultsDisplay ---");
-                console.log("Passando questa prop 'results' (formattata ora):", JSON.stringify(formattedDisplayResults, null, 2));
-                return (
+                <Button onClick={() => { setRawResults(null); setProcessingStatus(null); }} variant="outline" className="gap-2 mb-4">
+                   <ArrowLeft className="h-4 w-4" />
+                   Carica un Altro Contenuto
+                </Button>
+                <div id="latest-results-export-area">
                   <ResultsDisplay
-                    key={formattedDisplayResults.transcript_id || Date.now()}
-                    results={formattedDisplayResults}
+                    key={rawResults.transcript_id || Date.now()} // Usa direttamente rawResults
+                    results={rawResults} // Usa direttamente rawResults
                     onChatOpen={handleChatOpen}
-                    onDownload={() => handleDownload(formattedDisplayResults)}
-                    onShare={() => handleShare(formattedDisplayResults)}
+                    onDownload={() => handleDownload(rawResults)} // Usa direttamente rawResults
+                    onShare={() => handleShare(rawResults)} // Usa direttamente rawResults
                   />
-                );
-              })()
+                </div>
+              </div>
             ) : (
+              // Se NON mostriamo i risultati NUOVI E non stiamo processando,
+              // mostriamo Errore (se c'è) o Cronologia
               <>
                 {processingStatus === 'failed' && <ProcessingStatus status={processingStatus} />}
-                <RecentFiles
-                  files={analysisHistory}
-                  onOpenChat={handleHistoryChatOpen}
-                  onDelete={handleDeleteFile}
-                  formatApiResult={formatApiResult}
-                />
+                {(processingStatus === null || processingStatus === 'failed') && !isLoadingHistory && (
+                    <RecentFiles
+                       files={analysisHistory}
+                       onOpenChat={handleHistoryChatOpen}
+                       onDelete={handleDeleteFile}
+                       formatApiResult={formatApiResult} // Serve ancora qui per visualizzare la cronologia
+                     />
+                 )}
+                 {isLoadingHistory && <div className='text-center p-8'>Caricamento file recenti...</div>}
               </>
             )}
           </div>
@@ -464,7 +446,11 @@ export function Dashboard() {
           </div>
         )
       default:
-         return <UploadSection onUpload={handleUpload} processingStatus={processingStatus} />;
+         return <UploadSection
+                   onAnalysisComplete={handleAnalysisComplete}
+                   formatApiResult={formatApiResult}
+                   processingStatus={processingStatus}
+                 />;
     }
   }
 

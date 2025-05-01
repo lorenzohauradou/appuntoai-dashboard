@@ -5,6 +5,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { FileUp, FileText, Settings, History, Home, LogOut, Menu, X, BrainCircuit } from "lucide-react"
+import { signOut } from "next-auth/react"
 
 interface SidebarProps {
   activeTab: string
@@ -112,7 +113,11 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
           </nav>
 
           <div className="pt-4 border-t border-white/20">
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-white hover:bg-white/10"
+              onClick={() => signOut({ callbackUrl: '/' })}
+            >
               <LogOut className="mr-2 h-5 w-5" />
               Esci
             </Button>
@@ -203,6 +208,7 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
           <Button
             variant="ghost"
             className={cn("w-full justify-start text-white hover:bg-white/10", !expanded && "justify-center p-2")}
+            onClick={() => signOut({ callbackUrl: '/' })}
           >
             <LogOut className={cn("h-5 w-5", expanded && "mr-2")} />
             {expanded && "Esci"}
