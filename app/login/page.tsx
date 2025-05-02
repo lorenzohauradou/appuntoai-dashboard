@@ -6,13 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Loader2, MailCheck } from "lucide-react";
 import Link from "next/link";
+import { BackgroundPattern } from "@/components/ui/background-pattern";
 
-// Componente Logo separato per chiarezza
 const Logo = () => (
-  <Link href="/" className="inline-flex items-center gap-2 mb-8">
+  <Link href="/" className="inline-flex items-center gap-2 mb-10">
     <svg
       width="32"
       height="32"
@@ -41,46 +40,48 @@ const Logo = () => (
         strokeLinejoin="round"
       />
     </svg>
-    <span className="text-xl font-bold">Appuntoai</span>
+    <span className="text-xl font-bold text-slate-900">Appuntoai</span>
   </Link>
+);
+
+// Icona Google SVG semplice
+const GoogleIcon = () => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5">
+      <title>Google</title>
+      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.08-2.58 1.93-4.48 1.93-3.6 0-6.53-2.95-6.53-6.59s2.93-6.59 6.53-6.59c2.03 0 3.45.79 4.38 1.69l2.6-2.6C19.84 4.34 17.37 3 14.48 3 9.01 3 4.95 7.05 4.95 12.5s4.06 9.5 9.53 9.5c2.82 0 5.16-1 6.9-2.87 1.78-1.9 2.4-4.48 2.4-7.28 0-.8-.08-1.55-.2-2.28H12.48z" fill="#4285F4"/>
+    </svg>
 );
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [messageSent, setMessageSent] = useState(false); // Stato per mostrare messaggio di successo
+  const [messageSent, setMessageSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setMessageSent(false); // Resetta messaggio successo
+    setMessageSent(false);
 
     try {
-      // Chiama signIn con il provider 'resend'
       const result = await signIn('resend', {
         email,
-        redirect: false, // Non reindirizzare automaticamente
-        // Puoi specificare una callbackUrl se vuoi che l'utente atterri lì
-        // dopo aver cliccato il link nell'email
+        redirect: false,
         callbackUrl: '/dashboard',
       });
 
       if (result?.error) {
-        // Gestisci errori specifici se necessario, altrimenti mostra un errore generico
-        if (result.error === 'EmailSignin') { // Questo potrebbe essere un errore comune
-             setError('Impossibile inviare il link. Riprova.');
+        if (result.error === 'EmailSignin') {
+             setError('Impossibile inviare il link. Controlla l\'email e riprova.');
         } else {
             setError('Si è verificato un errore. Riprova.');
         }
         console.error("Sign in error:", result.error);
       } else if (result?.ok) {
-        // L'email è stata inviata (NextAuth non solleva errore)
         setMessageSent(true);
-        setEmail(''); // Pulisci l'input email
+        setEmail('');
       } else {
-         // Caso imprevisto
          setError('Qualcosa è andato storto. Riprova.');
       }
     } catch (err) {
@@ -91,62 +92,98 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-12">
-      <Logo />
+  const handleGoogleSignIn = () => {
+    setLoading(true);
+    signIn("google", { callbackUrl: "/dashboard" });
+  };
 
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Accedi ad AppuntoAI</CardTitle>
-          <CardDescription>Inserisci la tua email per ricevere un link magico e accedere.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {messageSent ? (
-            <div className="text-center p-4 border border-green-200 bg-green-50 rounded-md">
-              <MailCheck className="mx-auto h-12 w-12 text-green-500 mb-3" />
-              <h3 className="text-lg font-semibold text-green-800">Controlla la tua email!</h3>
-              <p className="text-sm text-green-700 mt-1">
-                Ti abbiamo inviato un link magico. Cliccalo per completare l'accesso.
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                (Potrebbe volerci qualche minuto e finire nello spam)
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="iltuonome@esempio.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="h-10" // Altezza standard
-                />
+  return (
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-12 overflow-hidden">
+      <BackgroundPattern />
+      <div className="relative z-10 flex flex-col items-center w-full">
+        <Logo />
+
+        <Card className="w-full max-w-md shadow-xl border-t-4 border-primary bg-card">
+          <CardHeader className="text-center space-y-1">
+            <CardTitle className="text-2xl font-bold tracking-tight">Accedi ad AppuntoAI</CardTitle>
+            <CardDescription>Inserisci la tua email per ricevere un link magico.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {messageSent ? (
+              <div className="text-center p-4 border border-green-300 bg-green-50 rounded-lg shadow-sm">
+                <MailCheck className="mx-auto h-12 w-12 text-green-500 mb-3" />
+                <h3 className="text-lg font-semibold text-green-800">Controlla la tua email!</h3>
+                <p className="text-sm text-green-700 mt-1">
+                  Ti abbiamo inviato un link magico per accedere.
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  (Potrebbe richiedere qualche minuto)
+                </p>
               </div>
-              {error && (
-                <p className="text-sm text-red-600">{error}</p>
-              )}
-              <Button type="submit" disabled={loading} className="w-full bg-primary text-white hover:bg-primary/90 h-10">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Invio in corso...
-                  </>
-                ) : (
-                  'Invia Magic Link'
-                )}
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="iltuonome@esempio.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    className={`h-10 ${error ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                  />
+                  {error && (
+                      <p className="text-sm text-red-600">{error}</p>
+                  )}
+                </div>
+
+                <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 text-sm font-semibold">
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Invio in corso...
+                    </>
+                  ) : (
+                    'Invia Magic Link'
+                  )}
+                </Button>
+              </form>
+            )}
+
+            {!messageSent && (
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Oppure accedi con
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {!messageSent && (
+              <Button
+                variant="outline"
+                className="w-full h-10 flex items-center justify-center gap-2 text-sm border-slate-300 hover:bg-slate-100 text-slate-700"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                <GoogleIcon />
+                Accedi con Google
               </Button>
-            </form>
+             )}
+          </CardContent>
+          {!messageSent && (
+               <CardFooter className="flex justify-center text-center text-sm text-muted-foreground pt-2 pb-6">
+                  <p>Non hai un account? Verrà creato al primo accesso.</p>
+               </CardFooter>
           )}
-        </CardContent>
-        <CardFooter className="flex justify-center text-center text-sm text-muted-foreground pt-4">
-          <p>Non hai un account? Verrà creato automaticamente.</p>
-        </CardFooter>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -203,9 +203,8 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
         ) : (
           <div className="space-y-4">
             {files.map((file) => {
-              // --- AGGIUNTA: Ottieni stile per il tipo ---
+              // --- Ottieni stile per il tipo ---
               const typeStyle = getTypeStyle(file.contentType);
-              // -----------------------------------------
 
               let formattedResultsForDisplay: ResultsType | null = null;
               if (expandedFileId === file.id) {
@@ -230,13 +229,13 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                       {/* --- AGGIUNTA: Badge per il tipo --- */}
+                       {/* --- Badge per il tipo --- */}
                        <Badge className={`text-xs px-2 py-1 ${typeStyle.className}`}>
                          {typeStyle.text}
                        </Badge>
                        {/* ----------------------------------- */}
                       {/* Badge dello stato esistente */}
-                      <Badge className="text-xs text-green-600 bg-green-100 px-2 py-1">
+                      <Badge className="text-xs text-green-600 bg-green-100 px-2 py-1 hover:bg-green-200">
                         {file.status}
                       </Badge>
                       <DropdownMenu>

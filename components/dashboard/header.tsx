@@ -77,7 +77,7 @@ export function Header() {
             className="text-sm font-medium"
             onClick={() => signOut({ callbackUrl: '/' })}
           >
-            Esci
+            Logout
           </Button>
         ) : (
           <Button
@@ -139,7 +139,7 @@ export function Header() {
               <DropdownMenuItem>Impostazioni</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })} className="text-red-600 focus:text-red-700 focus:bg-red-50">
-                 Esci
+                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

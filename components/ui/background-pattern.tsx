@@ -20,7 +20,7 @@ export function BackgroundPattern() {
               d="M5 0L5 10M0 5L10 5"
               stroke="currentColor"
               strokeWidth="0.5"
-              opacity="0.3"
+              className="opacity-30"
             />
           </pattern>
         </defs>

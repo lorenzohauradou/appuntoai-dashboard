@@ -6,10 +6,12 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { useRouter } from 'next/navigation'
+import { useSession, signOut } from "next-auth/react"
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
+  const { data: session, status } = useSession()
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen)
@@ -17,6 +19,13 @@ export function Navbar() {
 
   const navigateToLogin = () => {
     router.push('/login')
+    if (mobileMenuOpen) {
+      toggleMobileMenu()
+    }
+  }
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' })
     if (mobileMenuOpen) {
       toggleMobileMenu()
     }
@@ -88,16 +97,39 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex md:items-center md:gap-4">
-          <Button
-            variant="ghost"
-            className="text-sm font-medium"
-            onClick={navigateToLogin}
-          >
-            Accedi
-          </Button>
-          <Link href="/dashboard">
-            <Button className="bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
-          </Link>
+          {status === 'loading' && (
+            <Button variant="ghost" disabled>Caricamento...</Button>
+          )}
+
+          {status === 'unauthenticated' && (
+            <>
+              <Button
+                variant="ghost"
+                className="text-sm font-medium"
+                onClick={navigateToLogin}
+              >
+                Accedi
+              </Button>
+              <Link href="/dashboard">
+                <Button className="bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
+              </Link>
+            </>
+          )}
+
+          {status === 'authenticated' && (
+            <>
+              <Button
+                variant="ghost"
+                className="text-sm font-medium"
+                onClick={handleSignOut}
+              >
+                Logout
+              </Button>
+              <Link href="/dashboard">
+                <Button className="bg-primary text-white hover:bg-primary/90">Vai alla Dashboard</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -127,16 +159,37 @@ export function Navbar() {
             FAQ
           </Link>
           <div className="flex flex-col gap-2 pt-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={navigateToLogin}
-            >
-              Accedi
-            </Button>
-            <Link href="/dashboard" onClick={toggleMobileMenu}>
-              <Button className="w-full bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
-            </Link>
+            {status === 'loading' && (
+              <Button variant="outline" className="w-full" disabled>Caricamento...</Button>
+            )}
+            {status === 'unauthenticated' && (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={navigateToLogin}
+                >
+                  Accedi
+                </Button>
+                <Link href="/dashboard" onClick={toggleMobileMenu}>
+                  <Button className="w-full bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
+                </Link>
+              </>
+            )}
+            {status === 'authenticated' && (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleSignOut}
+                >
+                  Logout
+                </Button>
+                <Link href="/dashboard" onClick={toggleMobileMenu}>
+                  <Button className="w-full bg-primary text-white hover:bg-primary/90">Vai alla Dashboard</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -15,14 +15,8 @@ async function createUpgradeCheckoutUrl(userId: string, userEmail: string | null
   };
   const priceId = PRICE_IDS[plan];
 
-  if (!priceId) {
-    console.error(`ID Prezzo Stripe per il piano '${plan}' non trovato nelle variabili d'ambiente.`);
-    // Considera di lanciare un errore o restituire un URL di fallback alla pagina prezzi
-    return null;
-  }
-
   // Assicurati che NEXT_PUBLIC_APP_URL sia definito in .env.local / Vercel
-  const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const DOMAIN = process.env.NEXT_PUBLIC_APP_URL;
 
   try {
     // Cerca l'utente nel DB per ottenere stripeCustomerId, se esiste
@@ -37,8 +31,8 @@ async function createUpgradeCheckoutUrl(userId: string, userEmail: string | null
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      success_url: `${DOMAIN}/dashboard?upgraded=true`, // Pagina successo dopo upgrade
-      cancel_url: `${DOMAIN}/dashboard?canceled_upgrade=true`, // Pagina se annulla upgrade
+      success_url: `${DOMAIN}/dashboard?upgraded=true`,
+      cancel_url: `${DOMAIN}/dashboard?canceled_upgrade=true`,
       // Se hai il customerId, usalo, altrimenti Stripe lo crea/trova tramite email
       customer: customerId || undefined,
       customer_email: !customerId ? userEmail || undefined : undefined,
@@ -53,8 +47,6 @@ async function createUpgradeCheckoutUrl(userId: string, userEmail: string | null
 
   } catch (error) {
     console.error(`Errore creazione sessione checkout Stripe per user ${userId}:`, error);
-    // In caso di errore nella creazione sessione, ritorna null
-    // Il frontend gestirà il messaggio d'errore generico
     return null;
   }
 }
@@ -127,9 +119,9 @@ export async function POST(req: Request) {
      return NextResponse.json({ error: `Dati richiesta non validi: ${errorMessage}` }, { status: 400 });
   }
 
-  // Ora abbiamo 'fileInput' (sempre, anche per testo), 'categoryForm' (lowercase), 'fileTypeForDb', 'originalFileName'
+  // 'fileInput' (sempre, anche per testo), 'categoryForm' (lowercase), 'fileTypeForDb', 'originalFileName'
 
-  // --- Inizia il blocco try/catch principale ---
+
   try {
     // 2. Recupera Utente dal DB
     const user = await prisma.user.findUnique({
@@ -192,7 +184,7 @@ export async function POST(req: Request) {
     pythonFormData.append('user_id', userId); // Invia l'ID utente
 
     // Esegui fetch a Python
-    const pythonResponse = await fetch(`${pythonBackendUrl}/analyze`, { // Assicurati che l'URL includa /analyze
+    const pythonResponse = await fetch(`${pythonBackendUrl}/analyze`, {
         method: 'POST',
         body: pythonFormData,
         // Non impostare Content-Type qui, fetch lo fa per FormData
@@ -203,18 +195,18 @@ export async function POST(req: Request) {
     // Gestione risposta Python
     if (!pythonResponse.ok) {
       let errorDetail = "Errore sconosciuto dal servizio di elaborazione.";
-      try { // Prova a leggere il dettaglio dell'errore da Python
+      try {
          const errorJson = await pythonResponse.json();
          errorDetail = errorJson.detail || errorDetail;
       } catch (e) {
-         errorDetail = await pythonResponse.text(); // Fallback a testo grezzo
+         errorDetail = await pythonResponse.text(); //fallback
       }
       console.error(`Errore da Python (${pythonResponse.status}): ${errorDetail}`);
       throw new Error(`Errore elaborazione (${pythonResponse.status}): ${errorDetail}`);
     }
 
     // Estrai risultati COMPLETI da Python
-    const resultsFromPython = await pythonResponse.json(); // ASSUMI che questo contenga { transcript_id, riassunto, decisioni, tasks, etc... }
+    const resultsFromPython = await pythonResponse.json(); // { transcript_id, riassunto, decisioni, tasks, etc... }
     console.log(`Elaborazione Python completata con successo per ${userId}. Transcript ID da Python: ${resultsFromPython.transcript_id}`);
 
     // 5. CREA RECORD Transcription NEL DB PRISMA (per tracciare l'uso)
@@ -222,24 +214,21 @@ export async function POST(req: Request) {
 
     const newTranscription = await prisma.transcription.create({
       data: {
-        // Usiamo l'ID generato da Python/Supabase se disponibile? O ne generiamo uno nuovo?
-        // Per ora usiamo quello generato da Prisma, ma potremmo voler allineare gli ID.
+        // id generato da Prisma, ma potremmo voler allineare gli ID.
         // id: resultsFromPython.transcript_id, // Opzionale: dipende se vuoi usare lo stesso ID
         title: titleToSave.substring(0, 191), // Limita per DB
         transcript: resultsFromPython.riassunto || "Elaborazione completata", // Salva riassunto o testo placeholder
         cleanedTranscript: resultsFromPython.riassunto || "Elaborazione completata", // Idem
         fileType: fileTypeForDb,
         userId: userId,
-        // Non creiamo il record Analysis qui, lo fa Python
       }
     });
     console.log(`Record Transcription ${newTranscription.id} creato in Prisma DB per ${userId}.`);
 
-    // 6. Restituisci Successo al Frontend con risultati
     return NextResponse.json({
         success: true,
         message: "Elaborazione completata!",
-        // Passiamo l'intero oggetto dei risultati formattati da Python
+        // Passiamo l'intero oggetto dei risultati formattati dal BE
         results: resultsFromPython 
     });
 

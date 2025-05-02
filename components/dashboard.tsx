@@ -376,8 +376,8 @@ export function Dashboard() {
                     formatApiResult={formatApiResult}
                     processingStatus={processingStatus}
                   />
-                )}
-                {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
+            )}
+            {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
               </>
             )}
 
@@ -414,12 +414,12 @@ export function Dashboard() {
               <>
                 {processingStatus === 'failed' && <ProcessingStatus status={processingStatus} />}
                 {(processingStatus === null || processingStatus === 'failed') && !isLoadingHistory && (
-                    <RecentFiles
-                       files={analysisHistory}
-                       onOpenChat={handleHistoryChatOpen}
-                       onDelete={handleDeleteFile}
+                <RecentFiles
+                  files={analysisHistory}
+                  onOpenChat={handleHistoryChatOpen}
+                  onDelete={handleDeleteFile}
                        formatApiResult={formatApiResult} // Serve ancora qui per visualizzare la cronologia
-                     />
+                />
                  )}
                  {isLoadingHistory && <div className='text-center p-8'>Caricamento file recenti...</div>}
               </>
