@@ -36,16 +36,13 @@ export function HeroSection() {
               Utilizzato da migliaia di professionisti per risparmiare tempo e lavorare in modo più intelligente.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4 md:justify-start">
-              <p className="text-sm font-medium">Disponibile su Web, iOS e Android</p>
+              <p className="text-sm font-medium">In arrivo anche su iOS e Android</p>
               <div className="flex gap-2">
                 <Badge variant="secondary" className="rounded-full">
                   🇮🇹 Italiano
                 </Badge>
                 <Badge variant="secondary" className="rounded-full">
                   🇬🇧 English
-                </Badge>
-                <Badge variant="secondary" className="rounded-full">
-                  🇪🇸 Español
                 </Badge>
               </div>
             </div>

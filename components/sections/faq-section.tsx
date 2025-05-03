@@ -23,7 +23,7 @@ export function FaqSection() {
             <AccordionItem value="item-2">
               <AccordionTrigger>Quali lingue sono supportate?</AccordionTrigger>
               <AccordionContent>
-                Attualmente Appuntoai supporta italiano, inglese, spagnolo, francese, tedesco e portoghese. Stiamo
+                Attualmente Appuntoai supporta italiano e inglese. Stiamo
                 lavorando per aggiungere altre lingue nel prossimo futuro.
               </AccordionContent>
             </AccordionItem>
