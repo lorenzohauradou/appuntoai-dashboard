@@ -100,7 +100,7 @@ export function Navbar() {
           {status === 'loading' && (
             <Button variant="ghost" disabled>Caricamento...</Button>
           )}
-
+          {/* Desktop unauthenticated buttons */}
           {status === 'unauthenticated' && (
             <>
               <Button
@@ -115,7 +115,7 @@ export function Navbar() {
               </Link>
             </>
           )}
-
+          {/* Desktop authenticated buttons */}
           {status === 'authenticated' && (
             <>
               <Button
@@ -132,13 +132,26 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile menu button */}
+        {/* --- Mobile Auth Buttons (Next to Hamburger) --- */}
+        <div className="flex items-center gap-2 md:hidden">
+          {status === 'loading' && (
+             <Button variant="ghost" size="sm" disabled>...</Button>
+           )}
+           {status === 'unauthenticated' && (
+             <Button variant="ghost" size="sm" onClick={navigateToLogin}>Accedi</Button>
+           )}
+           {status === 'authenticated' && (
+             <Button variant="ghost" size="sm" onClick={handleSignOut}>Logout</Button>
+           )}
+        </div>
+
+        {/* Mobile menu button (Hamburger) */}
         <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMobileMenu}>
           {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu dropdown */}
       <div
         className={cn(
           "fixed inset-x-0 top-16 z-50 mt-px h-[calc(100vh-4rem)] overflow-y-auto bg-background md:hidden",
@@ -146,6 +159,7 @@ export function Navbar() {
         )}
       >
         <div className="container space-y-4 py-4">
+          {/* Mobile navigation links */}
           <Link href="#come-funziona" className="block py-2 text-lg font-medium" onClick={toggleMobileMenu}>
             Come funziona
           </Link>
@@ -158,33 +172,36 @@ export function Navbar() {
           <Link href="#faq" className="block py-2 text-lg font-medium" onClick={toggleMobileMenu}>
             FAQ
           </Link>
+          {/* --- Updated Mobile Auth Action Buttons (Inside Dropdown) --- */}
           <div className="flex flex-col gap-2 pt-4">
             {status === 'loading' && (
               <Button variant="outline" className="w-full" disabled>Caricamento...</Button>
             )}
+            {/* Mobile unauthenticated action (Accedi removed) */}
             {status === 'unauthenticated' && (
               <>
-                <Button
+                {/* <Button
                   variant="outline"
                   className="w-full"
                   onClick={navigateToLogin}
                 >
                   Accedi
-                </Button>
+                </Button> */}
                 <Link href="/dashboard" onClick={toggleMobileMenu}>
                   <Button className="w-full bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
                 </Link>
               </>
             )}
+            {/* Mobile authenticated action (Logout removed) */}
             {status === 'authenticated' && (
               <>
-                <Button
+                {/* <Button
                   variant="outline"
                   className="w-full"
                   onClick={handleSignOut}
                 >
                   Logout
-                </Button>
+                </Button> */}
                 <Link href="/dashboard" onClick={toggleMobileMenu}>
                   <Button className="w-full bg-primary text-white hover:bg-primary/90">Vai alla Dashboard</Button>
                 </Link>

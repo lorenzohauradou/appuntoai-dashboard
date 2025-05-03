@@ -209,27 +209,33 @@ export async function POST(req: Request) {
     const resultsFromPython = await pythonResponse.json(); // { transcript_id, riassunto, decisioni, tasks, etc... }
     console.log(`Elaborazione Python completata con successo per ${userId}. Transcript ID da Python: ${resultsFromPython.transcript_id}`);
 
-    // 5. CREA RECORD Transcription NEL DB PRISMA (per tracciare l'uso)
+    // 5. CREA O AGGIORNA RECORD Transcription NEL DB PRISMA (per tracciare l'uso)
     const titleToSave = `${categoryForm.charAt(0).toUpperCase() + categoryForm.slice(1)} - ${originalFileName}`;
 
-    const newTranscription = await prisma.transcription.create({
-      data: {
-        // id generato da Prisma, ma potremmo voler allineare gli ID.
-        // id: resultsFromPython.transcript_id, // Opzionale: dipende se vuoi usare lo stesso ID
-        title: titleToSave.substring(0, 191), // Limita per DB
-        transcript: resultsFromPython.riassunto || "Elaborazione completata", // Salva riassunto o testo placeholder
-        cleanedTranscript: resultsFromPython.riassunto || "Elaborazione completata", // Idem
-        fileType: fileTypeForDb,
-        userId: userId,
-      }
+    // Prepara i dati per la creazione o l'aggiornamento
+    const dataToUpsert = {
+      id: resultsFromPython.transcript_id, // Usa l'ID da Python
+      title: titleToSave.substring(0, 191), // Limita per DB
+      transcript: resultsFromPython.riassunto || "Elaborazione completata", // Salva riassunto o placeholder
+      cleanedTranscript: resultsFromPython.riassunto || "Elaborazione completata", // Idem
+      fileType: fileTypeForDb,
+      userId: userId,
+    };
+
+    // Usa upsert: cerca per ID, se esiste aggiorna, altrimenti crea.
+    const upsertedTranscription = await prisma.transcription.upsert({
+      where: {
+        id: resultsFromPython.transcript_id, // Criterio di ricerca
+      },
+      update: dataToUpsert, // Dati da usare se il record esiste
+      create: dataToUpsert, // Dati da usare se il record NON esiste
     });
-    console.log(`Record Transcription ${newTranscription.id} creato in Prisma DB per ${userId}.`);
+    console.log(`Record Transcription ${upsertedTranscription.id} creato/aggiornato in Prisma DB per ${userId}.`);
 
     return NextResponse.json({
         success: true,
         message: "Elaborazione completata!",
-        // Passiamo l'intero oggetto dei risultati formattati dal BE
-        results: resultsFromPython 
+        results: resultsFromPython
     });
 
   } catch (error) {

@@ -44,14 +44,6 @@ const Logo = () => (
   </Link>
 );
 
-// Icona Google SVG semplice
-const GoogleIcon = () => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5">
-      <title>Google</title>
-      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.08-2.58 1.93-4.48 1.93-3.6 0-6.53-2.95-6.53-6.59s2.93-6.59 6.53-6.59c2.03 0 3.45.79 4.38 1.69l2.6-2.6C19.84 4.34 17.37 3 14.48 3 9.01 3 4.95 7.05 4.95 12.5s4.06 9.5 9.53 9.5c2.82 0 5.16-1 6.9-2.87 1.78-1.9 2.4-4.48 2.4-7.28 0-.8-.08-1.55-.2-2.28H12.48z" fill="#4285F4"/>
-    </svg>
-);
-
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -106,7 +98,7 @@ export default function LoginPage() {
         <Card className="w-full max-w-md shadow-xl border-t-4 border-primary bg-card">
           <CardHeader className="text-center space-y-1">
             <CardTitle className="text-2xl font-bold tracking-tight">Accedi ad AppuntoAI</CardTitle>
-            <CardDescription>Inserisci la tua email per ricevere un link magico.</CardDescription>
+            <CardDescription>Inserisci la tua email per ricevere un magic link.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {messageSent ? (
@@ -159,7 +151,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-card px-2 text-muted-foreground">
-                    Oppure accedi con
+                    Oppure
                   </span>
                 </div>
               </div>
@@ -172,7 +164,7 @@ export default function LoginPage() {
                 onClick={handleGoogleSignIn}
                 disabled={loading}
               >
-                <GoogleIcon />
+                <img src="/google_icon.png" alt="Google logo" className="h-5 w-5" />
                 Accedi con Google
               </Button>
              )}

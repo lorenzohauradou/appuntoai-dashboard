@@ -38,7 +38,7 @@ export function FaqSection() {
             <AccordionItem value="item-4">
               <AccordionTrigger>Quanto è accurata la trascrizione?</AccordionTrigger>
               <AccordionContent>
-                La nostra tecnologia di trascrizione ha un'accuratezza superiore al 99% per audio di buona qualità.
+                La nostra tecnologia di trascrizione ha un'accuratezza superiore al 96% per audio di buona qualità.
                 L'accuratezza può variare in base alla qualità dell'audio, agli accenti e alla terminologia
                 specialistica, ma continuiamo a migliorare costantemente i nostri modelli.
               </AccordionContent>

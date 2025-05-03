@@ -195,9 +195,6 @@ export function PricingSection() {
               >
                 {isLoadingPro ? 'Caricamento...' : 'Scegli Pro'}
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                Garanzia soddisfatti o rimborsati di 14 giorni
-              </p>
             </CardFooter>
           </Card>
 
@@ -259,9 +256,6 @@ export function PricingSection() {
               >
                 {isLoadingBusiness ? 'Caricamento...' : 'Scegli Business'}
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                Garanzia soddisfatti o rimborsati di 14 giorni
-              </p>
             </CardFooter>
           </Card>
 
