@@ -205,7 +205,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
 
   return (
     <Card className="border-0 shadow-lg bg-white overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg items-start justify-between">
+      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg md:items-start justify-between">
         <div>
           <CardTitle className="text-2xl text-center md:text-left mb-3">Carica il tuo contenuto</CardTitle>
           <CardDescription className="text-primary-100 hidden md:block">
