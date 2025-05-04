@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from 'sonner'
 import { ResultsType } from "@/components/dashboard/types"; 
 
 // Definisci il tipo ContentCategory qui o importalo se è definito altrove
@@ -23,6 +23,9 @@ interface UploadSectionProps {
   onAnalysisComplete: (results: ResultsType) => void
   formatApiResult: (result: any) => ResultsType | null
 }
+
+// Definisci la dimensione massima in byte (7 GB)
+const MAX_FILE_SIZE = 7 * 1024 * 1024 * 1024; 
 
 export function UploadSection({ processingStatus, onAnalysisComplete, formatApiResult }: UploadSectionProps) {
   const [activeTab, setActiveTab] = useState("video")
@@ -37,7 +40,6 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
   // Usa hook per sessione e router
   const { data: session, status: sessionStatus } = useSession()
   const router = useRouter()
-  const { toast } = useToast()
 
   // Effetto per controllare localStorage al montaggio
   useEffect(() => {
@@ -59,8 +61,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
         }
 
         if (description) {
-          toast({
-            title: "Bentornato!",
+          toast.success("Bentornato!", {
             description: description,
             duration: 7000,
           });
@@ -101,6 +102,16 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
   }
 
   const handleFile = (file: File) => {
+    // CONTROLLO DIMENSIONE
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("File Troppo Grande", {
+        description: `Il file "${file.name}" (${(file.size / (1024 * 1024 * 1024)).toFixed(2)} GB) supera il limite massimo di 4 GB.`,
+        duration: 7000, // Mostra per più tempo
+      });
+      clearSelection(); // Resetta l'input
+      return; // Interrompi l'elaborazione per questo file
+    }
+
     const fileType = file.type.split("/")[0];
     const extension = file.name.split('.').pop()?.toLowerCase();
     
@@ -111,12 +122,12 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
 
     if (isValidVideo || isValidAudio || isValidText) {
       setSelectedFile(file);
-      setTextInput(""); // Pulisce l'area di testo se si carica un file di testo
+      if (activeTab === 'text') { // Se si carica un file di testo, pulisci l'area di testo
+          setTextInput("");
+      }
     } else {
-       toast({
-         title: "Formato non supportato",
-         description: `Il file "${file.name}" non è un ${activeTab} valido o supportato.`,
-         variant: "destructive",
+       toast.error("Formato non supportato", {
+         description: `Il file "${file.name}" non è un ${activeTab} valido o supportato.`
        });
        clearSelection(); // Pulisce la selezione
     }
@@ -148,7 +159,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
     // Determina cosa inviare: file o testo
     const dataToSend = selectedFile || textInput;
     if (!dataToSend) {
-      toast({ title: "Nessun contenuto", description: "Seleziona un file o inserisci del testo.", variant: "destructive" });
+      toast.warning("Nessun contenuto", { description: "Seleziona un file o inserisci del testo." });
       return;
     }
 
@@ -184,8 +195,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
       if (response.ok) {
         // Successo!
         console.log("Elaborazione completata:", result);
-        toast({
-          title: "Successo!",
+        toast.success("Successo!", {
           description: result.message || "Contenuto elaborato correttamente."
         });
         clearSelection(); // Pulisce l'input dopo successo
@@ -198,10 +208,8 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
             onAnalysisComplete(formattedResults); // Passa i risultati formattati al Dashboard
         } else {
             console.error("UploadSection: Fallita formattazione risultati da API.");
-            toast({
-                title: "Errore Formattazione Risultati",
+            toast.error("Errore Formattazione Risultati", {
                 description: "Impossibile mostrare i risultati correttamente.",
-                variant: "destructive",
             });
              // Potresti voler impostare uno stato di errore specifico qui
              // setIsProcessing('failed'); o simile, se gestito
@@ -211,10 +219,8 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
         if (response.status === 403 && result.error === "LIMIT_REACHED") {
           // Limite raggiunto
           console.warn("Limite trascrizioni raggiunto.");
-          toast({
-            title: "Limite Raggiunto",
+          toast.error("Limite Raggiunto", {
             description: result.message || "Hai esaurito le tue analisi gratuite.",
-            variant: "destructive",
             duration: 9000,
           });
           // Reindirizza a Stripe se l'URL è disponibile
@@ -222,29 +228,23 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
             window.location.href = result.checkoutUrl;
             return;
           } else {
-            toast({
-              title: "Errore Upgrade",
+            toast.error("Errore Upgrade", {
               description: "Non è stato possibile generare il link per l'upgrade. Contatta il supporto.",
-              variant: "destructive",
             });
           }
         } else {
           // Altri errori 
           console.error("Errore API:", response.status, result);
-          toast({
-            title: "Errore Elaborazione",
+          toast.error("Errore Elaborazione", {
             description: result.error || result.message || "Si è verificato un errore imprevisto.",
-            variant: "destructive",
           });
         }
       }
     } catch (error) {
       // Errore di rete o eccezione JS
       console.error("Errore fetch o JS:", error);
-      toast({
-        title: "Errore di Rete",
+      toast.error("Errore di Rete", {
         description: "Impossibile comunicare con il server. Riprova più tardi.",
-        variant: "destructive",
       });
     } finally {
        // Assicura che lo stato di caricamento venga resettato
