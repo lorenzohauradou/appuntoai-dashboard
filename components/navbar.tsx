@@ -108,11 +108,11 @@ export function Navbar() {
                 className="text-sm font-medium"
                 onClick={navigateToLogin}
               >
-                Accedi
-              </Button>
-              <Link href="/dashboard">
-                <Button className="bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
-              </Link>
+              Accedi
+            </Button>
+          <Link href="/dashboard">
+            <Button className="bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
+          </Link>
             </>
           )}
           {/* Desktop authenticated buttons */}
@@ -185,11 +185,11 @@ export function Navbar() {
                   className="w-full"
                   onClick={navigateToLogin}
                 >
-                  Accedi
+                Accedi
                 </Button> */}
-                <Link href="/dashboard" onClick={toggleMobileMenu}>
-                  <Button className="w-full bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
-                </Link>
+            <Link href="/dashboard" onClick={toggleMobileMenu}>
+              <Button className="w-full bg-primary text-white hover:bg-primary/90">Prova Appuntoai</Button>
+            </Link>
               </>
             )}
             {/* Mobile authenticated action (Logout removed) */}

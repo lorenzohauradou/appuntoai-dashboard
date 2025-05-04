@@ -10,12 +10,11 @@ const FREE_TRANSCRIPTION_LIMIT = 3; // limite gratis
 async function createUpgradeCheckoutUrl(userId: string, userEmail: string | null | undefined, plan: 'pro' | 'business' = 'pro'): Promise<string | null> {
   const stripe = getStripeInstance();
   const PRICE_IDS = {
-    pro: process.env.STRIPE_PRO_PRICE_ID, // DEVI aggiungere questi ID al tuo .env.local / Vercel
+    pro: process.env.STRIPE_PRO_PRICE_ID,
     business: process.env.STRIPE_BUSINESS_PRICE_ID,
   };
   const priceId = PRICE_IDS[plan];
 
-  // Assicurati che NEXT_PUBLIC_APP_URL sia definito in .env.local / Vercel
   const DOMAIN = process.env.NEXT_PUBLIC_APP_URL;
 
   try {
@@ -62,65 +61,63 @@ export async function POST(req: Request) {
 
   const userId = session.user.id;
   const userEmail = session.user.email;
-  console.log(`Richiesta elaborazione da user ${userId}`);
+  console.log(`API /process-transcription: Richiesta da user ${userId}`);
 
-  // --- ESTRAZIONE DATI CON VALIDAZIONE ---
-  let fileInput: File | null = null;
-  let textInput: string | null = null;
-  let categoryForm: string = "meeting"; // Default
-  let fileTypeForDb: FileType = FileType.audio; // Default, verrà sovrascritto
-  let originalFileName = "Testo"; // Default per testo
+  // LOGICA ESTRAZIONE DATI (Solo JSON)
+  let requestPayload: {
+      text?: string;              // Per testo diretto
+      filePath?: string;          // Per file uploadato su storage
+      originalFileName?: string; // Necessario se c'è filePath
+      category: string;         // Categoria (meeting, lesson, interview) - lowercase
+      type: string;             // Tipo originale (video, audio, text)
+  };
 
   try {
+    // Aspettiamo JSON
     const contentType = req.headers.get('content-type') || '';
-
-    if (contentType.includes('multipart/form-data')) {
-      const formData = await req.formData();
-      fileInput = formData.get('file') as File | null;
-      categoryForm = (formData.get('category') as string | null)?.toLowerCase() || "meeting"; // Normalizza a lowercase
-      const receivedType = formData.get('type') as string | null; // 'video', 'audio', 'text'
-
-      if (!fileInput) throw new Error("File non trovato nel FormData.");
-      originalFileName = fileInput.name;
-
-      // Determina fileTypeForDb
-      if (receivedType === 'video') fileTypeForDb = FileType.video;
-      else if (receivedType === 'audio') fileTypeForDb = FileType.audio;
-      else if (receivedType === 'text' && fileInput.type.startsWith('text/')) fileTypeForDb = FileType.testo;
-      else throw new Error(`Tipo file non supportato ricevuto: ${receivedType} / ${fileInput.type}`);
-
-    } else if (contentType.includes('application/json')) {
-      const body = await req.json();
-      textInput = body.text as string | null;
-      categoryForm = (body.category as string | null)?.toLowerCase() || "meeting"; // Normalizza
-
-      if (!textInput) throw new Error("Testo non trovato nel body JSON.");
-      fileTypeForDb = FileType.testo;
-
-      // === CONVERSIONE TESTO IN FILE BLOB ===
-      // Crea un Blob (sottotipo di File) dal testo
-      const textBlob = new Blob([textInput], { type: 'text/plain' });
-      // Crea un oggetto File dal Blob (necessario per FormData)
-      fileInput = new File([textBlob], "testo.txt", { type: 'text/plain' });
-      console.log("Testo incollato convertito in File object per l'invio.");
-
-    } else {
-      throw new Error(`Content-Type non supportato: ${contentType}`);
+    if (!contentType.includes('application/json')) {
+       throw new Error(`Content-Type non supportato: ${contentType}. Atteso application/json.`);
     }
 
-    // Validazione categoria (content_type per Python)
-    if (!["meeting", "lesson", "interview"].includes(categoryForm)) {
-       throw new Error(`Categoria non valida: ${categoryForm}. Usare 'meeting', 'lesson' o 'interview'.`);
+    requestPayload = await req.json();
+    console.log("API /process-transcription: Payload ricevuto:", requestPayload);
+
+
+    // Validazione payload
+    if (!requestPayload.category || !requestPayload.type) {
+        throw new Error("Campi 'category' o 'type' mancanti nel payload.");
+    }
+    requestPayload.category = requestPayload.category.toLowerCase(); // Assicura lowercase
+
+    if (!requestPayload.text && !requestPayload.filePath) {
+       throw new Error("Né 'text' né 'filePath' forniti nel payload.");
+    }
+    if (requestPayload.filePath && !requestPayload.originalFileName) {
+       throw new Error("'originalFileName' è richiesto quando si fornisce 'filePath'.");
+    }
+    if (!["meeting", "lesson", "interview"].includes(requestPayload.category)) {
+       throw new Error(`Categoria non valida: ${requestPayload.category}.`);
     }
 
   } catch (e) {
      const errorMessage = e instanceof Error ? e.message : 'Errore sconosciuto';
-     console.error("Errore lettura/validazione body request:", errorMessage);
+     console.error("Errore lettura/validazione body request JSON:", errorMessage);
      return NextResponse.json({ error: `Dati richiesta non validi: ${errorMessage}` }, { status: 400 });
   }
 
-  // 'fileInput' (sempre, anche per testo), 'categoryForm' (lowercase), 'fileTypeForDb', 'originalFileName'
+  // Determina il fileType per il DB Prisma basato sul 'type' ricevuto
+  let fileTypeForDb: FileType;
+  switch(requestPayload.type) {
+      case 'video': fileTypeForDb = FileType.video; break;
+      case 'audio': fileTypeForDb = FileType.audio; break;
+      case 'text': fileTypeForDb = FileType.testo; break;
+      default:
+          console.warn(`Tipo file non riconosciuto: ${requestPayload.type}, imposto audio di default.`);
+          fileTypeForDb = FileType.audio; // Fallback sicuro? O errore? Meglio errore forse
+          return NextResponse.json({ error: `Tipo file non valido: ${requestPayload.type}` }, { status: 400 });
+  }
 
+  const originalFileName = requestPayload.originalFileName || (requestPayload.text ? "Testo Incollato" : "File Sconosciuto");
 
   try {
     // 2. Recupera Utente dal DB
@@ -135,7 +132,6 @@ export async function POST(req: Request) {
     // 3. Controllo Limite per Utenti "Free"
     if (user.subscriptionStatus === "free") {
       const now = new Date();
-      // Trova l'inizio del mese corrente (alle 00:00:00)
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); 
 
       // Conta le trascrizioni create dall'utente da inizio mese
@@ -143,7 +139,7 @@ export async function POST(req: Request) {
         where: {
           userId: userId,
           createdAt: {
-            gte: startOfMonth, // >= inizio mese
+            gte: startOfMonth,
           },
         },
       });
@@ -177,40 +173,84 @@ export async function POST(req: Request) {
         throw new Error("Configurazione del servizio di elaborazione mancante.");
     }
 
-    // Prepara FormData per Python
-    const pythonFormData = new FormData();
-    pythonFormData.append('file', fileInput as Blob, originalFileName); // Invia il file (o il blob di testo)
-    pythonFormData.append('content_type', categoryForm); // Invia la categoria normalizzata
-    pythonFormData.append('user_id', userId); // Invia l'ID utente
+    // Prepara il payload JSON per Python
+    const pythonPayload: any = {
+        user_id: userId,
+        content_type: requestPayload.category, // Inoltra categoria
+    };
 
-    // Esegui fetch a Python
+    // Aggiungi 'filePath' o 'text' al payload per Python
+    if (requestPayload.filePath) {
+        pythonPayload.file_path = requestPayload.filePath; // Python dovrà gestire questo
+        pythonPayload.original_file_name = requestPayload.originalFileName; // Invia anche nome originale
+        console.log("Invio a Python: filePath, original_file_name, content_type, user_id");
+    } else if (requestPayload.text) {
+        pythonPayload.text_content = requestPayload.text; // Python dovrà gestire questo
+         console.log("Invio a Python: text_content, content_type, user_id");
+    } else {
+        // Questo non dovrebbe accadere per la validazione precedente, ma per sicurezza
+        throw new Error("Dati input mancanti per Python (né filePath né text).");
+    }
+
+    // Esegui fetch a Python inviando JSON
     const pythonResponse = await fetch(`${pythonBackendUrl}/analyze`, {
         method: 'POST',
-        body: pythonFormData,
-        // Non impostare Content-Type qui, fetch lo fa per FormData
+        headers: { 'Content-Type': 'application/json' }, // Ora inviamo JSON
+        body: JSON.stringify(pythonPayload),
     });
 
     console.log(`Risposta da Python: ${pythonResponse.status}`);
 
     // Gestione risposta Python
     if (!pythonResponse.ok) {
-      let errorDetail = "Errore sconosciuto dal servizio di elaborazione.";
+      let errorDetail = `Errore ${pythonResponse.status} dal servizio Python.`; // Messaggio default
+      let fullErrorJson = null; // Per loggare l'errore completo
       try {
-         const errorJson = await pythonResponse.json();
-         errorDetail = errorJson.detail || errorDetail;
-      } catch (e) {
-         errorDetail = await pythonResponse.text(); //fallback
+         // Prova a parsare la risposta JSON completa
+         fullErrorJson = await pythonResponse.json(); 
+         // Estrai il dettaglio se esiste e è una stringa, altrimenti usa un messaggio generico
+         if (fullErrorJson && typeof fullErrorJson.detail === 'string') {
+             errorDetail = fullErrorJson.detail;
+         } else if (fullErrorJson && Array.isArray(fullErrorJson.detail)) {
+             // Se detail è un array (comune per errori validazione FastAPI), prova a formattarlo
+             try {
+                errorDetail = fullErrorJson.detail.map((err: any) => 
+                    `${err.loc?.join('.') || 'campo'}: ${err.msg}`
+                ).join('; ');
+             } catch(formatErr) {
+                 errorDetail = "Errore di validazione dettagliato ricevuto da Python.";
+             }
+         } else {
+              errorDetail = `Errore ${pythonResponse.status} da Python (dettaglio non disponibile o non stringa).`;
+         }
+      } catch (e) { 
+          // Se il parsing JSON fallisce, prova a leggere come testo
+          try {
+             errorDetail = await pythonResponse.text(); 
+          } catch(textErr) {
+              errorDetail = `Errore ${pythonResponse.status} da Python (risposta non leggibile).`;
+          }
       }
-      console.error(`Errore da Python (${pythonResponse.status}): ${errorDetail}`);
-      throw new Error(`Errore elaborazione (${pythonResponse.status}): ${errorDetail}`);
+      // Logga sia il dettaglio estratto/formattato SIA l'oggetto JSON completo (se disponibile)
+      console.error(`Errore da Python (${pythonResponse.status}): ${errorDetail}`); 
+      if (fullErrorJson) {
+         console.error("JSON completo dell'errore da Python:", JSON.stringify(fullErrorJson, null, 2)); 
+      }
+      // Lancia l'errore con il messaggio estratto/formattato
+      throw new Error(`Errore elaborazione Python (${pythonResponse.status}): ${errorDetail}`); 
     }
 
     // Estrai risultati COMPLETI da Python
-    const resultsFromPython = await pythonResponse.json(); // { transcript_id, riassunto, decisioni, tasks, etc... }
-    console.log(`Elaborazione Python completata con successo per ${userId}. Transcript ID da Python: ${resultsFromPython.transcript_id}`);
+    const resultsFromPython = await pythonResponse.json();
+    // Assicurati che Python restituisca ancora 'transcript_id' nel suo JSON
+    if (!resultsFromPython.transcript_id) {
+        console.error("Risposta da Python non contiene 'transcript_id':", resultsFromPython);
+        throw new Error("Risposta dal servizio di elaborazione incompleta (manca transcript_id).");
+    }
+    console.log(`Elaborazione Python completata con successo per ${userId}. Transcript ID: ${resultsFromPython.transcript_id}`);
 
     // 5. CREA O AGGIORNA RECORD Transcription NEL DB PRISMA (per tracciare l'uso)
-    const titleToSave = `${categoryForm.charAt(0).toUpperCase() + categoryForm.slice(1)} - ${originalFileName}`;
+    const titleToSave = `${requestPayload.category.charAt(0).toUpperCase() + requestPayload.category.slice(1)} - ${originalFileName}`;
 
     // Prepara i dati per la creazione o l'aggiornamento
     const dataToUpsert = {

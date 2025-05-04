@@ -5,20 +5,21 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
-import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2, Loader2, Clock, FileCheck } from "lucide-react"
+import { FileVideo, FileAudio, FileText, Upload, X, Users, GraduationCap, Mic2, Loader2, Clock, FileCheck, CloudUpload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { toast } from 'sonner'
-import { ResultsType } from "@/components/dashboard/types"; 
+import { ResultsType } from "@/components/dashboard/types";
+import { Progress } from "@/components/ui/progress"
+import { useUploader } from '@/hooks/use-uploader';
 
 // Definisci il tipo ContentCategory qui o importalo se è definito altrove
 type ContentCategory = "Meeting" | "Lesson" | "Interview";
 
 interface UploadSectionProps {
-  // Usa ContentCategory per il parametro category
   processingStatus: string | null
   onAnalysisComplete: (results: ResultsType) => void
   formatApiResult: (result: any) => ResultsType | null
@@ -35,11 +36,16 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
   // Usa ContentCategory per lo stato
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory>("Meeting")
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isProcessing, setIsProcessing] = useState(false); // Stato locale per feedback caricamento
 
   // Usa hook per sessione e router
   const { data: session, status: sessionStatus } = useSession()
   const router = useRouter()
+
+  // --- USA IL CUSTOM HOOK ---
+  const { currentPhase, uploadProgress, startProcessing, resetUploaderState } = useUploader({
+    onAnalysisComplete,
+    formatApiResult
+  });
 
   // Effetto per controllare localStorage al montaggio
   useEffect(() => {
@@ -105,11 +111,11 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
     // CONTROLLO DIMENSIONE
     if (file.size > MAX_FILE_SIZE) {
       toast.error("File Troppo Grande", {
-        description: `Il file "${file.name}" (${(file.size / (1024 * 1024 * 1024)).toFixed(2)} GB) supera il limite massimo di 4 GB.`,
-        duration: 7000, // Mostra per più tempo
+        description: `Il file "${file.name}" (${(file.size / (1024 * 1024 * 1024)).toFixed(2)} GB) supera il limite massimo di ${ (MAX_FILE_SIZE / (1024*1024*1024)).toFixed(0)} GB.`,
+        duration: 7000,
       });
-      clearSelection(); // Resetta l'input
-      return; // Interrompi l'elaborazione per questo file
+      clearSelection();
+      return;
     }
 
     const fileType = file.type.split("/")[0];
@@ -122,24 +128,16 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
 
     if (isValidVideo || isValidAudio || isValidText) {
       setSelectedFile(file);
-      if (activeTab === 'text') { // Se si carica un file di testo, pulisci l'area di testo
+      if (activeTab === 'text') {
           setTextInput("");
       }
     } else {
        toast.error("Formato non supportato", {
          description: `Il file "${file.name}" non è un ${activeTab} valido o supportato.`
        });
-       clearSelection(); // Pulisce la selezione
+       clearSelection();
     }
   };
-
-  const handleUploadClick = () => {
-    if (activeTab === "text" && textInput) {
-      handleActualUpload()
-    } else if (selectedFile) {
-      handleActualUpload()
-    }
-  }
 
   const clearSelection = () => {
     setSelectedFile(null)
@@ -154,141 +152,56 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
     setTextInput("")
   }
 
-  // --- NUOVA FUNZIONE PER GESTIRE L'UPLOAD REALE ---
-  const handleActualUpload = async () => {
-    // Determina cosa inviare: file o testo
-    const dataToSend = selectedFile || textInput;
-    if (!dataToSend) {
-      toast.warning("Nessun contenuto", { description: "Seleziona un file o inserisci del testo." });
-      return;
-    }
-
-    setIsProcessing(true); // Avvia feedback caricamento
-
-    try {
-      let body: BodyInit;
-      const headers: HeadersInit = {};
-
-      if (dataToSend instanceof File) {
-        // Se è un file, usa FormData
-        const formData = new FormData();
-        formData.append('file', dataToSend); // L'API backend si aspetta 'file'
-        formData.append('category', selectedCategory);
-        formData.append('type', activeTab); // Può essere utile all'API
-        body = formData;
-        // Non impostare Content-Type manualmente per FormData
-      } else {
-        // Se è testo, usa JSON
-        body = JSON.stringify({ text: dataToSend, category: selectedCategory, type: activeTab });
-        headers['Content-Type'] = 'application/json';
-      }
-
-      // Chiama la tua API backend
-      const response = await fetch('/api/process-transcription', {
-        method: 'POST',
-        headers: headers,
-        body: body,
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        // Successo!
-        console.log("Elaborazione completata:", result);
-        toast.success("Successo!", {
-          description: result.message || "Contenuto elaborato correttamente."
-        });
-        clearSelection(); // Pulisce l'input dopo successo
-        setTextInput("");
-
-        // Formatta i risultati usando la funzione passata dal Dashboard
-        const formattedResults = formatApiResult(result.results); // Usa result.results!
-        if (formattedResults) {
-            console.log("UploadSection: Risultati formattati, chiamo onAnalysisComplete", formattedResults);
-            onAnalysisComplete(formattedResults); // Passa i risultati formattati al Dashboard
-        } else {
-            console.error("UploadSection: Fallita formattazione risultati da API.");
-            toast.error("Errore Formattazione Risultati", {
-                description: "Impossibile mostrare i risultati correttamente.",
-            });
-             // Potresti voler impostare uno stato di errore specifico qui
-             // setIsProcessing('failed'); o simile, se gestito
-        }
-      } else {
-        // Gestione errori specifici e generici
-        if (response.status === 403 && result.error === "LIMIT_REACHED") {
-          // Limite raggiunto
-          console.warn("Limite trascrizioni raggiunto.");
-          toast.error("Limite Raggiunto", {
-            description: result.message || "Hai esaurito le tue analisi gratuite.",
-            duration: 9000,
-          });
-          // Reindirizza a Stripe se l'URL è disponibile
-          if (result.checkoutUrl) {
-            window.location.href = result.checkoutUrl;
-            return;
-          } else {
-            toast.error("Errore Upgrade", {
-              description: "Non è stato possibile generare il link per l'upgrade. Contatta il supporto.",
-            });
-          }
-        } else {
-          // Altri errori 
-          console.error("Errore API:", response.status, result);
-          toast.error("Errore Elaborazione", {
-            description: result.error || result.message || "Si è verificato un errore imprevisto.",
-          });
-        }
-      }
-    } catch (error) {
-      // Errore di rete o eccezione JS
-      console.error("Errore fetch o JS:", error);
-      toast.error("Errore di Rete", {
-        description: "Impossibile comunicare con il server. Riprova più tardi.",
-      });
-    } finally {
-       // Assicura che lo stato di caricamento venga resettato
-       // tranne in caso di redirect a Stripe
-       if (typeof window !== 'undefined' && !window.location.href.startsWith('https://checkout.stripe.com')) {
-         setIsProcessing(false);
-       }
-    }
-  };
-
-  const handleProcessClick = () => {
-    if (sessionStatus === 'loading' || isProcessing) {
-      return;
-    }
+  const handleProcessClick = async () => {
+    if (sessionStatus === 'loading' || currentPhase !== 'idle') return;
 
     if (sessionStatus === 'unauthenticated') {
-      try { 
-        if (selectedFile) {
-          localStorage.setItem('pendingUploadInfo', JSON.stringify({
-            type: activeTab,
-            category: selectedCategory,
-            fileName: selectedFile.name 
-          }));
-        } else if (activeTab === 'text' && textInput) {
-           localStorage.setItem('pendingUploadInfo', JSON.stringify({
-            type: activeTab,
-            category: selectedCategory,
-            textPreview: textInput.substring(0, 50) + (textInput.length > 50 ? '...' : '') 
-          }));
-        }
-      } catch (error) {
-        console.error("Errore salvataggio localStorage:", error);
-      }
+      try {
+        if (selectedFile) localStorage.setItem('pendingUploadInfo', JSON.stringify({ type: activeTab, category: selectedCategory, fileName: selectedFile.name }));
+        else if (activeTab === 'text' && textInput) localStorage.setItem('pendingUploadInfo', JSON.stringify({ type: activeTab, category: selectedCategory, textPreview: textInput.substring(0, 50) + '...' }));
+      } catch (error) { console.error("Errore localStorage:", error); }
       router.push('/login');
     } else if (sessionStatus === 'authenticated') {
-      //  fetch all'API
-      handleActualUpload(); 
+      const dataToSend = selectedFile || textInput;
+      if (dataToSend) {
+        const success = await startProcessing(dataToSend, selectedCategory, activeTab as 'video' | 'audio' | 'text');
+        if (success && dataToSend instanceof File) {
+            clearSelection();
+        }
+      } else {
+        toast.warning("Nessun contenuto selezionato.");
+      }
     }
   }
 
-  const isButtonDisabled =
+  const isButtonDisabled = 
     sessionStatus === 'loading' ||
-    isProcessing || // Usa lo stato locale
+    currentPhase !== 'idle' ||
     ((activeTab !== "text" || !textInput) && !selectedFile);
+
+  const getButtonText = () => {
+     switch(currentPhase) {
+        case 'gettingUrl': return "Preparo upload...";
+        case 'uploading': return `Caricamento... ${uploadProgress}%`;
+        case 'processing': return "Elaborazione Server...";
+        case 'failed': return "Errore - Riprova";
+        case 'idle': default:
+           if (sessionStatus === 'loading') return "Verifica...";
+           if (sessionStatus === 'unauthenticated') return "Accedi per analizzare";
+           return "Elabora";
+     }
+  }
+
+  const getButtonIcon = () => {
+     switch(currentPhase) {
+        case 'gettingUrl': case 'processing': return <Loader2 className="mr-2 h-4 w-4 animate-spin" />;
+        case 'uploading': return <CloudUpload className="mr-2 h-4 w-4 animate-bounce" />;
+        case 'failed': return <X className="mr-2 h-4 w-4" />;
+        case 'idle': default:
+           if (sessionStatus === 'loading') return <Loader2 className="mr-2 h-4 w-4 animate-spin" />;
+           return <Upload className="mr-2 h-4 w-4" />;
+     }
+  }
 
   return (
     <Card className="border-0 shadow-lg bg-white overflow-hidden">
@@ -317,7 +230,6 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
             </TabsTrigger>
           </TabsList>
 
-          {/* Selezione della categoria */}
           <div className="mb-6">
             <div className="flex gap-2 flex-wrap">
               <Button
@@ -490,6 +402,27 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
             </div>
           </TabsContent>
         </Tabs>
+
+        {currentPhase === 'uploading' && (
+          <div className="mt-6 space-y-2">
+             <Progress value={uploadProgress} className="w-full h-2" />
+             <p className="text-sm text-center text-muted-foreground">
+               Caricamento file... ({uploadProgress}%)
+             </p>
+          </div>
+        )}
+         {currentPhase === 'processing' && (
+           <p className="text-sm text-center text-muted-foreground mt-6">
+              Il file è stato caricato! Elaborazione in corso sul server...<br/>
+              L'analisi potrebbe richiedere diversi minuti.
+           </p>
+         )}
+         {currentPhase === 'gettingUrl' && (
+             <p className="text-sm text-center text-muted-foreground mt-6">
+                Preparazione dell'upload sicuro...
+             </p>
+         )}
+
       </CardContent>
       <CardFooter className="flex flex-col md:flex-row md:justify-between md:items-center border-t p-6 gap-4 md:gap-0">
         <div className="order-2 md:order-1 w-full">
@@ -534,7 +467,6 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
                </p>
             </div>
           </div>
-          {/* Card informativa - Versione Desktop */}
           <div className="hidden md:block max-w-[350px] bg-slate-50 rounded-lg p-4 shadow-sm border border-slate-200">
             <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-sm">
               <div className="flex items-center text-slate-500">
@@ -580,31 +512,12 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
 
         <div className="order-1 md:order-2 w-full flex justify-center md:w-auto md:justify-start">
           <Button
-            className="bg-primary text-white hover:bg-primary/90 min-w-[120px]" // Aggiunto min-width per evitare troppo resizing
+            className="bg-primary text-white hover:bg-primary/90 min-w-[180px]"
             onClick={handleProcessClick}
             disabled={isButtonDisabled}
           >
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Elaborazione in corso...
-              </>
-            ) : sessionStatus === 'loading' ? (
-               <>
-                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                 Verifica...
-               </>
-            ) : sessionStatus === 'unauthenticated' ? (
-               <>
-                 <Upload className="mr-2 h-4 w-4" />
-                 Accedi per analizzare
-               </>
-            ) : ( // Autenticato e non in elaborazione
-               <>
-                 <Upload className="mr-2 h-4 w-4" />
-                 Elabora
-               </>
-            )}
+             {getButtonIcon()}
+             {getButtonText()}
           </Button>
         </div>
       </CardFooter>
