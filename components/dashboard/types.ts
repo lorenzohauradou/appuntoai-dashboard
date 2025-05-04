@@ -1,5 +1,6 @@
 // Definizioni di tipi condivisi per i componenti della dashboard
 
+export type RawApiResult = any;
 // Tipi per i partecipanti
 export interface Participant {
   name: string;
@@ -82,4 +83,4 @@ export interface RecentFileRaw {
   date: string;
   status: string;
   rawData: any;
-} 
+}

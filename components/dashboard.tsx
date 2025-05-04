@@ -13,18 +13,17 @@ import { ChatDialog } from "@/components/dashboard/chat-dialog"
 import { useToast } from "@/components/ui/use-toast"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { ResultsType } from "@/components/dashboard/types"
+import { ResultsType, RawApiResult } from "@/components/dashboard/types"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle } from "lucide-react"
+import { formatApiResult } from "@/lib/formatters"
+import { useAnalysisHistory } from "@/hooks/use-analysis-history"
 
 
 // Definisci un tipo più specifico per le categorie valide
 type ContentCategory = "Meeting" | "Lezione" | "Intervista";
-
-// Tipo per i risultati grezzi dall'API (esempio, potrebbe essere più specifico)
-type RawApiResult = any; 
 
 // ---> DEFINISCI RecentFileRaw QUI <--- 
 interface RecentFileRaw {
@@ -45,147 +44,10 @@ export function Dashboard() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [transcriptId, setTranscriptId] = useState<string | null>(null)
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
-  const [analysisHistory, setAnalysisHistory] = useState<RecentFileRaw[]>([])
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const { toast } = useToast()
 
-  // --- DEFINIZIONE DI fetchAnalysisHistory (prima di usarla) ---
-  const fetchAnalysisHistory = useCallback(async () => {
-    // Non impostare isLoadingHistory qui se viene chiamato da useEffect
-    // Impostalo solo se è una funzione chiamata da un bottone ad es.
-    // setIsLoadingHistory(true); // Rimuovi o sposta se necessario
-    try {
-      console.log("Fetching analysis history..."); // Aggiunto log
-      const response = await fetch('/api/analyses/history', {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-      });
-
-      if (!response.ok) {
-        let errorDetail = `Errore HTTP: ${response.status}`;
-        try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
-        throw new Error(errorDetail);
-      }
-
-      const historyData = await response.json();
-      const rawHistory = historyData.map((item: any): RecentFileRaw => ({
-         id: item.transcript_id,
-         name: item.title || "Analisi senza titolo",
-         type: item.file_type || "text",
-         contentType: item.content?.tipo_contenuto || undefined,
-         date: new Date(item.created_at).toLocaleString('it-IT'),
-         status: "Completato",
-         rawData: item.content // Salva i dati grezzi
-      }));
-
-      setAnalysisHistory(rawHistory);
-       console.log("Analysis history fetched and set:", rawHistory); // Aggiunto log
-    } catch (error) {
-      console.error("Errore nel recupero della cronologia:", error);
-      toast({
-        title: "Errore Cronologia",
-        description: "Impossibile caricare la cronologia delle analisi.",
-        variant: "destructive",
-      });
-    } finally {
-       // setIsLoadingHistory(false); // Rimuovi o sposta se necessario
-    }
-  }, [toast]);
-
-  // --- DEFINIZIONE DI formatApiResult (prima di usarla) ---
-  const formatApiResult = useCallback((result: RawApiResult): ResultsType | null => {
-    console.log("[[[ formatApiResult INIZIO ]]]"); 
-    if (!result) {
-      console.error("[[[ formatApiResult ERRORE: Input 'result' è null o undefined ]]]");
-      return { 
-        summary: "Errore: Dati API mancanti", 
-        contentType: 'meeting', 
-        decisions:[], 
-        tasks:[], 
-        themes:[], 
-        participants:[], 
-        transcript_id: undefined, 
-        suggested_questions: [] 
-      };
-    }
-
-    console.log("[[[ formatApiResult Input 'result' RAW ]]]:", result);
-    try {
-      console.log("[[[ formatApiResult Input 'result' JSON.stringify ]]]:", JSON.stringify(result));
-    } catch (e) {
-      console.error("[[[ formatApiResult ERRORE JSON.stringify ]]]:", e);
-    }
-
-    const category = result.tipo_contenuto;
-    console.log(`[[[ formatApiResult Categoria rilevata: ${category} ]]]`);
-
-    let formattedResults: ResultsType;
-
-     if (category === "lesson") {
-        console.log("[[[ formatApiResult Blocco 'lezione' ESEGUITO ]]]");
-        formattedResults = {
-          summary: result.riassunto || "",
-          contentType: "lezione" as const,
-          keyPoints: result.concetti_chiave || [],
-          exercises: (result.esercizi || []).map((ex: { descrizione: string; scadenza?: string; data_iso?: string }) => ({
-             description: ex.descrizione || "N/A",
-             deadline: ex.scadenza,
-             date_iso: ex.data_iso
-          })),
-          topics: result.argomenti || [],
-          participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
-            name: participant.nome || "Non specificato",
-            role: participant.ruolo || 'Docente/Relatore',
-          })),
-          possibleQuestions: result.possibili_domande_esame || [],
-          bibliography: result.bibliografia || [],
-          transcript_id: result.transcript_id,
-          suggested_questions: result.suggested_questions || [],
-        };
-      } else if (category === "interview") {
-         console.log("[[[ formatApiResult Blocco 'intervista' ESEGUITO ]]]");
-         // Cast result to InterviewResults structure for type safety, assuming backend sends matching fields
-         const interviewData = result as any; // O definisci un tipo RawInterviewResult più specifico
-         formattedResults = {
-           summary: interviewData.riassunto || "",
-           contentType: "intervista" as const,
-           // definito in InterviewResults
-           domande_principali: interviewData.domande_principali || [],
-           risposte_chiave: interviewData.risposte_chiave || [],
-           punti_salienti: interviewData.punti_salienti || [],
-           temi_principali: interviewData.temi_principali || [], // Corretto da 'themes'
-           participants: (interviewData.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
-            name: participant.nome || "Non specificato",
-            role: participant.ruolo || 'Intervistatore/Intervistato',
-           })),
-           transcript_id: interviewData.transcript_id,
-           suggested_questions: interviewData.suggested_questions || [],
-         };
-      } else {
-        console.log(`[[[ formatApiResult Blocco 'meeting' (default) ESEGUITO perché categoria è '${category}' ]]]`);
-        formattedResults = {
-          summary: result.riassunto || "",
-          contentType: "meeting" as const,
-          decisions: result.decisioni || [],
-          tasks: (result.tasks || []).map((task: { descrizione: string; assegnatario?: string; scadenza?: string; priorita?: string; categoria?: string }) => ({
-            task: task.descrizione || "",
-            assignee: task.assegnatario || "Non specificato",
-            deadline: task.scadenza || 'Non specificata',
-            priority: task.priorita || 'Media',
-            category: task.categoria || 'Generale',
-          })),
-          themes: result.temi_principali || [],
-          participants: (result.partecipanti || []).map((participant: { nome: string; ruolo?: string }) => ({
-            name: participant.nome || "Non specificato",
-            role: participant.ruolo || 'Partecipante',
-          })),
-          transcript_id: result.transcript_id,
-          suggested_questions: result.suggested_questions || [],
-        };
-      }
-      console.log("[[[ formatApiResult Ritorno formattato: ]]]", formattedResults);
-      return formattedResults;
-  }, []);
+  // --- USA IL NUOVO HOOK ---
+  const { analysisHistory, isLoadingHistory, handleDeleteFile, refreshHistory } = useAnalysisHistory();
 
   // --- DEFINIZIONE DI handleAnalysisComplete (prima di usarla) ---
   const handleAnalysisComplete = useCallback((results: ResultsType) => {
@@ -194,25 +56,13 @@ export function Dashboard() {
     setProcessingStatus("completed");
     setSuggestedQuestions(results.suggested_questions || []);
     setTranscriptId(results.transcript_id || null);
-    fetchAnalysisHistory();
-  }, [fetchAnalysisHistory]);
-
-  // Effetto per recuperare la cronologia iniziale
-  useEffect(() => {
-    const initialFetch = async () => {
-        setIsLoadingHistory(true); // Imposta caricamento qui
-        await fetchAnalysisHistory();
-        setIsLoadingHistory(false); // Togli caricamento qui
-    }
-    initialFetch();
-  }, [fetchAnalysisHistory]);
+    refreshHistory();
+  }, [refreshHistory]);
 
   useEffect(() => {
-
     console.log("Processing Status:", processingStatus);
     console.log("Active Tab:", activeTab);
-    // Logga i risultati GREZZI
-    console.log("Raw Results State (in useEffect):", JSON.stringify(rawResults, null, 2)); 
+    console.log("Raw Results State (in useEffect):", rawResults ? 'Present' : 'null'); 
     console.log("Transcript ID:", transcriptId);
   }, [rawResults, processingStatus, activeTab, transcriptId]);
 
@@ -308,49 +158,6 @@ export function Dashboard() {
       }
     }
   }
-
-  const handleDeleteFile = async (transcriptIdToDelete: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questa analisi? L'azione non può essere annullata.")) {
-      return;
-    }
-
-    console.log(`Tentativo di eliminazione per ID: ${transcriptIdToDelete}`);
-    try {
-      const response = await fetch(`/api/analyses/${transcriptIdToDelete}`, {
-        method: 'DELETE',
-      });
-
-      // Gestisci la risposta (204 No Content per successo senza corpo)
-      if (response.status === 204) {
-        console.log(`Analisi ${transcriptIdToDelete} eliminata con successo (204).`);
-      } else if (response.ok) {
-        const data = await response.json().catch(() => null);
-        console.log(`Analisi ${transcriptIdToDelete} eliminata con successo (${response.status}):`, data);
-      } else {
-        // Errore
-        let errorDetail = `Errore eliminazione: ${response.status}`;
-        try { errorDetail = (await response.json()).detail || errorDetail } catch (e) { /* ignore */ }
-        throw new Error(errorDetail);
-      }
-      
-      setAnalysisHistory(prevHistory => 
-        prevHistory.filter(file => file.id !== transcriptIdToDelete)
-      );
-      
-      toast({ 
-        title: "Analisi Eliminata", 
-        description: "L'analisi selezionata è stata rimossa con successo.",
-      });
-
-    } catch (error) {
-      console.error("Errore durante l'eliminazione nel componente Dashboard:", error);
-      toast({ 
-        title: "Errore Eliminazione", 
-        description: error instanceof Error ? error.message : "Impossibile eliminare l'analisi.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const renderContent = () => {
     console.log("--- renderContent ---"); // DEBUG
