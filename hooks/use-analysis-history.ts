@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useToast } from "@/components/ui/use-toast";
-import type { RawApiResult } from '@/components/dashboard/types';
 import { RecentFileRaw } from '@/components/dashboard/types';
 
 export function useAnalysisHistory() {
