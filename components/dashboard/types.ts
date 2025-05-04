@@ -78,9 +78,9 @@ export interface ResultsDisplayProps {
 export interface RecentFileRaw {
   id: string;
   name: string;
-  type: string; // File type like 'audio', 'video', 'text'
-  contentType?: string; // <<< ADDED: Analysis type like 'meeting', 'lesson', 'interview'
+  type: string; // file_type: 'audio', 'video', 'text'
+  contentType: string; // content_type: 'meeting', 'lesson', 'interview'
   date: string;
   status: string;
-  rawData: any;
+  rawData: RawApiResult;
 }
