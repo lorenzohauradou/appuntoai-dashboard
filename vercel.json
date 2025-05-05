@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/api/process-transcription/**": {
+      "maxDuration": 300
+    }
+  }
+}
