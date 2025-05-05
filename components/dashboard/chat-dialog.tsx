@@ -338,16 +338,15 @@ export function ChatDialog({
                  <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-6">
                      {sources.length > 0 ? (
                          sources.map((source, index) => (
-                             <div key={index} className="p-4 border rounded-md bg-muted/50 break-words">
-                                 <p className="text-sm font-semibold mb-1 text-primary">Fonte #{index + 1}</p>
-                                 <p className="text-xs text-muted-foreground whitespace-pre-wrap">{source}</p>
-                                 <div className="mt-2 text-xs border-t pt-2 italic text-gray-400">
-                                     (Contenuto dettagliato della fonte {index+1} apparirà qui quando implementato)
-                                 </div>
+                             <div key={index} className="p-4 border rounded-md bg-muted/50">
+                                 <p className="text-sm font-semibold mb-2 text-primary">Fonte #{index + 1}</p>
+                                 <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words"> 
+                                    {source || "Contenuto fonte non disponibile."} 
+                                 </p>
                              </div>
                          ))
                      ) : (
-                         <p className="text-center text-muted-foreground py-10">Nessuna fonte disponibile.</p>
+                         <p className="text-center text-muted-foreground py-10">Nessuna fonte disponibile per l'ultima risposta.</p>
                      )}
                  </div>
                   <SheetClose asChild className="mt-auto shrink-0">
