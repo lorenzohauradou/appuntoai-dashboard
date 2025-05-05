@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils"
 import { Providers } from "@/components/providers"
 import { Toaster } from "@/components/ui/sonner"
 import { FloatingDashboardButton } from "@/components/ui/floating-dashboard-button"
+import { Analytics } from "@vercel/analytics/react"
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
 export const metadata: Metadata = {
@@ -58,6 +60,7 @@ export default function RootLayout({
           <Toaster />
           <FloatingDashboardButton /> 
         </Providers>
+        <Analytics />
       </body>
     </html>
   )
