@@ -2,6 +2,12 @@
   "functions": {
     "app/api/process-transcription/**": {
       "maxDuration": 300
+    },
+    "app/api/chat/history/**": {
+      "maxDuration": 300
+    },
+    "app/api/send-chat-message/**": {
+      "maxDuration": 300
     }
   }
 }
