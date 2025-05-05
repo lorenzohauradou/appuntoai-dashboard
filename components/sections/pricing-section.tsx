@@ -126,15 +126,11 @@ export function PricingSection() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm">Trascrizione fino a 60 minuti</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
                   <span className="text-sm">Analisi base (Task, Decisioni, Temi)</span>
                 </li>
-                <li className="flex items-start gap-2 font-medium text-primary">
-                  <MessageSquare className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Chatta con il documento (3 chat/mese)</span>
+                <li className="flex items-start gap-2 font-medium text-muted-foreground/80">
+                  <MessageSquare className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Chatta con il contenuto (3 chat/mese)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
@@ -166,19 +162,23 @@ export function PricingSection() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">20 report al mese</span>
+                  <span className="text-sm">30 report al mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Trascrizione fino a 120 minuti</span>
+                  <span className="text-sm">Video / audio fino a 500 MB per report</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
                   <span className="text-sm">Analisi base (Task, Decisioni, Temi)</span>
                 </li>
+                <li className="flex items-start gap-2 font-medium text-primary">
+                  <MessageSquare className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Chatta con il contenuto (30 chat/mese)</span>
+                </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Esportazione in tutti i formati</span>
+                  <span className="text-sm">Esportazione in PDF e TXT</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
@@ -220,7 +220,7 @@ export function PricingSection() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Trascrizione fino a 180 minuti</span>
+                  <span className="text-sm">Video / audio fino a 7 GB per report</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
@@ -228,19 +228,15 @@ export function PricingSection() {
                 </li>
                 <li className="flex items-start gap-2 font-medium text-primary">
                   <MessageSquare className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Chat illimitata con i documenti</span>
+                  <span className="text-sm">Chat illimitata con i contenuti</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Funzionalità collaborative:</span>
+                  <span className="text-sm">Funzionalità aggiuntive:</span>
                 </li>
                 <li className="flex items-start gap-2 pl-6">
                   <Check className="mt-1 h-3 w-3 text-primary flex-shrink-0" />
-                  <span className="text-xs">Condivisione team (fino a 5 membri)</span>
-                </li>
-                <li className="flex items-start gap-2 pl-6">
-                  <Check className="mt-1 h-3 w-3 text-primary flex-shrink-0" />
-                  <span className="text-xs">Workflow di approvazione</span>
+                  <span className="text-xs">Trascrizione completa per ogni report</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
