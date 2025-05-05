@@ -228,7 +228,7 @@ export function ChatDialog({
                 {suggestedQuestions.map((question, i) => (
                   <Button 
                     key={i} 
-                    variant="outline" 
+                    variant="outline"
                     className="justify-start text-left h-auto py-2 hover:bg-muted"
                     onClick={() => setInput(question)}
                   >

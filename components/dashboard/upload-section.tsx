@@ -414,7 +414,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
          {currentPhase === 'processing' && (
            <p className="text-sm text-center text-muted-foreground mt-6">
               Il file è stato caricato! Elaborazione in corso sul server...<br/>
-              L'analisi potrebbe richiedere diversi minuti.
+              L'analisi potrebbe richiedere qualche minuto.
            </p>
          )}
          {currentPhase === 'gettingUrl' && (

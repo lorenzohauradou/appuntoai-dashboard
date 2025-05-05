@@ -63,6 +63,7 @@ export function RagVideoSection() {
                     muted
                     playsInline
                     controls
+                    preload="metadata"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <source src="/showcase_video.mp4" type="video/mp4" />

@@ -17,28 +17,30 @@ import {
   HelpCircle,
   BookOpen,
   AlertTriangle,
-  AlertCircle
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Copy
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MeetingResults, LectureResults, InterviewResults, ResultsType, ResultsDisplayProps } from "./types"
+import { MeetingResults, LectureResults, InterviewResults, PriorityStyle, ResultsDisplayProps } from "./types"
+import { toast } from 'sonner';
 
-//  tipo più specifico per lo stile della priorità
-type PriorityStyle = {
-  variant: "destructive" | "default" | "secondary" | "outline";
-  icon: React.ReactNode | null;
-  className: string;
+interface QuestionAnswerState {
+  answer: string | null;
+  isLoading: boolean;
+  error?: string | null;
 }
 
 export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: ResultsDisplayProps) {
-  // Log #1: Controlla le props ricevute all'inizio
-  console.log("--- ResultsDisplay RENDER ---");
-  console.log("Props ricevute:", results);
-  console.log("ContentType:", results.contentType); // Conferma il tipo
 
   const [activeTab, setActiveTab] = useState(results.contentType === "lezione" ? "summary" : "summary")
+  const [questionStates, setQuestionStates] = useState<Record<number, QuestionAnswerState>>({});
+  const [currentlyExpandedIndex, setCurrentlyExpandedIndex] = useState<number | null>(null);
 
   const getPriorityStyles = (priority: string): PriorityStyle => {
     // Verifichiamo che priority sia una stringa valida prima di chiamare toLowerCase()
@@ -79,6 +81,87 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
     }
   }
 
+  // Funzione per gestire il click sulla domanda
+  const handleQuestionClick = async (index: number, question: string) => {
+    // 1. Gestisci la visibilità
+    if (currentlyExpandedIndex === index) {
+      // Cliccato sulla domanda già aperta: chiudila
+      setCurrentlyExpandedIndex(null);
+      return;
+    } 
+    // Altrimenti, apri la domanda cliccata
+    setCurrentlyExpandedIndex(index);
+
+    // 2. Controlla se dobbiamo fare il fetch
+    const existingState = questionStates[index];
+    if (existingState && !existingState.error) {
+       // Già caricata (o in caricamento), non fare nulla (abbiamo già gestito la visibilità)
+       console.log(`Risposta per domanda ${index} già presente o in caricamento.`);
+       return;
+    }
+    console.log(`Fetching risposta per domanda ${index}...`);
+    // Imposta lo stato di caricamento per QUESTA domanda
+    setQuestionStates(prev => ({
+      ...prev,
+      [index]: { answer: null, isLoading: true, error: null } 
+    }));
+
+    if (!results.transcript_id) {
+      console.error("Transcript ID mancante nei risultati.");
+       setQuestionStates(prev => ({
+        ...prev,
+        [index]: { answer: null, isLoading: false, error: "Errore: ID trascrizione mancante." } 
+      }));
+      toast.error("Errore interno", { description: "ID della trascrizione mancante per recuperare la risposta."});
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/send-chat-message", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcriptId: results.transcript_id, message: question }) 
+      });
+
+      if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ detail: 'Errore sconosciuto nel recupero della risposta.'}));
+          throw new Error(errorData.detail || `Errore ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      
+      // Memorizza la risposta nello stato
+      setQuestionStates(prev => ({
+        ...prev,
+        [index]: { answer: responseData.response, isLoading: false, error: null } 
+      }));
+
+    } catch (error: any) {
+      console.error("Errore nel recupero della risposta alla domanda:", error);
+      // Memorizza l'errore nello stato
+       setQuestionStates(prev => ({
+        ...prev,
+        [index]: { answer: null, isLoading: false, error: error.message || "Impossibile caricare la risposta." } 
+      }));
+      toast.error("Errore Risposta", { description: error.message || "Impossibile caricare la risposta per questa domanda."});
+    }
+  };
+
+  // Funzione per copiare il riassunto
+  const handleCopySummary = async () => {
+    if (!results.summary) {
+      toast.error("Errore Copia", { description: "Il riassunto è vuoto." });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(results.summary);
+      toast.success("Riassunto Copiato!", { description: "Il riassunto è stato copiato negli appunti." });
+    } catch (err) {
+      console.error("Errore durante la copia del riassunto:", err);
+      toast.error("Errore Copia", { description: "Impossibile copiare il riassunto negli appunti." });
+    }
+  };
+
   // Determina i tab da mostrare in base al tipo di contenuto
   const renderTabs = () => {
     // Log #2: Verifica quale set di TabsList viene scelto
@@ -104,7 +187,7 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
               Esercizi
             </TabsTrigger>
           )}
-          <TabsTrigger value="questions" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger value="examQuestions" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             <HelpCircle className="mr-2 h-4 w-4" />
             Domande Esame
           </TabsTrigger>
@@ -174,13 +257,25 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
       <>
         <TabsContent value="summary" className="mt-8 w-full">
           <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
-            <CardHeader className="p-0 mb-4 pt-5">
-              <CardTitle className="break-words">Riassunto</CardTitle>
-              <CardDescription className="break-words">
-                {results.contentType === 'lezione' ? 'Una sintesi degli argomenti trattati nella lezione' :
-                 results.contentType === 'intervista' ? 'Una sintesi dei punti chiave emersi durante l\'intervista' :
-                 'Una sintesi del contenuto analizzato'}
-              </CardDescription>
+            <CardHeader className="p-0 mb-4 pt-5 flex flex-row items-start justify-between gap-4">
+              <div>
+                <CardTitle className="break-words">Riassunto</CardTitle>
+                <CardDescription className="break-words mt-1">
+                  {results.contentType === 'lezione' ? 'Una sintesi degli argomenti trattati nella lezione' :
+                   results.contentType === 'intervista' ? 'Una sintesi dei punti chiave emersi durante l\'intervista' :
+                   'Una sintesi del contenuto analizzato'}
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCopySummary}
+                className="border-primary/30 text-primary hover:text-primary flex-shrink-0 flex items-center gap-1.5" 
+                aria-label="Copia riassunto"
+              >
+                <Copy className="h-4 w-4" />
+                <span>Copia</span>
+              </Button>
             </CardHeader>
             <CardContent className="p-0 w-full">
               <p className="text-lg break-words">{results.summary}</p>
@@ -297,25 +392,80 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
             </TabsContent>
           )}
 
-          <TabsContent value="questions" className="mt-8 w-full">
+          <TabsContent value="examQuestions" className="mt-8 w-full">
             <Card className="border-0 shadow-md bg-white p-4 px-5 md:p-6 w-full">
               <CardHeader className="p-0 mb-4 pt-5">
-                <CardTitle className="break-words">Possibili Domande d'Esame</CardTitle>
-                <CardDescription className="break-words">Domande che potrebbero emergere da questo contenuto</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap /> Possibili Domande d'Esame
+                </CardTitle>
+                <CardDescription>
+                  Domande che potrebbero emergere da questo contenuto. Clicca per vedere una possibile risposta generata dall'AI in base al tuo contenuto.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0 w-full">
-                <ul className="space-y-4 w-full">
+                <div className="space-y-3">
                   {lectureResults.possibleQuestions.length > 0 ? (
-                    lectureResults.possibleQuestions.map((question, index) => (
-                      <li key={index} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
-                        <HelpCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                        <span className="break-words">{question}</span>
-                      </li>
-                    ))
+                    lectureResults.possibleQuestions.map((question, i) => {
+                      // Ottieni lo stato specifico per questa domanda
+                      const currentQuestionState = questionStates[i];
+                      // Determina se questa domanda è quella visualmente espansa
+                      const isExpanded = currentlyExpandedIndex === i;
+
+                      return (
+                        <div key={i} className="border rounded-lg overflow-hidden">
+                          <button 
+                            className="flex font-bold items-center justify-between w-full p-4 text-left hover:bg-muted/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            onClick={() => handleQuestionClick(i, question)}
+                            aria-expanded={isExpanded} // Usa isExpanded
+                          >
+                            <div className="flex items-start gap-3">
+                               <HelpCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                               <span className="flex-1 break-words">{question}</span>
+                            </div>
+                            {/* Icona Chevron basata su isExpanded */}
+                            {isExpanded ? (
+                              <ChevronUp className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+                            )}
+                          </button>
+
+                          {/* Area Risposta (visibile solo se isExpanded è true) */}
+                          {isExpanded && (
+                            <div className="p-4 border-t bg-muted/30 animate-fadeIn">
+                               {/* Mostra il loader se lo stato per QUESTA domanda è loading */}
+                               {currentQuestionState?.isLoading && (
+                                 <div className="flex items-center justify-center text-muted-foreground py-4">
+                                   <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                   Caricamento risposta...
+                                 </div>
+                               )}
+                               {/* Mostra l'errore se c'è per QUESTA domanda */}
+                               {currentQuestionState?.error && !currentQuestionState.isLoading && (
+                                 <p className="text-sm text-red-600">{currentQuestionState.error}</p>
+                               )}
+                               {/* Mostra la risposta se c'è per QUESTA domanda */}
+                               {currentQuestionState?.answer && !currentQuestionState.isLoading && !currentQuestionState.error && (
+                                 <div className="prose prose-sm max-w-none dark:prose-invert">
+                                    <p className="whitespace-pre-wrap">{currentQuestionState.answer}</p>
+                                 </div>
+                               )}
+                               {/* Caso iniziale: espansa ma non ancora caricata/errore/risposta (raro con nuova logica) */}
+                               {!currentQuestionState && ( 
+                                  <div className="flex items-center justify-center text-muted-foreground py-4">
+                                      <Loader2 className="h-5 w-5 animate-spin mr-2" /> 
+                                      Caricamento risposta... {/* Mostra comunque loading la prima volta */}
+                                  </div>
+                               )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   ) : (
-                    <p className="text-center text-muted-foreground py-4">Nessuna possibile domanda identificata</p>
+                    <p className="text-muted-foreground">Nessuna domanda d'esame suggerita.</p>
                   )}
-                </ul>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -84,3 +84,8 @@ export interface RecentFileRaw {
   status: string;
   rawData: RawApiResult;
 }
+export type PriorityStyle = {
+  variant: "destructive" | "default" | "secondary" | "outline";
+  icon: React.ReactNode | null;
+  className: string;
+}
