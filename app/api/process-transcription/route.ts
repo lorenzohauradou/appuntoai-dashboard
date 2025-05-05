@@ -4,7 +4,7 @@ import { getStripeInstance } from '@/lib/stripe';
 import { NextResponse } from 'next/server';
 import { FileType } from '@prisma/client';
 
-const FREE_TRANSCRIPTION_LIMIT = 3; // limite gratis
+const FREE_TRANSCRIPTION_LIMIT = 2; // limite gratis
 
 // Funzione helper per creare URL Checkout Stripe per l'upgrade
 async function createUpgradeCheckoutUrl(userId: string, userEmail: string | null | undefined, plan: 'pro' | 'business' = 'pro'): Promise<string | null> {
