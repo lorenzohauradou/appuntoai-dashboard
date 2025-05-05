@@ -25,8 +25,8 @@ interface UploadSectionProps {
   formatApiResult: (result: any) => ResultsType | null
 }
 
-// Definisci la dimensione massima in byte (7 GB)
-const MAX_FILE_SIZE = 7 * 1024 * 1024 * 1024; 
+// Definisci la dimensione massima in byte (8 GB)
+const MAX_FILE_SIZE = 8 * 1024 * 1024 * 1024; 
 
 export function UploadSection({ processingStatus, onAnalysisComplete, formatApiResult }: UploadSectionProps) {
   const [activeTab, setActiveTab] = useState("video")
@@ -407,14 +407,13 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
           <div className="mt-6 space-y-2">
              <Progress value={uploadProgress} className="w-full h-2" />
              <p className="text-sm text-center text-muted-foreground">
-               Caricamento file... ({uploadProgress}%)
+               Caricamento file... ({uploadProgress}%) <br />Può richiedere qualche minuto, in base alla dimensione del file.
              </p>
           </div>
         )}
          {currentPhase === 'processing' && (
            <p className="text-sm text-center text-muted-foreground mt-6">
               Il file è stato caricato! Elaborazione in corso sul server...<br/>
-              L'analisi potrebbe richiedere qualche minuto.
            </p>
          )}
          {currentPhase === 'gettingUrl' && (
