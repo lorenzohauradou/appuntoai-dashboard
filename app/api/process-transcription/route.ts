@@ -192,7 +192,7 @@ export async function POST(req: Request) {
         throw new Error("Dati input mancanti per Python (né filePath né text).");
     }
 
-    // Esegui fetch a Python inviando JSON
+
     const pythonResponse = await fetch(`${pythonBackendUrl}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }, // Ora inviamo JSON
