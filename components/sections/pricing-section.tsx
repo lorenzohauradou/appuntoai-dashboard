@@ -236,7 +236,7 @@ export function PricingSection() {
                 </li>
                 <li className="flex items-start gap-2 pl-6">
                   <Check className="mt-1 h-3 w-3 text-primary flex-shrink-0" />
-                  <span className="text-xs">Trascrizione completa per ogni report</span>
+                  <span className="text-xs">Trascrizione grezza per ogni report</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
