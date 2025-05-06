@@ -233,7 +233,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
           <div className="mb-6">
             <div className="flex gap-2 flex-wrap">
               <Button
-                variant={selectedCategory === "Meeting" ? "secondary" : "outline"}
+                variant={selectedCategory === "Meeting" ? "default" : "outline"}
                 className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
                 onClick={() => setSelectedCategory("Meeting")}
               >
@@ -241,7 +241,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
                 Meeting
               </Button>
               <Button
-                variant={selectedCategory === "Lesson" ? "secondary" : "outline"}
+                variant={selectedCategory === "Lesson" ? "default" : "outline"}
                 className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
                 onClick={() => setSelectedCategory("Lesson")}
               >
@@ -249,7 +249,7 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
                 Lezione
               </Button>
               <Button
-                variant={selectedCategory === "Interview" ? "secondary" : "outline"}
+                variant={selectedCategory === "Interview" ? "default" : "outline"}
                 className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
                 onClick={() => setSelectedCategory("Interview")}
               >
