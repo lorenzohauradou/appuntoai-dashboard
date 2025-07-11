@@ -62,7 +62,7 @@ export function Dashboard() {
   useEffect(() => {
     console.log("Processing Status:", processingStatus);
     console.log("Active Tab:", activeTab);
-    console.log("Raw Results State (in useEffect):", rawResults ? 'Present' : 'null'); 
+    console.log("Raw Results State (in useEffect):", rawResults ? 'Present' : 'null');
     console.log("Transcript ID:", transcriptId);
   }, [rawResults, processingStatus, activeTab, transcriptId]);
 
@@ -71,11 +71,11 @@ export function Dashboard() {
   }
 
   const handleChatOpen = () => {
-    if(transcriptId) {
-        setIsChatOpen(true);
+    if (transcriptId) {
+      setIsChatOpen(true);
     } else {
-        console.warn("Tentativo di aprire la chat senza transcriptId valido");
-        toast({ title: "Attendi...", description: "ID trascrizione non ancora pronto." });
+      console.warn("Tentativo di aprire la chat senza transcriptId valido");
+      toast({ title: "Attendi...", description: "ID trascrizione non ancora pronto." });
     }
   }
 
@@ -89,28 +89,28 @@ export function Dashboard() {
       toast({ title: "Errore Download", description: "Dati formattati non disponibili.", variant: "destructive" });
       return;
     }
-    
+
     const input = document.getElementById('results-export-area');
     if (!input) {
       toast({ title: "Errore Download", description: "Impossibile trovare l'area dei risultati da esportare.", variant: "destructive" });
       return;
     }
-    
+
     toast({ title: "Generazione PDF in corso...", description: "Potrebbe richiedere qualche secondo." });
 
     const buttonsToHide = input.querySelectorAll('button');
     buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'hidden');
 
     html2canvas(input, {
-      scale: 2, 
-      useCORS: true, 
-      logging: false, 
+      scale: 2,
+      useCORS: true,
+      logging: false,
     })
       .then((canvas) => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF({
-          orientation: 'p', 
-          unit: 'px',       
+          orientation: 'p',
+          unit: 'px',
           format: [canvas.width, canvas.height]
         });
 
@@ -130,8 +130,8 @@ export function Dashboard() {
 
   const handleShare = async (formattedData: ResultsType | null) => {
     if (!formattedData || !formattedData.summary) {
-         toast({ title: "Errore Condivisione", description: "Dati formattati o riassunto non disponibili.", variant: "destructive" });
-        return;
+      toast({ title: "Errore Condivisione", description: "Dati formattati o riassunto non disponibili.", variant: "destructive" });
+      return;
     }
 
     const shareData = {
@@ -149,7 +149,7 @@ export function Dashboard() {
       } else {
         toast({ title: "Condivisione non supportata", description: "Il tuo browser non supporta la condivisione o la copia negli appunti.", variant: "destructive" });
       }
-    } catch (err: any) { 
+    } catch (err: any) {
       if (err.name === 'AbortError') {
         console.log('Condivisione annullata dall\'utente.');
       } else {
@@ -183,16 +183,14 @@ export function Dashboard() {
                     formatApiResult={formatApiResult}
                     processingStatus={processingStatus}
                   />
-            )}
-            {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
+                )}
+                {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
               </>
             )}
 
             {/* Se DOBBIAMO mostrare i risultati NUOVI */}
             {showResultsAfterUpload ? (
               <div className="animate-fadeIn">
-                {/* Abbiamo già i risultati formattati in rawResults! */}
-                {/* Rimuoviamo la chiamata RIDONDANTE a formatApiResult */}
                 <Alert className="mb-6 border-green-500 bg-green-50 text-green-800">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <AlertTitle className="font-semibold">Elaborazione Completata!</AlertTitle>
@@ -202,8 +200,8 @@ export function Dashboard() {
                 </Alert>
 
                 <Button onClick={() => { setRawResults(null); setProcessingStatus(null); }} variant="outline" className="gap-2 mb-4">
-                   <ArrowLeft className="h-4 w-4" />
-                   Carica un Altro Contenuto
+                  <ArrowLeft className="h-4 w-4" />
+                  Carica un Altro Contenuto
                 </Button>
                 <div id="latest-results-export-area">
                   <ResultsDisplay
@@ -221,26 +219,26 @@ export function Dashboard() {
               <>
                 {processingStatus === 'failed' && <ProcessingStatus status={processingStatus} />}
                 {(processingStatus === null || processingStatus === 'failed') && !isLoadingHistory && (
-                <RecentFiles
-                  files={analysisHistory}
-                  onOpenChat={handleHistoryChatOpen}
-                  onDelete={handleDeleteFile}
-                       formatApiResult={formatApiResult} // Serve ancora qui per visualizzare la cronologia
-                />
-                 )}
-                 {isLoadingHistory && <div className='text-center p-8'>Caricamento file recenti...</div>}
+                  <RecentFiles
+                    files={analysisHistory}
+                    onOpenChat={handleHistoryChatOpen}
+                    onDelete={handleDeleteFile}
+                    formatApiResult={formatApiResult} // Serve ancora qui per visualizzare la cronologia
+                  />
+                )}
+                {isLoadingHistory && <div className='text-center p-8'>Caricamento file recenti...</div>}
               </>
             )}
           </div>
         )
       case "results":
       case "history":
-        return <RecentFiles 
-                 files={analysisHistory} 
-                 onOpenChat={handleHistoryChatOpen} 
-                 onDelete={handleDeleteFile}
-                 formatApiResult={formatApiResult}
-               />
+        return <RecentFiles
+          files={analysisHistory}
+          onOpenChat={handleHistoryChatOpen}
+          onDelete={handleDeleteFile}
+          formatApiResult={formatApiResult}
+        />
       case "settings":
         return (
           <div className="container max-w-4xl py-8">
@@ -253,11 +251,11 @@ export function Dashboard() {
           </div>
         )
       default:
-         return <UploadSection
-                   onAnalysisComplete={handleAnalysisComplete}
-                   formatApiResult={formatApiResult}
-                   processingStatus={processingStatus}
-                 />;
+        return <UploadSection
+          onAnalysisComplete={handleAnalysisComplete}
+          formatApiResult={formatApiResult}
+          processingStatus={processingStatus}
+        />;
     }
   }
 
@@ -271,10 +269,10 @@ export function Dashboard() {
           {renderContent()}
         </main>
       </div>
-      
+
       {transcriptId && (
-        <ChatDialog 
-          open={isChatOpen} 
+        <ChatDialog
+          open={isChatOpen}
           onOpenChange={setIsChatOpen}
           transcriptId={transcriptId}
           suggestedQuestions={suggestedQuestions}
