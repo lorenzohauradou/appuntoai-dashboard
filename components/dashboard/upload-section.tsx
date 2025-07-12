@@ -25,8 +25,8 @@ interface UploadSectionProps {
   formatApiResult: (result: any) => ResultsType | null
 }
 
-// Definisci la dimensione massima in byte (1 GB)
-const MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024;
+// Definisci la dimensione massima in byte (7 GB)
+const MAX_FILE_SIZE = 7 * 1024 * 1024 * 1024;
 
 export function UploadSection({ processingStatus, onAnalysisComplete, formatApiResult }: UploadSectionProps) {
   const [activeTab, setActiveTab] = useState("video")
