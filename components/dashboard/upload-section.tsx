@@ -36,50 +36,82 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
   // Usa ContentCategory per lo stato
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory>("Meeting")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [results, setResults] = useState<ResultsType | null>(null);
 
   // Usa hook per sessione e router
   const { data: session, status: sessionStatus } = useSession()
   const router = useRouter()
 
   // --- USA IL CUSTOM HOOK ---
-  const { currentPhase, uploadProgress, jobProgress, jobMessage, startProcessing, resetUploaderState } = useUploader({
-    onAnalysisComplete,
-    formatApiResult
+  const {
+    currentPhase,
+    uploadProgress,
+    jobProgress,
+    jobMessage,
+    isUploadBlocked,
+    startProcessing,
+    resetUploaderState
+  } = useUploader({
+    onAnalysisComplete: (results: ResultsType) => {
+      setResults(results);
+    },
+    formatApiResult: (result: any): ResultsType | null => {
+      // Logica di formattazione esistente
+      if (!result || typeof result !== 'object') return null;
+
+      if (result.tipo_contenuto === 'meeting') {
+        return {
+          contentType: 'meeting',
+          summary: result.riassunto || '',
+          decisions: result.decisioni || [],
+          tasks: result.task || [],
+          themes: result.temi || [],
+          participants: result.partecipanti || [],
+          transcript_id: result.transcript_id,
+          suggested_questions: result.domande_suggerite || [],
+        };
+      } else if (result.tipo_contenuto === 'lezione') {
+        return {
+          contentType: 'lezione',
+          summary: result.riassunto || '',
+          keyPoints: result.punti_chiave || [],
+          exercises: result.esercizi || [],
+          topics: result.argomenti || [],
+          participants: result.partecipanti || [],
+          possibleQuestions: result.domande_possibili || [],
+          bibliography: result.bibliografia || [],
+          transcript_id: result.transcript_id,
+          suggested_questions: result.domande_suggerite || [],
+        };
+      } else if (result.tipo_contenuto === 'intervista') {
+        return {
+          contentType: 'intervista',
+          summary: result.riassunto || '',
+          temi_principali: result.temi_principali || [],
+          punti_salienti: result.punti_salienti || [],
+          participants: result.partecipanti || [],
+          transcript_id: result.transcript_id,
+          suggested_questions: result.domande_suggerite || [],
+        };
+      }
+
+      return null;
+    }
   });
 
-  // Effetto per controllare localStorage al montaggio
-  useEffect(() => {
-    const pendingInfoRaw = localStorage.getItem('pendingUploadInfo');
-    if (pendingInfoRaw) {
-      try {
-        const info = JSON.parse(pendingInfoRaw);
-        console.log("Trovate informazioni pending:", info);
-
-        let description = "";
-        if (info.fileName) {
-          description = `Sembra che volessi elaborare il file "${info.fileName}". Per favore, caricalo di nuovo.`
-        } else if (info.text) {
-          description = "Sembra che volessi elaborare del testo. Incollalo di nuovo e clicca Elabora."
-          // Se vuoi ripopolare il campo textInput:
-          setTextInput(info.text);
-          setActiveTab(info.type);
-          setSelectedCategory(info.category);
-        }
-
-        if (description) {
-          toast.success("Bentornato!", {
-            description: description,
-            duration: 7000,
-          });
-        }
-
-      } catch (e) {
-        console.error("Errore nel parsing di pendingUploadInfo:", e);
-      } finally {
-        localStorage.removeItem('pendingUploadInfo');
-      }
+  // Funzione per ottenere l'icona di categoria
+  const getCategoryIcon = (category: ContentCategory) => {
+    switch (category) {
+      case "Meeting":
+        return <Users className="w-5 h-5" />
+      case "Lesson":
+        return <GraduationCap className="w-5 h-5" />
+      case "Interview":
+        return <Mic2 className="w-5 h-5" />
+      default:
+        return <Users className="w-5 h-5" />
     }
-  }, []); // Array dipendenze vuoto per eseguire solo una volta
+  }
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -183,7 +215,11 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
     switch (currentPhase) {
       case 'gettingUrl': return "Preparo upload...";
       case 'uploading': return `Caricamento... ${uploadProgress}%`;
-      case 'processing': return "Elaborazione Server...";
+      case 'processing':
+        if (jobMessage === "Recupero elaborazione in corso...") {
+          return "Recupero elaborazione...";
+        }
+        return "Elaborazione in corso...";
       case 'failed': return "Errore - Riprova";
       case 'idle': default:
         if (sessionStatus === 'loading') return "Verifica...";
@@ -212,186 +248,108 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
             Carica un file video, audio o inserisci direttamente il testo
           </CardDescription>
         </div>
+
       </CardHeader>
       <CardContent className="p-6">
-        <Tabs defaultValue="video" value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-6">
-            <TabsTrigger value="video" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              <FileVideo className="mr-2 h-4 w-4" />
-              Video
-            </TabsTrigger>
-            <TabsTrigger value="audio" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              <FileAudio className="mr-2 h-4 w-4" />
-              Audio
-            </TabsTrigger>
-            <TabsTrigger value="text" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              <FileText className="mr-2 h-4 w-4" />
-              Testo
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="mb-6">
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={selectedCategory === "Meeting" ? "default" : "outline"}
-                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
-                onClick={() => setSelectedCategory("Meeting")}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Meeting
-              </Button>
-              <Button
-                variant={selectedCategory === "Lesson" ? "default" : "outline"}
-                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
-                onClick={() => setSelectedCategory("Lesson")}
-              >
-                <GraduationCap className="mr-2 h-4 w-4" />
-                Lezione
-              </Button>
-              <Button
-                variant={selectedCategory === "Interview" ? "default" : "outline"}
-                className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
-                onClick={() => setSelectedCategory("Interview")}
-              >
-                <Mic2 className="mr-2 h-4 w-4" />
-                Intervista
-              </Button>
+        {isUploadBlocked && (
+          <div className="mb-6 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-orange-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-orange-900 mb-1">
+                  Upload in corso - Non chiudere questa pagina
+                </h3>
+                <p className="text-sm text-orange-700 mb-2">
+                  Il file si sta scaricando sui nostri server. Se chiudi questa pagina o il browser, l'upload verrà interrotto e dovrai ricominciare da capo.
+                </p>
+              </div>
             </div>
           </div>
+        )}
+        {!isUploadBlocked && (
+          <Tabs defaultValue="video" value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="grid grid-cols-3 mb-6">
+              <TabsTrigger value="video" className="flex items-center gap-2">
+                <FileVideo className="w-4 h-4" />
+                Video
+              </TabsTrigger>
+              <TabsTrigger value="audio" className="flex items-center gap-2">
+                <FileAudio className="w-4 h-4" />
+                Audio
+              </TabsTrigger>
+              <TabsTrigger value="text" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Testo
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="video" className="mt-0">
-            {!selectedFile ? (
-              <div
-                className={cn(
-                  "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 transition-colors",
-                  dragActive ? "border-primary bg-primary-50" : "border-gray-300",
-                )}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <FileVideo className="h-12 w-12 text-primary mb-4" />
-                <p className="text-center mb-4">
-                  Trascina qui il tuo file video o{" "}
-                  <span
-                    className="text-primary cursor-pointer hover:underline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    sfoglia
-                  </span>
-                </p>
-                <p className="text-sm text-muted-foreground text-center">Supporta .mp4, .mov, .avi</p>
-                <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center">
-                  <FileVideo className="h-8 w-8 text-primary mr-3" />
-                  <div>
-                    <p className="font-medium">{selectedFile.name}</p>
-                    <p className="text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" onClick={clearSelection}>
-                  <X className="h-5 w-5" />
+            <div className="mb-6">
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={selectedCategory === "Meeting" ? "default" : "outline"}
+                  className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
+                  onClick={() => setSelectedCategory("Meeting")}
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  Meeting
+                </Button>
+                <Button
+                  variant={selectedCategory === "Lesson" ? "default" : "outline"}
+                  className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
+                  onClick={() => setSelectedCategory("Lesson")}
+                >
+                  <GraduationCap className="mr-2 h-4 w-4" />
+                  Lezione
+                </Button>
+                <Button
+                  variant={selectedCategory === "Interview" ? "default" : "outline"}
+                  className="flex-1 transition-all duration-200 ease-in-out hover:scale-90 hover:shadow-md"
+                  onClick={() => setSelectedCategory("Interview")}
+                >
+                  <Mic2 className="mr-2 h-4 w-4" />
+                  Intervista
                 </Button>
               </div>
-            )}
-          </TabsContent>
+            </div>
 
-          <TabsContent value="audio" className="mt-0">
-            {!selectedFile ? (
-              <div
-                className={cn(
-                  "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 transition-colors",
-                  dragActive ? "border-primary bg-primary-50" : "border-gray-300",
-                )}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <FileAudio className="h-12 w-12 text-primary mb-4" />
-                <p className="text-center mb-4">
-                  Trascina qui il tuo file audio o{" "}
-                  <span
-                    className="text-primary cursor-pointer hover:underline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    sfoglia
-                  </span>
-                </p>
-                <p className="text-sm text-muted-foreground text-center">Supporta .mp3, .wav, .m4a, .ogg</p>
-                <input ref={fileInputRef} type="file" accept="audio/*" className="hidden" onChange={handleFileChange} />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center">
-                  <FileAudio className="h-8 w-8 text-primary mr-3" />
-                  <div>
-                    <p className="font-medium">{selectedFile.name}</p>
-                    <p className="text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
-                  </div>
+            <TabsContent value="video" className="mt-0">
+              {!selectedFile ? (
+                <div
+                  className={cn(
+                    "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 transition-colors",
+                    dragActive ? "border-primary bg-primary-50" : "border-gray-300",
+                  )}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <FileVideo className="h-12 w-12 text-primary mb-4" />
+                  <p className="text-center mb-4">
+                    Trascina qui il tuo file video o{" "}
+                    <span
+                      className="text-primary cursor-pointer hover:underline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      sfoglia
+                    </span>
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">Supporta .mp4, .mov, .avi</p>
+                  <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
                 </div>
-                <Button variant="ghost" size="icon" onClick={clearSelection}>
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="text" className="mt-0">
-            <div className="space-y-4">
-              <div
-                className={cn(
-                  "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 transition-colors",
-                  dragActive ? "border-primary bg-primary-50" : "border-gray-300",
-                )}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <FileText className="h-8 w-8 text-primary mb-2" />
-                <p className="text-center text-sm mb-2">
-                  Trascina un file .txt o{" "}
-                  <span
-                    className="text-primary cursor-pointer hover:underline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    sfoglia
-                  </span>
-                </p>
-                <input ref={fileInputRef} type="file" accept="text/*,.txt" className="hidden" onChange={handleFileChange} />
-              </div>
-
-              <div className="relative">
-                <Textarea
-                  placeholder="...oppure incolla direttamente il testo qui"
-                  className="min-h-32 resize-none"
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                />
-                {textInput && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => setTextInput("")}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-
-              {selectedFile && (
+              ) : (
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center">
-                    <FileText className="h-8 w-8 text-primary mr-3" />
+                    <FileVideo className="h-8 w-8 text-primary mr-3" />
                     <div>
                       <p className="font-medium">{selectedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">{(selectedFile.size / 1024).toFixed(2)} KB</p>
+                      <p className="text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" onClick={clearSelection}>
@@ -399,10 +357,113 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
                   </Button>
                 </div>
               )}
-            </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
 
+            <TabsContent value="audio" className="mt-0">
+              {!selectedFile ? (
+                <div
+                  className={cn(
+                    "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 transition-colors",
+                    dragActive ? "border-primary bg-primary-50" : "border-gray-300",
+                  )}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <FileAudio className="h-12 w-12 text-primary mb-4" />
+                  <p className="text-center mb-4">
+                    Trascina qui il tuo file audio o{" "}
+                    <span
+                      className="text-primary cursor-pointer hover:underline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      sfoglia
+                    </span>
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">Supporta .mp3, .wav, .m4a, .ogg</p>
+                  <input ref={fileInputRef} type="file" accept="audio/*" className="hidden" onChange={handleFileChange} />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center">
+                    <FileAudio className="h-8 w-8 text-primary mr-3" />
+                    <div>
+                      <p className="font-medium">{selectedFile.name}</p>
+                      <p className="text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={clearSelection}>
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="text" className="mt-0">
+              <div className="space-y-4">
+                <div
+                  className={cn(
+                    "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 transition-colors",
+                    dragActive ? "border-primary bg-primary-50" : "border-gray-300",
+                  )}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <FileText className="h-8 w-8 text-primary mb-2" />
+                  <p className="text-center text-sm mb-2">
+                    Trascina un file .txt o{" "}
+                    <span
+                      className="text-primary cursor-pointer hover:underline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      sfoglia
+                    </span>
+                  </p>
+                  <input ref={fileInputRef} type="file" accept="text/*,.txt" className="hidden" onChange={handleFileChange} />
+                </div>
+
+                <div className="relative">
+                  <Textarea
+                    placeholder="...oppure incolla direttamente il testo qui"
+                    className="min-h-32 resize-none"
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                  />
+                  {textInput && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={() => setTextInput("")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {selectedFile && (
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center">
+                      <FileText className="h-8 w-8 text-primary mr-3" />
+                      <div>
+                        <p className="font-medium">{selectedFile.name}</p>
+                        <p className="text-sm text-muted-foreground">{(selectedFile.size / 1024).toFixed(2)} KB</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={clearSelection}>
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* Mostra progress bar durante l'upload */}
         {currentPhase === 'uploading' && (
           <div className="mt-6 space-y-2">
             <Progress value={uploadProgress} className="w-full h-2" />
@@ -411,18 +472,18 @@ export function UploadSection({ processingStatus, onAnalysisComplete, formatApiR
             </p>
           </div>
         )}
-        {currentPhase === 'processing' && (
-          <div className="mt-6 space-y-2">
-            <Progress value={jobProgress} className="w-full h-2" />
-            <p className="text-sm text-center text-muted-foreground">
-              Elaborazione in corso... ({jobProgress}%) <br />
-              {jobMessage && <span className="text-primary font-medium">{jobMessage}</span>}
-            </p>
-          </div>
-        )}
+
+        {/* Mostra messaggio durante la preparazione */}
         {currentPhase === 'gettingUrl' && (
           <p className="text-sm text-center text-muted-foreground mt-6">
             Preparazione dell'upload sicuro...
+          </p>
+        )}
+
+        {/* Mostra messaggio durante l'elaborazione */}
+        {currentPhase === 'processing' && (
+          <p className="text-sm text-center text-muted-foreground mt-6">
+            Elaborazione in corso... L'operazione sarà completata in pochi secondi.
           </p>
         )}
 

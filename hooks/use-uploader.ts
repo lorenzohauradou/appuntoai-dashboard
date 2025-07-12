@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { ResultsType } from "@/components/dashboard/types";
 
@@ -24,18 +24,36 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
     const [uploadProgress, setUploadProgress] = useState<number>(0);
     const [jobProgress, setJobProgress] = useState<number>(0);
     const [jobMessage, setJobMessage] = useState<string>("");
+    const [isUploadBlocked, setIsUploadBlocked] = useState<boolean>(false);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const resetState = () => {
+    // Gestore per avvisare l'utente se prova a chiudere la pagina durante l'upload
+    const handleBeforeUnload = useCallback((e: BeforeUnloadEvent) => {
+        if (isUploadBlocked) {
+            e.preventDefault();
+            e.returnValue = 'Upload in corso. Se chiudi questa pagina, l\'upload verrà interrotto e dovrai ricominciare.';
+        }
+    }, [isUploadBlocked]);
+
+    // Effetto per gestire il listener beforeunload
+    useEffect(() => {
+        if (isUploadBlocked) {
+            window.addEventListener('beforeunload', handleBeforeUnload);
+            return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+        }
+    }, [isUploadBlocked, handleBeforeUnload]);
+
+    const resetState = useCallback(() => {
         setCurrentPhase('idle');
         setUploadProgress(0);
         setJobProgress(0);
         setJobMessage("");
+        setIsUploadBlocked(false);
         if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
             pollingIntervalRef.current = null;
         }
-    };
+    }, []);
 
     const handleApiError = (response: Response, result: any) => {
         if (response.status === 403 && result.error === "LIMIT_REACHED") {
@@ -56,11 +74,10 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
         setCurrentPhase('failed');
         setUploadProgress(0);
         setJobProgress(0);
+        setIsUploadBlocked(false);
     };
 
-    const startJobPolling = async (jobId: string) => {
-        console.log(`Avvio polling per job: ${jobId}`);
-        
+    const startJobPolling = useCallback(async (jobId: string) => {
         const checkJobStatus = async () => {
             try {
                 const response = await fetch(`/api/job-status/${jobId}`);
@@ -70,14 +87,11 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                     throw new Error(jobStatus.error || `Errore ${response.status}`);
                 }
                 
-                console.log(`Job ${jobId} - Status: ${jobStatus.status}, Progress: ${jobStatus.progress}%`);
-                
                 setJobProgress(jobStatus.progress);
                 setJobMessage(jobStatus.message);
                 
                 switch (jobStatus.status) {
                     case 'completed':
-                        // Job completato con successo
                         if (pollingIntervalRef.current) {
                             clearInterval(pollingIntervalRef.current);
                             pollingIntervalRef.current = null;
@@ -102,7 +116,6 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                         return true;
                         
                     case 'failed':
-                        // Job fallito
                         if (pollingIntervalRef.current) {
                             clearInterval(pollingIntervalRef.current);
                             pollingIntervalRef.current = null;
@@ -113,11 +126,11 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                         });
                         
                         setCurrentPhase('failed');
+                        setIsUploadBlocked(false);
                         return false;
                         
                     case 'processing':
                     case 'pending':
-                        // Job ancora in corso, continua il polling
                         break;
                         
                     default:
@@ -132,11 +145,12 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                     pollingIntervalRef.current = null;
                 }
                 
-                toast.error("Errore Controllo Stato", { 
+                toast.error("Errore Elaborazione", { 
                     description: error instanceof Error ? error.message : "Errore sconosciuto" 
                 });
                 
                 setCurrentPhase('failed');
+                setIsUploadBlocked(false);
                 return false;
             }
         };
@@ -146,7 +160,7 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
         
         // Avvia polling ogni 2 secondi
         pollingIntervalRef.current = setInterval(checkJobStatus, 2000);
-    };
+    }, [formatApiResult, onAnalysisComplete, resetState]);
 
     const startProcessing = async (
         data: File | string,
@@ -165,13 +179,18 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                 requestData.text_content = data;
                 setCurrentPhase('processing');
                 
-                console.log("Avvio elaborazione testo...");
-                
             } else if (data instanceof File) {
                 // Gestione file - prima upload, poi processing
                 setCurrentPhase('gettingUrl');
                 
-                console.log("Ottenimento URL firmato...");
+                // Blocca la navigazione durante l'upload
+                setIsUploadBlocked(true);
+                
+                // Mostra avviso importante
+                toast.warning("Upload in corso", {
+                    description: "Non chiudere questa pagina durante l'upload. L'operazione potrebbe richiedere diversi minuti.",
+                    duration: 8000,
+                });
                 
                 // 1. Ottieni URL firmato
                 const urlResponse = await fetch('/api/generate-upload-url', {
@@ -193,8 +212,6 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                 if (!signedUrlData?.signedUrl || !signedUrlData?.filePath) {
                     throw new Error("Dati URL firmato non validi");
                 }
-                
-                console.log("Upload file in corso...");
                 
                 // 2. Upload file
                 setCurrentPhase('uploading');
@@ -222,6 +239,10 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                         reject(new Error('Errore di rete durante l\'upload'));
                     };
                     
+                    xhr.ontimeout = () => {
+                        reject(new Error('Timeout durante l\'upload'));
+                    };
+                    
                     xhr.open('PUT', signedUrlData.signedUrl, true);
                     xhr.setRequestHeader('Content-Type', data.type);
                     xhr.send(data);
@@ -232,9 +253,15 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
                 requestData.original_file_name = data.name;
                 
                 setCurrentPhase('processing');
+                
+                // Upload completato, ora l'utente può navigare
+                setIsUploadBlocked(false);
+                
+                toast.success("Upload completato!", {
+                    description: "File caricato con successo. Elaborazione in corso...",
+                    duration: 3000,
+                });
             }
-            
-            console.log("Avvio job di elaborazione...");
             
             // Avvia il job di elaborazione
             const jobResponse = await fetch('/api/process-transcription', {
@@ -253,13 +280,11 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
             // Ottieni job_id e avvia polling
             const jobId = jobResult.job_id;
             if (!jobId) {
-                throw new Error("Job ID non ricevuto dal server");
+                throw new Error("Impossibile avviare l'elaborazione");
             }
             
-            console.log(`Job creato: ${jobId}`);
-            
             toast.success("Elaborazione Avviata", { 
-                description: "Il job è stato avviato. Monitoraggio in corso..." 
+                description: "L'elaborazione è stata avviata. Sarà completata in pochi secondi." 
             });
             
             // Avvia polling dello stato
@@ -274,6 +299,7 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
             setCurrentPhase('failed');
             setUploadProgress(0);
             setJobProgress(0);
+            setIsUploadBlocked(false);
             
             return false;
         }
@@ -284,6 +310,7 @@ export function useUploader({ onAnalysisComplete, formatApiResult }: UploaderPar
         uploadProgress,
         jobProgress,
         jobMessage,
+        isUploadBlocked,
         startProcessing,
         resetUploaderState: resetState
     };
