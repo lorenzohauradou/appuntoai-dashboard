@@ -11,8 +11,6 @@ import { BackgroundPattern } from "@/src/components/ui/background-pattern"
 import { cn } from "@/src/lib/utils"
 import { ChatDialog } from "@/src/components/dashboard/chat-dialog"
 import { useToast } from "@/src/components/ui/use-toast"
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { ResultsType, RawApiResult } from "@/src/components/dashboard/types"
 import { Button } from "@/src/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -22,19 +20,6 @@ import { formatApiResult } from "@/src/lib/formatters"
 import { useAnalysisHistory } from "@/src/hooks/use-analysis-history"
 
 
-// Definisci un tipo più specifico per le categorie valide
-type ContentCategory = "Meeting" | "Lezione" | "Intervista";
-
-// ---> DEFINISCI RecentFileRaw QUI <--- 
-interface RecentFileRaw {
-  id: string;
-  name: string;
-  type: string;
-  contentType: string | undefined;
-  date: string;
-  status: string;
-  rawData: RawApiResult; // Campo per i dati grezzi
-}
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<string>("upload")
@@ -46,7 +31,6 @@ export default function DashboardPage() {
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
   const { toast } = useToast()
 
-  // --- USA IL NUOVO HOOK ---
   const { analysisHistory, isLoadingHistory, handleDeleteFile, refreshHistory } = useAnalysisHistory();
 
   // --- DEFINIZIONE DI handleAnalysisComplete (prima di usarla) ---
@@ -84,49 +68,6 @@ export default function DashboardPage() {
     setIsChatOpen(true);
   }
 
-  const handleDownload = (formattedData: ResultsType | null) => {
-    if (!formattedData) {
-      toast({ title: "Errore Download", description: "Dati formattati non disponibili.", variant: "destructive" });
-      return;
-    }
-
-    const input = document.getElementById('results-export-area');
-    if (!input) {
-      toast({ title: "Errore Download", description: "Impossibile trovare l'area dei risultati da esportare.", variant: "destructive" });
-      return;
-    }
-
-    toast({ title: "Generazione PDF in corso...", description: "Potrebbe richiedere qualche secondo." });
-
-    const buttonsToHide = input.querySelectorAll('button');
-    buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'hidden');
-
-    html2canvas(input, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-    })
-      .then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'p',
-          unit: 'px',
-          format: [canvas.width, canvas.height]
-        });
-
-        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-        const filename = `appuntoai_results_${formattedData.contentType || 'analisi'}.pdf`;
-        pdf.save(filename);
-
-        buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'visible');
-        toast({ title: "PDF Generato!", description: `Il file ${filename} è stato scaricato.` });
-      })
-      .catch((err: any) => {
-        console.error("Errore durante la generazione del PDF:", err);
-        buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'visible');
-        toast({ title: "Errore Download PDF", description: "Non è stato possibile generare il PDF.", variant: "destructive" });
-      });
-  }
 
   const handleShare = async (formattedData: ResultsType | null) => {
     if (!formattedData || !formattedData.summary) {
@@ -202,15 +143,12 @@ export default function DashboardPage() {
                   <ArrowLeft className="h-4 w-4" />
                   Carica un Altro Contenuto
                 </Button>
-                <div id="latest-results-export-area">
-                  <ResultsDisplay
-                    key={rawResults.transcript_id || Date.now()}
-                    results={rawResults}
-                    onChatOpen={handleChatOpen}
-                    onDownload={() => handleDownload(rawResults)}
-                    onShare={() => handleShare(rawResults)}
-                  />
-                </div>
+                <ResultsDisplay
+                  key={rawResults.transcript_id || Date.now()}
+                  results={rawResults}
+                  onChatOpen={handleChatOpen}
+                  onShare={() => handleShare(rawResults)}
+                />
               </div>
             )}
           </div>

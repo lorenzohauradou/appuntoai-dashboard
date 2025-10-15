@@ -8,7 +8,6 @@ import {
   ListTodo,
   Users,
   Hash,
-  Download,
   Share2,
   MessageSquare,
   Book,
@@ -36,16 +35,14 @@ interface QuestionAnswerState {
   error?: string | null;
 }
 
-export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: ResultsDisplayProps) {
+export function ResultsDisplay({ results, onChatOpen, onShare }: ResultsDisplayProps) {
 
   const [activeTab, setActiveTab] = useState(results.contentType === "lezione" ? "summary" : "summary")
   const [questionStates, setQuestionStates] = useState<Record<number, QuestionAnswerState>>({});
   const [currentlyExpandedIndex, setCurrentlyExpandedIndex] = useState<number | null>(null);
 
   const getPriorityStyles = (priority: string): PriorityStyle => {
-    // Verifichiamo che priority sia una stringa valida prima di chiamare toLowerCase()
     if (!priority) {
-      // Caso di default se priority è undefined, null o una stringa vuota
       return {
         variant: "outline",
         icon: null,
@@ -654,10 +651,6 @@ export function ResultsDisplay({ results, onChatOpen, onDownload, onShare }: Res
               Chatta con il documento!
             </Button>
           )}
-          <Button variant="outline" className="gap-2" onClick={onDownload}>
-            <Download className="h-4 w-4" />
-            Scarica
-          </Button>
           <Button variant="outline" className="gap-2" onClick={onShare}>
             <Share2 className="h-4 w-4" />
             Condividi

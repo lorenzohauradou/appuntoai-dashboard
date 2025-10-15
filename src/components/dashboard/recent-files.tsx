@@ -7,8 +7,6 @@ import { Button } from "@/src/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/src/components/ui/dropdown-menu"
 import { ResultsDisplay } from "./results-display"
 import { useToast } from "@/src/components/ui/use-toast"
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
 import { ResultsType, RecentFileRaw } from "./types"
 import { Badge } from "@/src/components/ui/badge"
 
@@ -68,67 +66,6 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
     }
   };
 
-  const handleDownloadPlaceholder = (fileId: string) => {
-    console.log(`Azione: Download risultati per file ${fileId}`);
-
-    const file = files.find(f => f.id === fileId);
-    if (!file || !file.rawData) {
-      toast({ title: "Errore Download", description: "Dati del file non disponibili.", variant: "destructive" });
-      return;
-    }
-
-    // Formatta i dati prima di usarli
-    const formattedData = formatApiResult(file.rawData);
-    if (!formattedData) {
-      toast({ title: "Errore Download", description: "Impossibile formattare i dati per il download.", variant: "destructive" });
-      return;
-    }
-
-    toast({ title: "Generazione PDF in corso...", description: "Potrebbe richiedere qualche secondo." });
-
-    // Aspettiamo un attimo che il toast venga visualizzato e che il DOM sia pronto
-    setTimeout(() => {
-      const input = document.getElementById(`results-export-area-${fileId}`);
-      console.log(`Cercando elemento con ID: results-export-area-${fileId}`);
-
-      if (!input) {
-        console.error(`Elemento con ID results-export-area-${fileId} non trovato`);
-        toast({ title: "Errore Download", description: "Impossibile trovare l'area dei risultati da esportare.", variant: "destructive" });
-        return;
-      }
-
-      console.log("Elemento trovato, nascondendo i pulsanti...");
-      const buttonsToHide = input.querySelectorAll('button');
-      buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'hidden');
-
-      html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-        logging: true, // Attiva il logging per debug
-      })
-        .then((canvas) => {
-          console.log("Canvas generato, creando PDF...");
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF({
-            orientation: 'p',
-            unit: 'px',
-            format: [canvas.width, canvas.height]
-          });
-
-          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-          const filename = `appuntoai_results_${formattedData.contentType || file.name}.pdf`;
-          pdf.save(filename);
-
-          buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'visible');
-          toast({ title: "PDF Generato!", description: `Il file ${filename} è stato scaricato.` });
-        })
-        .catch((err) => {
-          console.error("Errore durante la generazione del PDF:", err);
-          buttonsToHide.forEach(btn => (btn as HTMLElement).style.visibility = 'visible');
-          toast({ title: "Errore Download PDF", description: "Non è stato possibile generare il PDF.", variant: "destructive" });
-        });
-    }, 500);
-  };
 
   const handleSharePlaceholder = async (fileId: string) => {
     console.log(`Azione: Condividi risultati per file ${fileId}`);
@@ -268,7 +205,6 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
                       <ResultsDisplay
                         results={formattedResultsForDisplay}
                         onChatOpen={() => handleChatOpenPlaceholder(file.id)}
-                        onDownload={() => handleDownloadPlaceholder(file.id)}
                         onShare={() => handleSharePlaceholder(file.id)}
                       />
                     </div>

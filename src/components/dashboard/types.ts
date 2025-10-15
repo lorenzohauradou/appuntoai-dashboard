@@ -70,8 +70,7 @@ export type ResultsType = MeetingResults | LectureResults | InterviewResults;
 // Interfaccia per le props del componente ResultsDisplay
 export interface ResultsDisplayProps {
   results: ResultsType;
-  onChatOpen: () => void;
-  onDownload: () => void;
+  onChatOpen?: () => void;
   onShare: () => void;
 }
 

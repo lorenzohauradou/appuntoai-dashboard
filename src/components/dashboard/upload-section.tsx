@@ -96,46 +96,6 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
     clearSelection()
   }
 
-  const pollJobStatus = async (jobId: string) => {
-    const maxAttempts = 150
-    let attempts = 0
-
-    while (attempts < maxAttempts) {
-      try {
-        const response = await fetch(`/api/job-status/${jobId}`)
-        const jobStatus = await response.json()
-
-        if (jobStatus.status === 'completed') {
-          if (jobStatus.result) {
-            const formatted = formatApiResult(jobStatus.result)
-            if (formatted) {
-              onAnalysisComplete(formatted)
-              toast.success("Elaborazione Completata!")
-              setIsProcessing(false)
-              clearSelection()
-              return
-            }
-          }
-        }
-
-        if (jobStatus.status === 'failed') {
-          throw new Error(jobStatus.error || 'Elaborazione fallita')
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        attempts++
-      } catch (error) {
-        toast.error("Errore", {
-          description: error instanceof Error ? error.message : "Errore sconosciuto"
-        })
-        setIsProcessing(false)
-        return
-      }
-    }
-
-    toast.error("Timeout", { description: "L'elaborazione sta richiedendo troppo tempo" })
-    setIsProcessing(false)
-  }
 
   const handleProcessClick = async () => {
     if (sessionStatus === 'unauthenticated') {
@@ -163,27 +123,34 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
       setIsUploading(false)
       setIsProcessing(true)
 
-      const jobResponse = await fetch('/api/process-transcription', {
+      const analysisResponse = await fetch('/api/process-transcription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          file_path: blob.url,
-          original_file_name: selectedFile.name,
-          content_type: 'lezione',
+          file_url: blob.url
         }),
       })
 
-      const jobResult = await jobResponse.json()
+      const analysisResult = await analysisResponse.json()
 
-      if (!jobResponse.ok) {
-        throw new Error(jobResult.error || jobResult.detail || 'Errore elaborazione')
+      if (!analysisResponse.ok) {
+        throw new Error(analysisResult.error || analysisResult.detail || 'Errore elaborazione')
       }
 
-      if (!jobResult.job_id) {
-        throw new Error("Job ID non disponibile")
+      const formatted = formatApiResult(analysisResult)
+
+      if (formatted) {
+        toast.success("Analisi completata!", {
+          description: "I risultati sono pronti"
+        })
+        onAnalysisComplete(formatted)
+      } else {
+        throw new Error("Formato risultato non valido")
       }
 
-      await pollJobStatus(jobResult.job_id)
+      setIsProcessing(false)
+      setSelectedFile(null)
+      setActiveTab("video")
 
     } catch (error) {
       toast.error("Errore", {
