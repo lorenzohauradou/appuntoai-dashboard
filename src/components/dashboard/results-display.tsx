@@ -5,24 +5,29 @@ import type React from 'react';
 import {
   FileText,
   Users,
-  Share2,
   MessageSquare,
   Book,
   GraduationCap,
   Lightbulb,
   HelpCircle,
-  Copy
+  Copy,
+  FileType
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
 import { Button } from "@/src/components/ui/button"
 import { Badge } from "@/src/components/ui/badge"
 import { LectureResults, ResultsDisplayProps } from "./types"
-import { toast } from 'sonner';
+import { toast } from 'sonner'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/src/components/ui/dialog"
+import { Loader2 } from "lucide-react"
 
-export function ResultsDisplay({ results, onChatOpen, onShare }: ResultsDisplayProps) {
+export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
 
   const [activeTab, setActiveTab] = useState("summary")
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false)
+  const [transcript, setTranscript] = useState<string | null>(null)
+  const [isLoadingTranscript, setIsLoadingTranscript] = useState(false)
   const lectureResults = results as LectureResults;
 
   // Funzione per copiare il riassunto
@@ -36,6 +41,39 @@ export function ResultsDisplay({ results, onChatOpen, onShare }: ResultsDisplayP
       toast.success("Riassunto Copiato!", { description: "Il riassunto è stato copiato negli appunti." });
     } catch (err) {
       toast.error("Errore Copia", { description: "Impossibile copiare il riassunto negli appunti." });
+    }
+  };
+
+  const handleTranscriptOpen = async () => {
+    if (!results.transcript_id) return;
+
+    setIsTranscriptOpen(true);
+
+    if (transcript) return;
+
+    setIsLoadingTranscript(true);
+    try {
+      const response = await fetch(`/api/transcript/${results.transcript_id}`);
+      if (!response.ok) {
+        throw new Error('Errore nel recupero della trascrizione');
+      }
+      const data = await response.json();
+      setTranscript(data.transcript);
+    } catch (error) {
+      toast.error("Errore", { description: "Impossibile recuperare la trascrizione" });
+      setIsTranscriptOpen(false);
+    } finally {
+      setIsLoadingTranscript(false);
+    }
+  };
+
+  const handleCopyTranscript = async () => {
+    if (!transcript) return;
+    try {
+      await navigator.clipboard.writeText(transcript);
+      toast.success("Trascrizione Copiata!", { description: "La trascrizione è stata copiata negli appunti." });
+    } catch (err) {
+      toast.error("Errore Copia", { description: "Impossibile copiare la trascrizione." });
     }
   };
 
@@ -209,24 +247,56 @@ export function ResultsDisplay({ results, onChatOpen, onShare }: ResultsDisplayP
             Ecco cosa abbiamo estratto dalla lezione
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {results.transcript_id && (
+        {results.transcript_id && (
+          <div className="flex flex-wrap gap-2">
             <Button onClick={onChatOpen} className="gap-2 bg-primary text-white">
               <MessageSquare className="h-4 w-4" />
               Chatta con il documento!
             </Button>
-          )}
-          <Button variant="outline" className="gap-2" onClick={onShare}>
-            <Share2 className="h-4 w-4" />
-            Condividi
-          </Button>
-        </div>
+            <Button onClick={handleTranscriptOpen} variant="outline" className="gap-2">
+              <FileType className="h-4 w-4" />
+              Trascrizione
+            </Button>
+          </div>
+        )}
       </div>
 
       <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
         {renderTabs()}
         {renderTabsContent()}
       </Tabs>
+
+      <Dialog open={isTranscriptOpen} onOpenChange={setIsTranscriptOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileType className="h-5 w-5" />
+              Trascrizione Completa
+            </DialogTitle>
+            <DialogDescription>
+              La trascrizione completa della lezione. Puoi copiarla negli appunti.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingTranscript ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              <div className="bg-muted/50 rounded-lg p-4 mb-4">
+                <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
+                  {transcript}
+                </pre>
+              </div>
+              <Button onClick={handleCopyTranscript} className="w-full gap-2">
+                <Copy className="h-4 w-4" />
+                Copia Trascrizione
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -9,7 +9,6 @@ import { ResultsDisplay } from "@/src/components/dashboard/results-display"
 import { RecentFiles } from "@/src/components/dashboard/recent-files"
 import { BackgroundPattern } from "@/src/components/ui/background-pattern"
 import { cn } from "@/src/lib/utils"
-import { ChatDialog } from "@/src/components/dashboard/chat-dialog"
 import { useToast } from "@/src/components/ui/use-toast"
 import { ResultsType, RawApiResult } from "@/src/components/dashboard/types"
 import { Button } from "@/src/components/ui/button"
@@ -26,9 +25,7 @@ export default function DashboardPage() {
   const [processingStatus, setProcessingStatus] = useState<string | null>(null)
   const [rawResults, setRawResults] = useState<RawApiResult | null>(null)
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
-  const [isChatOpen, setIsChatOpen] = useState(false)
   const [transcriptId, setTranscriptId] = useState<string | null>(null)
-  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
   const { toast } = useToast()
 
   const { analysisHistory, isLoadingHistory, handleDeleteFile, refreshHistory } = useAnalysisHistory();
@@ -38,7 +35,6 @@ export default function DashboardPage() {
     console.log("Dashboard: Analysis complete, showing results.", results);
     setRawResults(results);
     setProcessingStatus("completed");
-    setSuggestedQuestions(results.suggested_questions || []);
     setTranscriptId(results.transcript_id || null);
     refreshHistory();
   }, [refreshHistory]);
@@ -55,50 +51,18 @@ export default function DashboardPage() {
   }
 
   const handleChatOpen = () => {
-    if (transcriptId) {
-      setIsChatOpen(true);
+    if (transcriptId && rawResults) {
+      const fileName = rawResults.title || "Lezione";
+      const chatUrl = `/chat?transcriptId=${transcriptId}&fileName=${encodeURIComponent(fileName)}`;
+      window.open(chatUrl, '_blank', 'width=1200,height=800');
     } else {
       console.warn("Tentativo di aprire la chat senza transcriptId valido");
       toast({ title: "Attendi...", description: "ID trascrizione non ancora pronto." });
     }
   }
 
-  const handleHistoryChatOpen = (transcriptId: string) => {
-    setTranscriptId(transcriptId);
-    setIsChatOpen(true);
-  }
 
 
-  const handleShare = async (formattedData: ResultsType | null) => {
-    if (!formattedData || !formattedData.summary) {
-      toast({ title: "Errore Condivisione", description: "Dati formattati o riassunto non disponibili.", variant: "destructive" });
-      return;
-    }
-
-    const shareData = {
-      title: `Risultati Analisi AppuntoAI (${formattedData.contentType})`,
-      text: formattedData.summary,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-        console.log("Condivisione completata o annullata tramite API Web Share");
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(formattedData.summary);
-        toast({ title: "Riassunto copiato!", description: "Il riassunto è stato copiato negli appunti." });
-      } else {
-        toast({ title: "Condivisione non supportata", description: "Il tuo browser non supporta la condivisione o la copia negli appunti.", variant: "destructive" });
-      }
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        console.log('Condivisione annullata dall\'utente.');
-      } else {
-        console.error("Errore durante la condivisione:", err);
-        toast({ title: "Errore di condivisione", description: "Non è stato possibile condividere il contenuto.", variant: "destructive" });
-      }
-    }
-  }
 
   const renderContent = () => {
     console.log("--- renderContent ---"); // DEBUG
@@ -147,7 +111,6 @@ export default function DashboardPage() {
                   key={rawResults.transcript_id || Date.now()}
                   results={rawResults}
                   onChatOpen={handleChatOpen}
-                  onShare={() => handleShare(rawResults)}
                 />
               </div>
             )}
@@ -157,7 +120,6 @@ export default function DashboardPage() {
       case "history":
         return <RecentFiles
           files={analysisHistory}
-          onOpenChat={handleHistoryChatOpen}
           onDelete={handleDeleteFile}
           formatApiResult={formatApiResult}
         />
@@ -190,15 +152,6 @@ export default function DashboardPage() {
           {renderContent()}
         </main>
       </div>
-
-      {transcriptId && (
-        <ChatDialog
-          open={isChatOpen}
-          onOpenChange={setIsChatOpen}
-          transcriptId={transcriptId}
-          suggestedQuestions={suggestedQuestions}
-        />
-      )}
     </div>
   )
 }

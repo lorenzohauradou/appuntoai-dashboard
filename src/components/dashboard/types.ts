@@ -14,6 +14,7 @@ export interface LectureResults {
   bibliography: string[];
   transcript_id?: string;
   suggested_questions?: string[];
+  title?: string;
 }
 
 export type ResultsType = LectureResults;
@@ -21,7 +22,6 @@ export type ResultsType = LectureResults;
 export interface ResultsDisplayProps {
   results: ResultsType;
   onChatOpen?: () => void;
-  onShare: () => void;
 }
 
 export interface RecentFileRaw {

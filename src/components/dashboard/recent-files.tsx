@@ -47,43 +47,6 @@ export function RecentFiles({ files = [], onDelete, formatApiResult }: RecentFil
 
 
 
-  const handleSharePlaceholder = async (fileId: string) => {
-    console.log(`Azione: Condividi risultati per file ${fileId}`);
-
-    const file = files.find(f => f.id === fileId);
-    if (!file || !file.rawData) {
-      toast({ title: "Errore Condivisione", description: "Dati del file non disponibili.", variant: "destructive" });
-      return;
-    }
-
-    // Formatta i dati prima di usarli
-    const formattedData = formatApiResult(file.rawData);
-    if (!formattedData || !formattedData.summary) {
-      toast({ title: "Errore Condivisione", description: "Impossibile formattare i dati o riassunto mancante.", variant: "destructive" });
-      return;
-    }
-
-    // Prova a condividere o copiare il riassunto formattato
-    try {
-      // Usa shareData con dati formattati
-      const shareData = {
-        title: `Risultati Analisi AppuntoAI (${formattedData.contentType})`,
-        text: formattedData.summary,
-      };
-      if (navigator.share) { // Tenta prima l'API Web Share
-        await navigator.share(shareData);
-        console.log("Condivisione via Web Share API riuscita o annullata.");
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(formattedData.summary);
-        toast({ title: "Riassunto copiato!", description: "Il riassunto è stato copiato negli appunti." });
-      } else {
-        toast({ title: "Condivisione non supportata", description: "Il tuo browser non supporta la copia negli appunti.", variant: "destructive" });
-      }
-    } catch (err: any) {
-      console.error("Errore durante la condivisione:", err);
-      toast({ title: "Errore di condivisione", description: "Non è stato possibile condividere il contenuto.", variant: "destructive" });
-    }
-  };
 
   const renderEmptyState = () => (
     <div className="mt-12 p-8 border rounded-lg shadow-sm bg-white/50 flex flex-col items-center justify-center text-center">
@@ -179,7 +142,6 @@ export function RecentFiles({ files = [], onDelete, formatApiResult }: RecentFil
                     >
                       <ResultsDisplay
                         results={formattedResultsForDisplay}
-                        onShare={() => handleSharePlaceholder(file.id)}
                       />
                     </div>
                   )}
