@@ -7,6 +7,7 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     const userId = session?.user?.id;
 
+    
     if (!userId) {
       return NextResponse.json({ detail: 'Autenticazione richiesta' }, { status: 401 });
     }
