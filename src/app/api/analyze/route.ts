@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/auth";
 
+export const maxDuration = 300;
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -50,9 +52,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ detail: errorDetail }, { status: response.status || 500 });
     }
 
-    const data = await response.json();
-    console.log("Analisi completata");
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      console.error("Errore parsing JSON dalla risposta backend");
+      const text = await response.text();
+      console.error("Risposta raw:", text);
+      return NextResponse.json({ 
+        detail: `Errore formato risposta: ${text.substring(0, 100)}` 
+      }, { status: 500 });
+    }
     
+    console.log("Analisi completata");
     return NextResponse.json(data, { status: 200 });
 
   } catch (error: any) {

@@ -131,11 +131,19 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
         }),
       })
 
-      const analysisResult = await analysisResponse.json()
-
       if (!analysisResponse.ok) {
-        throw new Error(analysisResult.error || analysisResult.detail || 'Errore elaborazione')
+        let errorMsg = 'Errore elaborazione'
+        try {
+          const errorData = await analysisResponse.json()
+          errorMsg = errorData.error || errorData.detail || errorMsg
+        } catch {
+          const text = await analysisResponse.text()
+          errorMsg = text || errorMsg
+        }
+        throw new Error(errorMsg)
       }
+
+      const analysisResult = await analysisResponse.json()
 
       const formatted = formatApiResult(analysisResult)
 
