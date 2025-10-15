@@ -177,19 +177,18 @@ export default function DashboardPage() {
             {/* Se NON dobbiamo mostrare i risultati NUOVI, mostriamo Upload o Processing */}
             {!showResultsAfterUpload && (
               <>
-                {processingStatus !== 'processing' && ( // Mostra UploadSection solo se NON sta processando
+                {processingStatus !== 'processing' && (
                   <UploadSection
                     onAnalysisComplete={handleAnalysisComplete}
                     formatApiResult={formatApiResult}
-                    processingStatus={processingStatus}
                   />
                 )}
                 {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
+                {processingStatus === 'failed' && <ProcessingStatus status={processingStatus} />}
               </>
             )}
 
-            {/* Se DOBBIAMO mostrare i risultati NUOVI */}
-            {showResultsAfterUpload ? (
+            {showResultsAfterUpload && (
               <div className="animate-fadeIn">
                 <Alert className="mb-6 border-green-500 bg-green-50 text-green-800">
                   <CheckCircle className="h-5 w-5 text-green-600" />
@@ -205,29 +204,14 @@ export default function DashboardPage() {
                 </Button>
                 <div id="latest-results-export-area">
                   <ResultsDisplay
-                    key={rawResults.transcript_id || Date.now()} // Usa direttamente rawResults
-                    results={rawResults} // Usa direttamente rawResults
+                    key={rawResults.transcript_id || Date.now()}
+                    results={rawResults}
                     onChatOpen={handleChatOpen}
-                    onDownload={() => handleDownload(rawResults)} // Usa direttamente rawResults
-                    onShare={() => handleShare(rawResults)} // Usa direttamente rawResults
+                    onDownload={() => handleDownload(rawResults)}
+                    onShare={() => handleShare(rawResults)}
                   />
                 </div>
               </div>
-            ) : (
-              // Se NON mostriamo i risultati NUOVI E non stiamo processando,
-              // mostriamo Errore (se c'è) o Cronologia
-              <>
-                {processingStatus === 'failed' && <ProcessingStatus status={processingStatus} />}
-                {(processingStatus === null || processingStatus === 'failed') && !isLoadingHistory && (
-                  <RecentFiles
-                    files={analysisHistory}
-                    onOpenChat={handleHistoryChatOpen}
-                    onDelete={handleDeleteFile}
-                    formatApiResult={formatApiResult} // Serve ancora qui per visualizzare la cronologia
-                  />
-                )}
-                {isLoadingHistory && <div className='text-center p-8'>Caricamento file recenti...</div>}
-              </>
             )}
           </div>
         )
@@ -254,7 +238,6 @@ export default function DashboardPage() {
         return <UploadSection
           onAnalysisComplete={handleAnalysisComplete}
           formatApiResult={formatApiResult}
-          processingStatus={processingStatus}
         />;
     }
   }

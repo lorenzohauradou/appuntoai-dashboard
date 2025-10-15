@@ -37,7 +37,6 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile menu button */}
       <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 md:hidden" onClick={toggleMobileSidebar}>
         {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </Button>
@@ -85,14 +84,6 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
           </div>
 
           <nav className="flex-1 space-y-2">
-            <Link
-              href="/"
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white hover:bg-white/10"
-            >
-              <Home className="h-5 w-5" />
-              Home
-            </Link>
-
             {navItems.map((item) => (
               <Button
                 key={item.id}
@@ -176,16 +167,7 @@ export function Sidebar({ activeTab, setActiveTab, onToggle }: SidebarProps) {
         </Button>
 
         <nav className="flex-1 space-y-2 p-4">
-          <Link
-            href="/"
-            className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white hover:bg-white/10",
-              !expanded && "justify-center px-0",
-            )}
-          >
-            <Home className={cn("h-5 w-5", expanded && "mr-2")} />
-            {expanded && "Home"}
-          </Link>
+
 
           {navItems.map((item) => (
             <Button
