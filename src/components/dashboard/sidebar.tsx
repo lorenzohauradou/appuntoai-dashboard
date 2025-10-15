@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { cn } from "@/src/lib/utils"
 import { Button } from "@/src/components/ui/button"
-import { FileUp, FileText, Settings, History, Home, LogOut, Menu, X, BrainCircuit } from "lucide-react"
+import { FileUp, FileText, Settings, LogOut, Menu, X } from "lucide-react"
 import { signOut } from "next-auth/react"
 
 interface SidebarProps {
