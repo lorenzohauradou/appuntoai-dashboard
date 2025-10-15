@@ -123,7 +123,7 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
       setIsUploading(false)
       setIsProcessing(true)
 
-      const analysisResponse = await fetch('/api/process-transcription', {
+      const analysisResponse = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

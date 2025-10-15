@@ -10,15 +10,13 @@ import { useToast } from "@/src/components/ui/use-toast"
 import { ResultsType, RecentFileRaw } from "./types"
 import { Badge } from "@/src/components/ui/badge"
 
-// Interface per le props del componente
 interface RecentFilesProps {
   files?: RecentFileRaw[];
-  onOpenChat?: (transcriptId: string) => void;
   onDelete?: (transcriptId: string) => void;
   formatApiResult: (result: any) => ResultsType | null;
 }
 
-export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult }: RecentFilesProps) {
+export function RecentFiles({ files = [], onDelete, formatApiResult }: RecentFilesProps) {
   const [expandedFileId, setExpandedFileId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -40,31 +38,13 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
     setExpandedFileId(prevId => (prevId === fileId ? null : fileId));
   };
 
-  // --- STILE BADGE TIPO ---
   const getTypeStyle = (contentType?: string): { text: string; className: string } => {
     switch (contentType) {
-      case 'meeting':
-        return { text: 'Meeting', className: 'bg-blue-100 text-blue-700' };
-      case 'lesson':
-        return { text: 'Lezione', className: 'bg-purple-100 text-purple-700' };
-      case 'interview':
-        return { text: 'Intervista', className: 'bg-yellow-100 text-yellow-700' };
       default:
-        return { text: 'N/D', className: 'bg-gray-100 text-gray-700' };
+        return { text: 'Lezione', className: 'bg-purple-100 text-gray-700' };
     }
   };
 
-  // Funzioni per ResultsDisplay
-  const handleChatOpenPlaceholder = (fileId: string) => {
-    console.log(`Azione: Apri chat per file ${fileId}`);
-
-    // Se esiste un handler per aprire la chat, lo chiamiamo
-    if (onOpenChat) {
-      onOpenChat(fileId);
-    } else {
-      toast({ title: "Funzionalità chat", description: `La chat per questo file storico non è ancora implementata.` });
-    }
-  };
 
 
   const handleSharePlaceholder = async (fileId: string) => {
@@ -105,7 +85,6 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
     }
   };
 
-  // Stato vuoto quando non ci sono file recenti
   const renderEmptyState = () => (
     <div className="mt-12 p-8 border rounded-lg shadow-sm bg-white/50 flex flex-col items-center justify-center text-center">
       <div className="w-16 h-16 mb-4 rounded-full bg-purple-100 flex items-center justify-center">
@@ -140,7 +119,6 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
         ) : (
           <div className="space-y-4">
             {files.map((file) => {
-              // --- Ottieni stile per il tipo ---
               const typeStyle = getTypeStyle(file.contentType);
 
               let formattedResultsForDisplay: ResultsType | null = null;
@@ -166,12 +144,9 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* --- Badge per il tipo --- */}
                       <Badge className={`text-xs px-2 py-1 ${typeStyle.className}`}>
                         {typeStyle.text}
                       </Badge>
-                      {/* ----------------------------------- */}
-                      {/* Badge dello stato esistente */}
                       <Badge className="text-xs text-green-600 bg-green-100 px-2 py-1 hover:bg-green-200">
                         {file.status}
                       </Badge>
@@ -204,7 +179,6 @@ export function RecentFiles({ files = [], onOpenChat, onDelete, formatApiResult 
                     >
                       <ResultsDisplay
                         results={formattedResultsForDisplay}
-                        onChatOpen={() => handleChatOpenPlaceholder(file.id)}
                         onShare={() => handleSharePlaceholder(file.id)}
                       />
                     </div>
