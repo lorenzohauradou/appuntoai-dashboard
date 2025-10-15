@@ -39,13 +39,14 @@ export async function POST(request: NextRequest) {
       }),
     });
 
+    const text = await response.text();
+    
     if (!response.ok) {
       let errorDetail = `Errore backend: ${response.status}`;
       try {
-        const errorData = await response.json();
+        const errorData = JSON.parse(text);
         errorDetail = errorData.detail || JSON.stringify(errorData);
       } catch (e) {
-        const text = await response.text();
         errorDetail = text || errorDetail;
       }
       console.error(`Errore ${response.status}: ${errorDetail}`);
@@ -54,11 +55,10 @@ export async function POST(request: NextRequest) {
 
     let data;
     try {
-      data = await response.json();
+      data = JSON.parse(text);
     } catch (jsonError) {
       console.error("Errore parsing JSON dalla risposta backend");
-      const text = await response.text();
-      console.error("Risposta raw:", text);
+      console.error("Risposta raw:", text.substring(0, 200));
       return NextResponse.json({ 
         detail: `Errore formato risposta: ${text.substring(0, 100)}` 
       }, { status: 500 });

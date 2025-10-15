@@ -40,22 +40,32 @@ export async function POST(request: NextRequest) {
       }),
     });
 
+    const text = await response.text();
+    
     if (!response.ok) {
       let errorDetail = `Errore backend: ${response.status}`;
       try {
-        const errorData = await response.json();
+        const errorData = JSON.parse(text);
         errorDetail = errorData.detail || JSON.stringify(errorData);
       } catch (e) {
-        const text = await response.text();
         errorDetail = text || errorDetail;
       }
       console.error(`Errore ${response.status}: ${errorDetail}`);
       return NextResponse.json({ detail: errorDetail }, { status: response.status || 500 });
     }
 
-    const data = await response.json();
-    console.log("Chat risposta completata");
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (jsonError) {
+      console.error("Errore parsing JSON dalla risposta chat");
+      console.error("Risposta raw:", text.substring(0, 200));
+      return NextResponse.json({ 
+        detail: `Errore formato risposta: ${text.substring(0, 100)}` 
+      }, { status: 500 });
+    }
     
+    console.log("Chat risposta completata");
     return NextResponse.json(data, { status: 200 });
 
   } catch (error: any) {
