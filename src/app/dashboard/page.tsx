@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useSearchParams } from "next/navigation"
 import { Sidebar } from "@/src/components/dashboard/sidebar"
 import { Header } from "@/src/components/dashboard/header"
 import { UploadSection } from "@/src/components/dashboard/upload-section"
 import { YoutubeSection } from "@/src/components/dashboard/youtube-section"
+import { LiveRecordingSection } from "@/src/components/dashboard/live-recording-section"
 import { ProcessingStatus } from "@/src/components/dashboard/processing-status"
 import { ResultsDisplay } from "@/src/components/dashboard/results-display"
 import { RecentFiles } from "@/src/components/dashboard/recent-files"
@@ -18,6 +20,7 @@ import { formatApiResult } from "@/src/lib/formatters"
 import { useAnalysisHistory } from "@/src/hooks/use-analysis-history"
 
 export default function DashboardPage() {
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<string>("upload")
   const [processingStatus, setProcessingStatus] = useState<string | null>(null)
   const [rawResults, setRawResults] = useState<RawApiResult | null>(null)
@@ -35,6 +38,27 @@ export default function DashboardPage() {
     setTranscriptId(results.transcript_id || null);
     refreshHistory();
   }, [refreshHistory]);
+
+  // Controlla se ci sono risultati da mostrare dal sessionStorage
+  useEffect(() => {
+    const showResults = searchParams.get('showResults')
+    if (showResults === 'true') {
+      const storedAnalysis = sessionStorage.getItem('latestAnalysis')
+      if (storedAnalysis) {
+        try {
+          const data = JSON.parse(storedAnalysis)
+          const formatted = formatApiResult(data)
+          if (formatted) {
+            handleAnalysisComplete(formatted)
+
+            sessionStorage.removeItem('latestAnalysis')
+          }
+        } catch (error) {
+          console.error('Errore nel parsing dei risultati:', error)
+        }
+      }
+    }
+  }, [searchParams, handleAnalysisComplete])
 
   useEffect(() => {
     console.log("Processing Status:", processingStatus);
@@ -86,6 +110,11 @@ export default function DashboardPage() {
                       formatApiResult={formatApiResult}
                     />
                     <div className="mt-6">
+                      <LiveRecordingSection
+                        onAnalysisComplete={handleAnalysisComplete}
+                      />
+                    </div>
+                    <div className="pt-6">
                       <YoutubeSection
                         onAnalysisComplete={handleAnalysisComplete}
                         formatApiResult={formatApiResult}

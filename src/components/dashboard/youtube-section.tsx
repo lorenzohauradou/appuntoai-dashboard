@@ -8,6 +8,7 @@ import { Input } from "@/src/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { toast } from 'sonner'
 import { ResultsType } from "@/src/components/dashboard/types"
+import Image from "next/image"
 
 interface YoutubeSectionProps {
     onAnalysisComplete: (results: ResultsType) => void
@@ -109,7 +110,13 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
             <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg p-6">
                 <div className="flex items-start gap-4">
                     <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
-                        <Youtube className="h-6 w-6" />
+                        <Image
+                            src="/youtube.png"
+                            alt="YouTube"
+                            width={32}
+                            height={32}
+                            className="h-10 w-10 object-contain"
+                        />
                     </div>
                     <div className="flex-1">
                         <CardTitle className="text-xl font-semibold mb-1">
@@ -177,15 +184,6 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
                             </div>
                         </div>
                     )}
-
-                    <div className="bg-gradient-to-br from-purple-50/50 to-violet-50/50 border border-purple-100 rounded-lg p-4">
-                        <div className="flex items-start gap-3">
-                            <div className="text-purple-600 text-lg flex-shrink-0 mt-0.5">💡</div>
-                            <p className="text-sm text-gray-600">
-                                <span className="font-medium text-purple-900">Suggerimento:</span> Funziona con qualsiasi video YouTube che ha sottotitoli disponibili (automatici o manuali).
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </CardContent>
         </Card>

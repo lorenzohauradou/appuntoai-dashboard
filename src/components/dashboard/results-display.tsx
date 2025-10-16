@@ -179,7 +179,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
             </CardHeader>
             <CardContent className="p-0 w-full">
               <div className="flex flex-wrap gap-2 w-full">
-                {lectureResults.keyPoints.length > 0 ? (
+                {lectureResults.keyPoints && lectureResults.keyPoints.length > 0 ? (
                   lectureResults.keyPoints.map((concept, index) => (
                     <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3.5 bg-primary-100 text-primary">
                       {concept}
@@ -201,7 +201,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
             </CardHeader>
             <CardContent className="p-0 w-full">
               <ul className="space-y-4 w-full">
-                {lectureResults.topics.length > 0 ? (
+                {lectureResults.topics && lectureResults.topics.length > 0 ? (
                   lectureResults.topics.map((topic, index) => (
                     <li key={index} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
                       <Book className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -227,7 +227,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 w-full">
-              {lectureResults.possibleQuestions.length > 0 ? (
+              {lectureResults.possibleQuestions && lectureResults.possibleQuestions.length > 0 ? (
                 <Accordion type="single" collapsible className="w-full space-y-3">
                   {lectureResults.possibleQuestions.map((item, i) => {
                     const isQuestionObject = typeof item === 'object' && item !== null && 'domanda' in item;
