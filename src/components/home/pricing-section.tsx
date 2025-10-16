@@ -67,7 +67,7 @@ async function handleSubscription(
         });
       } else {
         toast.error("Errore Pagamento", {
-          description: `Errore: ${data.error || 'Riprova più tardi.'}`
+          description: 'Errore: Riprova più tardi.'
         });
       }
       setLoading(false);
