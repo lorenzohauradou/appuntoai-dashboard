@@ -11,7 +11,8 @@ import {
   HelpCircle,
   Copy,
   FileType,
-  Brain
+  Brain,
+  Network
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
@@ -22,6 +23,7 @@ import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/src/components/ui/dialog"
 import { Loader2 } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/src/components/ui/accordion"
+import { ConceptMapDialog } from "@/src/components/concept-map/concept-map-dialog"
 
 export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
 
@@ -29,6 +31,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(false)
   const [transcript, setTranscript] = useState<string | null>(null)
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false)
+  const [isConceptMapOpen, setIsConceptMapOpen] = useState(false)
   const lectureResults = results as LectureResults;
 
   const handleCopySummary = async () => {
@@ -281,6 +284,10 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
               <Brain className="h-4 w-4" />
               Inizia Quiz
             </Button>
+            <Button onClick={() => setIsConceptMapOpen(true)} variant="outline" className="gap-2 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white">
+              <Network className="h-4 w-4" />
+              Mappa Concettuale
+            </Button>
             <Button onClick={handleTranscriptOpen} variant="outline" className="gap-2">
               <FileType className="h-4 w-4" />
               Trascrizione
@@ -325,6 +332,14 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {results.transcript_id && (
+        <ConceptMapDialog
+          transcriptId={results.transcript_id}
+          open={isConceptMapOpen}
+          onOpenChange={setIsConceptMapOpen}
+        />
+      )}
     </div>
   )
 }
