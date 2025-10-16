@@ -253,7 +253,7 @@ export function MeetRecordingDialog({ onAnalysisComplete }: MeetRecordingDialogP
                                     <div className="text-center space-y-2">
                                         <h3 className="text-2xl font-bold text-slate-800">Spunta "Condividi audio scheda"</h3>
                                         <p className="text-slate-600">
-                                            <span className="font-semibold text-emerald-600">⚠️ FONDAMENTALE:</span> In basso a destra del pop-up, assicurati di spuntare la casella "Condividi audio scheda"!
+                                            <span className="font-semibold text-emerald-600">⚠️ FONDAMENTALE:</span> In basso a destra del pop-up, assicurati di spuntare la casella "Condividi anche l'audio della scheda"!
                                         </p>
                                     </div>
 
