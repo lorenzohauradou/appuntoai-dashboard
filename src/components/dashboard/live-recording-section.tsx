@@ -8,7 +8,6 @@ import { Mic, Square, Pause, Play, Trash2, Send, Loader2, Radio, Waves } from 'l
 import { useAudioRecorder } from '@/src/hooks/use-audio-recorder'
 import { toast } from 'sonner'
 import { ResultsType } from './types'
-import { cn } from '@/src/lib/utils'
 import { MeetRecordingDialog } from './meet-recording-dialog'
 
 interface LiveRecordingSectionProps {
