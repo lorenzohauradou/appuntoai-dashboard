@@ -250,7 +250,7 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
                       className="text-primary cursor-pointer hover:underline font-medium"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      sfoglia
+                      seleziona file
                     </span>
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground text-center">Supporta .mp4, .mov, .avi</p>
@@ -291,7 +291,7 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
                       className="text-primary cursor-pointer hover:underline font-medium"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      sfoglia
+                      seleziona file
                     </span>
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground text-center">Supporta .mp3, .wav, .m4a, .ogg</p>
@@ -329,18 +329,19 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
             Elaborazione in corso... L'operazione sarà completata in pochi secondi.
           </p>
         )}
+        {selectedFile && (
+          <CardFooter className="flex justify-center border-t p-3 sm:p-4 md:p-6">
+            <Button
+              className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto sm:min-w-[200px] text-sm sm:text-base"
+              onClick={handleProcessClick}
+              disabled={isButtonDisabled}
+            >
+              {getButtonIcon()}
+              {getButtonText()}
+            </Button>
+          </CardFooter>
+        )}
       </CardContent>
-
-      <CardFooter className="flex justify-center border-t p-3 sm:p-4 md:p-6">
-        <Button
-          className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto sm:min-w-[200px] text-sm sm:text-base"
-          onClick={handleProcessClick}
-          disabled={isButtonDisabled}
-        >
-          {getButtonIcon()}
-          {getButtonText()}
-        </Button>
-      </CardFooter>
     </Card>
   )
 }
