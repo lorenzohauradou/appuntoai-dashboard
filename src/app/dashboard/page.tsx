@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Sidebar } from "@/src/components/dashboard/sidebar"
 import { Header } from "@/src/components/dashboard/header"
@@ -19,7 +19,7 @@ import { ArrowLeft } from "lucide-react"
 import { formatApiResult } from "@/src/lib/formatters"
 import { useAnalysisHistory } from "@/src/hooks/use-analysis-history"
 
-export default function DashboardPage() {
+function DashboardContent() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<string>("upload")
   const [processingStatus, setProcessingStatus] = useState<string | null>(null)
@@ -179,5 +179,20 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Caricamento dashboard...</p>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   )
 }
