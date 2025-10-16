@@ -95,13 +95,10 @@ function DashboardContent() {
 
     switch (activeTab) {
       case "upload":
-        // Questa condizione determina se mostrare i NUOVI risultati
         const showResultsAfterUpload = processingStatus === 'completed' && rawResults;
-        console.log("Show Results After Upload?:", showResultsAfterUpload); // DEBUG
 
         return (
           <div className="space-y-6">
-            {/* Se NON dobbiamo mostrare i risultati NUOVI, mostriamo Upload o Processing */}
             {!showResultsAfterUpload && (
               <>
                 {processingStatus !== 'processing' && (
@@ -110,17 +107,27 @@ function DashboardContent() {
                       onAnalysisComplete={handleAnalysisComplete}
                       formatApiResult={formatApiResult}
                     />
-                    <div className="mt-6">
-                      <LiveRecordingSection
-                        onAnalysisComplete={handleAnalysisComplete}
-                      />
+
+                    <div className="relative flex items-center justify-center py-6">
+                      <div className="flex-grow border-t border-gray-300"></div>
+                      <span className="px-4 text-sm text-gray-500 font-medium bg-background">oppure</span>
+                      <div className="flex-grow border-t border-gray-300"></div>
                     </div>
-                    <div className="pt-6">
-                      <YoutubeSection
-                        onAnalysisComplete={handleAnalysisComplete}
-                        formatApiResult={formatApiResult}
-                      />
+
+                    <LiveRecordingSection
+                      onAnalysisComplete={handleAnalysisComplete}
+                    />
+
+                    <div className="relative flex items-center justify-center py-6">
+                      <div className="flex-grow border-t border-gray-300"></div>
+                      <span className="px-4 text-sm text-gray-500 font-medium bg-background">oppure</span>
+                      <div className="flex-grow border-t border-gray-300"></div>
                     </div>
+
+                    <YoutubeSection
+                      onAnalysisComplete={handleAnalysisComplete}
+                      formatApiResult={formatApiResult}
+                    />
                   </>
                 )}
                 {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
