@@ -319,7 +319,7 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
           <div className="mt-6 space-y-2">
             <Progress value={uploadProgress} className="w-full h-2" />
             <p className="text-sm text-center text-muted-foreground">
-              Caricamento file... ({uploadProgress}%)
+              Caricamento file...
             </p>
           </div>
         )}

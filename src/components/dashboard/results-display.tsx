@@ -10,7 +10,8 @@ import {
   Lightbulb,
   HelpCircle,
   Copy,
-  FileType
+  FileType,
+  Brain
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
@@ -73,6 +74,11 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
     } catch (err) {
       toast.error("Errore Copia", { description: "Impossibile copiare la trascrizione." });
     }
+  };
+
+  const handleStartQuiz = () => {
+    if (!results.transcript_id) return;
+    window.open(`/quiz/${results.transcript_id}`, '_blank');
   };
 
   const renderTabs = () => {
@@ -250,6 +256,10 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
             <Button onClick={onChatOpen} className="gap-2 bg-primary text-white">
               <MessageSquare className="h-4 w-4" />
               Chatta con il documento!
+            </Button>
+            <Button onClick={handleStartQuiz} variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-white">
+              <Brain className="h-4 w-4" />
+              Inizia Quiz
             </Button>
             <Button onClick={handleTranscriptOpen} variant="outline" className="gap-2">
               <FileType className="h-4 w-4" />

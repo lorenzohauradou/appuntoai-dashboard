@@ -13,8 +13,6 @@ import { useToast } from "@/src/components/ui/use-toast"
 import { ResultsType, RawApiResult } from "@/src/components/dashboard/types"
 import { Button } from "@/src/components/ui/button"
 import { ArrowLeft } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert"
-import { CheckCircle } from "lucide-react"
 import { formatApiResult } from "@/src/lib/formatters"
 import { useAnalysisHistory } from "@/src/hooks/use-analysis-history"
 
@@ -95,14 +93,6 @@ export default function DashboardPage() {
 
             {showResultsAfterUpload && (
               <div className="animate-fadeIn">
-                <Alert className="mb-6 border-green-500 bg-green-50 text-green-800">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <AlertTitle className="font-semibold">Elaborazione Completata!</AlertTitle>
-                  <AlertDescription>
-                    I risultati della tua analisi sono pronti qui sotto.
-                  </AlertDescription>
-                </Alert>
-
                 <Button onClick={() => { setRawResults(null); setProcessingStatus(null); }} variant="outline" className="gap-2 mb-4">
                   <ArrowLeft className="h-4 w-4" />
                   Carica un Altro Contenuto
