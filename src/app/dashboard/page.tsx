@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Sidebar } from "@/src/components/dashboard/sidebar"
 import { Header } from "@/src/components/dashboard/header"
 import { UploadSection } from "@/src/components/dashboard/upload-section"
+import { YoutubeSection } from "@/src/components/dashboard/youtube-section"
 import { ProcessingStatus } from "@/src/components/dashboard/processing-status"
 import { ResultsDisplay } from "@/src/components/dashboard/results-display"
 import { RecentFiles } from "@/src/components/dashboard/recent-files"
@@ -15,8 +16,6 @@ import { Button } from "@/src/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { formatApiResult } from "@/src/lib/formatters"
 import { useAnalysisHistory } from "@/src/hooks/use-analysis-history"
-
-
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<string>("upload")
@@ -81,10 +80,18 @@ export default function DashboardPage() {
             {!showResultsAfterUpload && (
               <>
                 {processingStatus !== 'processing' && (
-                  <UploadSection
-                    onAnalysisComplete={handleAnalysisComplete}
-                    formatApiResult={formatApiResult}
-                  />
+                  <>
+                    <UploadSection
+                      onAnalysisComplete={handleAnalysisComplete}
+                      formatApiResult={formatApiResult}
+                    />
+                    <div className="mt-6">
+                      <YoutubeSection
+                        onAnalysisComplete={handleAnalysisComplete}
+                        formatApiResult={formatApiResult}
+                      />
+                    </div>
+                  </>
                 )}
                 {processingStatus === 'processing' && <ProcessingStatus status={processingStatus} />}
                 {processingStatus === 'failed' && <ProcessingStatus status={processingStatus} />}
