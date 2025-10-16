@@ -137,11 +137,11 @@ export function FeedbackWidget() {
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary to-primary/60 opacity-75 blur transition-opacity group-hover:opacity-100" />
                 <Avatar className="relative h-14 w-14 border-3 border-white shadow-xl transition-transform group-hover:scale-105">
                     <AvatarImage
-                        src={session?.user?.image || undefined}
-                        alt={session?.user?.name || 'User'}
+                        src="/lorenz.jpg"
+                        alt="Lorenzo Founder di Appuntoai"
                     />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white font-semibold text-lg">
-                        {userInitials}
+                        L
                     </AvatarFallback>
                 </Avatar>
 
