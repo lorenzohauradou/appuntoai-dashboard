@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://appuntoai.com/</loc>
-    <lastmod>2025-05-05</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.appuntoai.com/</loc>
+    <lastmod>2025-10-16</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.appuntoai.com/"/>
   </url>
   <url>
-    <loc>https://appuntoai.com/dashboard</loc>
-    <lastmod>2025-05-05</lastmod>
+    <loc>https://www.appuntoai.com/dashboard</loc>
+    <lastmod>2025-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.appuntoai.com/dashboard"/>
+  </url>
+  <url>
+    <loc>https://www.appuntoai.com/login</loc>
+    <lastmod>2025-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.appuntoai.com/login"/>
   </url>
 </urlset> 
