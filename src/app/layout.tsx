@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/src/lib/utils"
@@ -10,6 +10,13 @@ import { Analytics } from "@vercel/analytics/react"
 import { StructuredData } from "@/src/components/structured-data"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.appuntoai.com'),

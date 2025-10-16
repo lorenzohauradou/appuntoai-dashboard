@@ -187,17 +187,17 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
   }
 
   return (
-    <Card className="border-0 shadow-lg bg-white overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg">
+    <Card className="border-0 shadow-lg bg-white overflow-hidden w-full">
+      <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg p-4 sm:p-6">
         <div>
-          <CardTitle className="text-2xl text-center md:text-left mb-3">Carica la tua lezione</CardTitle>
-          <CardDescription className="text-primary-100 hidden md:block">
+          <CardTitle className="text-xl sm:text-2xl text-center md:text-left mb-2 sm:mb-3">Carica la tua lezione</CardTitle>
+          <CardDescription className="text-primary-100 text-sm hidden md:block">
             Carica un file video o audio della lezione universitaria
           </CardDescription>
         </div>
       </CardHeader>
 
-      <CardContent className="p-6">
+      <CardContent className="p-3 sm:p-4 md:p-6">
         {(isUploading || isProcessing) && (
           <div className="mb-6 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 shadow-sm">
             <div className="flex items-center space-x-3">
@@ -235,7 +235,7 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
               {!selectedFile ? (
                 <div
                   className={cn(
-                    "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 transition-colors",
+                    "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 sm:p-8 md:p-12 transition-colors min-h-[200px] sm:min-h-[240px]",
                     dragActive ? "border-primary bg-primary-50" : "border-gray-300",
                   )}
                   onDragEnter={handleDrag}
@@ -243,30 +243,30 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
                   onDragOver={handleDrag}
                   onDrop={handleDrop}
                 >
-                  <FileVideo className="h-12 w-12 text-primary mb-4" />
-                  <p className="text-center mb-4">
+                  <FileVideo className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
+                  <p className="text-center mb-3 sm:mb-4 text-sm sm:text-base px-2">
                     Trascina qui il tuo file video o{" "}
                     <span
-                      className="text-primary cursor-pointer hover:underline"
+                      className="text-primary cursor-pointer hover:underline font-medium"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       sfoglia
                     </span>
                   </p>
-                  <p className="text-sm text-muted-foreground text-center">Supporta .mp4, .mov, .avi</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center">Supporta .mp4, .mov, .avi</p>
                   <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center">
-                    <FileVideo className="h-8 w-8 text-primary mr-3" />
-                    <div>
-                      <p className="font-medium">{selectedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                <div className="flex items-center justify-between p-3 sm:p-4 border rounded-lg gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <FileVideo className="h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm sm:text-base truncate">{selectedFile.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={clearSelection}>
-                    <X className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" onClick={clearSelection} className="flex-shrink-0">
+                    <X className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </div>
               )}
@@ -276,7 +276,7 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
               {!selectedFile ? (
                 <div
                   className={cn(
-                    "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 transition-colors",
+                    "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 sm:p-8 md:p-12 transition-colors min-h-[200px] sm:min-h-[240px]",
                     dragActive ? "border-primary bg-primary-50" : "border-gray-300",
                   )}
                   onDragEnter={handleDrag}
@@ -284,30 +284,30 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
                   onDragOver={handleDrag}
                   onDrop={handleDrop}
                 >
-                  <FileAudio className="h-12 w-12 text-primary mb-4" />
-                  <p className="text-center mb-4">
+                  <FileAudio className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
+                  <p className="text-center mb-3 sm:mb-4 text-sm sm:text-base px-2">
                     Trascina qui il tuo file audio o{" "}
                     <span
-                      className="text-primary cursor-pointer hover:underline"
+                      className="text-primary cursor-pointer hover:underline font-medium"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       sfoglia
                     </span>
                   </p>
-                  <p className="text-sm text-muted-foreground text-center">Supporta .mp3, .wav, .m4a, .ogg</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center">Supporta .mp3, .wav, .m4a, .ogg</p>
                   <input ref={fileInputRef} type="file" accept="audio/*" className="hidden" onChange={handleFileChange} />
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center">
-                    <FileAudio className="h-8 w-8 text-primary mr-3" />
-                    <div>
-                      <p className="font-medium">{selectedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                <div className="flex items-center justify-between p-3 sm:p-4 border rounded-lg gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <FileAudio className="h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm sm:text-base truncate">{selectedFile.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={clearSelection}>
-                    <X className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" onClick={clearSelection} className="flex-shrink-0">
+                    <X className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </div>
               )}
@@ -331,9 +331,9 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
         )}
       </CardContent>
 
-      <CardFooter className="flex justify-center border-t p-6">
+      <CardFooter className="flex justify-center border-t p-3 sm:p-4 md:p-6">
         <Button
-          className="bg-primary text-white hover:bg-primary/90 min-w-[200px]"
+          className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto sm:min-w-[200px] text-sm sm:text-base"
           onClick={handleProcessClick}
           disabled={isButtonDisabled}
         >

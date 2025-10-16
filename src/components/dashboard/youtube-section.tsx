@@ -106,41 +106,41 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
     }
 
     return (
-        <Card className="border-0 shadow-md bg-white overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg p-6">
-                <div className="flex items-start gap-4">
-                    <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+        <Card className="border-0 shadow-md bg-white overflow-hidden w-full">
+            <CardHeader className="bg-gradient-to-r from-primary to-primary-600 text-white rounded-t-lg p-4 sm:p-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="bg-white/20 backdrop-blur-sm p-2 sm:p-3 rounded-xl flex-shrink-0">
                         <Image
                             src="/youtube.png"
                             alt="YouTube"
-                            width={32}
-                            height={32}
-                            className="h-10 w-10 object-contain"
+                            width={28}
+                            height={28}
+                            className="h-7 w-7 sm:h-10 sm:w-10 object-contain"
                         />
                     </div>
-                    <div className="flex-1">
-                        <CardTitle className="text-xl font-semibold mb-1">
+                    <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg sm:text-xl font-semibold mb-1">
                             Analizza Video YouTube
                         </CardTitle>
-                        <CardDescription className="text-purple-50 text-sm">
+                        <CardDescription className="text-purple-50 text-xs sm:text-sm hidden md:block">
                             Inserisci l'URL di un video YouTube per analizzarlo
                         </CardDescription>
                     </div>
                 </div>
             </CardHeader>
 
-            <CardContent className="p-6">
-                <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row gap-3">
+            <CardContent className="p-3 sm:p-4 md:p-6">
+                <div className="space-y-3 sm:space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         <div className="relative flex-1">
-                            <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
+                            <Link className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
                             <Input
                                 type="text"
                                 placeholder="https://www.youtube.com/watch?v=..."
                                 value={youtubeUrl}
                                 onChange={(e) => setYoutubeUrl(e.target.value)}
                                 disabled={isProcessing}
-                                className="pl-10 border-purple-200 focus:border-purple-500 focus:ring-purple-500 h-11"
+                                className="pl-8 sm:pl-10 border-purple-200 focus:border-purple-500 focus:ring-purple-500 h-10 sm:h-11 text-sm sm:text-base"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !isProcessing) {
                                         handleAnalyze()
@@ -151,7 +151,7 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
                         <Button
                             onClick={handleAnalyze}
                             disabled={isProcessing || !youtubeUrl.trim()}
-                            className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white min-w-[130px] h-11 font-medium shadow-md hover:shadow-lg transition-all"
+                            className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white w-full sm:w-auto sm:min-w-[130px] h-10 sm:h-11 font-medium shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
                         >
                             {isProcessing ? (
                                 <>
@@ -168,16 +168,16 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
                     </div>
 
                     {isProcessing && (
-                        <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-purple-100 rounded-full p-2">
-                                    <Loader2 className="h-5 w-5 text-purple-600 animate-spin" />
+                        <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-3 sm:p-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className="bg-purple-100 rounded-full p-1.5 sm:p-2 flex-shrink-0">
+                                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 animate-spin" />
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium text-purple-900">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs sm:text-sm font-medium text-purple-900">
                                         Elaborazione video YouTube in corso...
                                     </p>
-                                    <p className="text-xs text-purple-700 mt-1">
+                                    <p className="text-xs text-purple-700 mt-0.5 sm:mt-1 hidden sm:block">
                                         Stiamo scaricando i sottotitoli e analizzando il contenuto
                                     </p>
                                 </div>

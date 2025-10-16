@@ -1,0 +1,160 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/src/components/ui/button'
+import { Textarea } from '@/src/components/ui/textarea'
+import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar'
+import { Send, Loader2, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { cn } from '@/src/lib/utils'
+
+export function FeedbackWidget() {
+    const [isExpanded, setIsExpanded] = useState(false)
+    const [feedback, setFeedback] = useState('')
+    const [isSending, setIsSending] = useState(false)
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        if (!feedback.trim()) {
+            toast.warning('Scrivi qualcosa!', {
+                description: 'Il messaggio non può essere vuoto',
+            })
+            return
+        }
+
+        setIsSending(true)
+
+        try {
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ feedback }),
+            })
+
+            if (!response.ok) {
+                throw new Error('Errore invio feedback')
+            }
+
+            toast.success('Grazie per il tuo feedback! 💜', {
+                description: 'Il tuo messaggio è stato inviato con successo',
+            })
+
+            setFeedback('')
+            setIsExpanded(false)
+        } catch (error) {
+            toast.error('Errore', {
+                description: 'Non è stato possibile inviare il feedback',
+            })
+        } finally {
+            setIsSending(false)
+        }
+    }
+
+
+    return (
+        <div className={cn(
+            "fixed z-50",
+            "bottom-4 right-4 sm:bottom-6 sm:right-6",
+            !isExpanded && "pointer-events-none"
+        )}>
+            <div className={cn(
+                "flex flex-col sm:flex-row items-end gap-2 sm:gap-3"
+            )}>
+                <div
+                    className={cn(
+                        "transition-all duration-300 ease-in-out order-1 sm:order-1",
+                        "origin-bottom sm:origin-right",
+                        isExpanded ? "opacity-100 scale-100 pointer-events-auto mb-2 sm:mb-0" : "opacity-0 scale-0 pointer-events-none"
+                    )}
+                >
+                    <div className="w-[calc(100vw-2rem)] sm:w-[380px] max-w-[380px] rounded-2xl border-2 border-primary/20 bg-white shadow-2xl">
+                        <div className="border-b border-slate-200 bg-gradient-to-r from-primary/5 to-primary/10 p-3 sm:p-4">
+                            <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-sm sm:text-base text-slate-800">Il tuo feedback conta davvero 💜</h3>
+                                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">
+                                        Stai usando Appuntoai tra i primi. Il tuo parere è fondamentale: sentiti libero di scrivere tutto ciò che vorresti vedere nell'app!
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setIsExpanded(false)}
+                                    className="text-slate-400 transition-colors hover:text-slate-600 flex-shrink-0"
+                                >
+                                    <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="p-3 sm:p-4 space-y-3">
+                            <div className="relative">
+                                <Textarea
+                                    placeholder="Scrivi qui il tuo feedback..."
+                                    value={feedback}
+                                    onChange={(e) => setFeedback(e.target.value)}
+                                    disabled={isSending}
+                                    rows={4}
+                                    maxLength={1000}
+                                    className={cn(
+                                        "resize-none border-2 transition-all text-sm w-full",
+                                        "focus:border-primary focus:ring-primary/20",
+                                        "placeholder:text-muted-foreground/60"
+                                    )}
+                                />
+                                <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+                                    {feedback.length}/1000
+                                </div>
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={isSending || !feedback.trim()}
+                                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md text-sm"
+                                size="sm"
+                            >
+                                {isSending ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                                        Invio...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                        Invia Feedback
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </div>
+                </div>
+
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className={cn(
+                        "group relative transition-all duration-300 pointer-events-auto flex-shrink-0 order-2 sm:order-2",
+                        isExpanded && "scale-90"
+                    )}
+                >
+                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary to-primary/60 opacity-75 blur transition-opacity group-hover:opacity-100" />
+                    <Avatar className="relative h-12 w-12 sm:h-14 sm:w-14 border-3 border-white shadow-xl transition-transform group-hover:scale-105">
+                        <AvatarImage
+                            src="/lorenz.jpg"
+                            alt="Lorenzo Founder di Appuntoai"
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white font-semibold text-base sm:text-lg">
+                            L
+                        </AvatarFallback>
+                    </Avatar>
+
+                    {!isExpanded && (
+                        <div className="absolute -right-0.5 -top-0.5 sm:-right-1 sm:-top-1 h-3 w-3 sm:h-4 sm:w-4">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                            <span className="relative inline-flex h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary" />
+                        </div>
+                    )}
+                </button>
+            </div>
+        </div>
+    )
+}
+

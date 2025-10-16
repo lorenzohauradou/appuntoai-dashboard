@@ -103,28 +103,28 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
 
     return (
         <Card className="w-full border-2 transition-all hover:shadow-md">
-            <CardHeader className="space-y-1 pb-4">
-                <div className="flex items-center justify-between gap-4">
+            <CardHeader className="space-y-1 pb-4 p-3 sm:p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="flex items-center gap-2">
-
                         <div>
-                            <CardTitle className="text-xl">Registrazione Live</CardTitle>
-                            <CardDescription className="text-sm">
+                            <CardTitle className="text-lg sm:text-xl">Registrazione Live</CardTitle>
+                            <CardDescription className="text-xs sm:text-sm">
                                 Registra e analizza la lezione in tempo reale
                             </CardDescription>
                         </div>
                     </div>
 
                     {!isRecording && !audioUrl && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto">
                             <MeetRecordingDialog onAnalysisComplete={onAnalysisComplete} />
                             <Button
                                 onClick={handleStartRecording}
-                                size="lg"
-                                className="h-14 px-8 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+                                size="default"
+                                className="h-11 sm:h-14 px-4 sm:px-8 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all text-sm sm:text-base flex-1 sm:flex-initial"
                             >
-                                <Mic className="h-5 w-5 mr-2" />
-                                Registra Audio
+                                <Mic className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                                <span className="hidden sm:inline">Registra Audio</span>
+                                <span className="sm:hidden">Audio</span>
                             </Button>
                         </div>
                     )}
@@ -138,7 +138,7 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                 </div>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-3 sm:p-4 md:p-6">
                 {error && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-red-500" />
@@ -147,20 +147,20 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                 )}
 
                 {isRecording && (
-                    <div className="space-y-4 p-6 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border border-red-200">
+                    <div className="space-y-3 sm:space-y-4 p-4 sm:p-6 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border border-red-200">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3 sm:gap-4">
                                 <div className="relative">
-                                    <div className="w-12 h-12 bg-red-500 rounded-full animate-pulse flex items-center justify-center">
-                                        <Mic className="h-6 w-6 text-white" />
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-full animate-pulse flex items-center justify-center">
+                                        <Mic className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                                     </div>
-                                    <div className="absolute inset-0 w-12 h-12 bg-red-500 rounded-full animate-ping opacity-75" />
+                                    <div className="absolute inset-0 w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-full animate-ping opacity-75" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-3xl tabular-nums text-gray-900">{formatTime(recordingTime)}</p>
+                                    <p className="font-bold text-2xl sm:text-3xl tabular-nums text-gray-900">{formatTime(recordingTime)}</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Waves className="h-3 w-3 text-red-600 animate-pulse" />
-                                        <p className="text-sm text-gray-700 font-medium">
+                                        <p className="text-xs sm:text-sm text-gray-700 font-medium">
                                             {isPaused ? 'In pausa' : 'Registrazione in corso...'}
                                         </p>
                                     </div>
@@ -206,15 +206,15 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                 )}
 
                 {audioUrl && !isRecording && (
-                    <div className="space-y-4">
-                        <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                    <div className="space-y-3 sm:space-y-4">
+                        <div className="p-4 sm:p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                     <div className="p-2 bg-green-500/10 rounded-lg">
                                         <Mic className="h-4 w-4 text-green-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">Registrazione completata</p>
+                                        <p className="text-xs sm:text-sm font-medium text-gray-900">Registrazione completata</p>
                                         <p className="text-xs text-gray-600">
                                             Durata: {formatTime(recordingTime)}
                                         </p>
@@ -225,7 +225,7 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                             <audio
                                 src={audioUrl}
                                 controls
-                                className="w-full h-10 mt-3"
+                                className="w-full h-8 sm:h-10 mt-3"
                                 style={{
                                     borderRadius: '8px',
                                 }}
@@ -236,17 +236,19 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                             <Button
                                 onClick={handleAnalyze}
                                 disabled={isAnalyzing}
-                                className="flex-1 h-12 bg-primary text-white hover:bg-primary/90"
+                                className="flex-1 h-11 sm:h-12 bg-primary text-white hover:bg-primary/90 text-sm sm:text-base"
                             >
                                 {isAnalyzing ? (
                                     <>
                                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Analisi in corso...
+                                        <span className="hidden sm:inline">Analisi in corso...</span>
+                                        <span className="sm:hidden">Analizzando...</span>
                                     </>
                                 ) : (
                                     <>
                                         <Send className="h-4 w-4 mr-2" />
-                                        Analizza Lezione
+                                        <span className="hidden sm:inline">Analizza Lezione</span>
+                                        <span className="sm:hidden">Analizza</span>
                                     </>
                                 )}
                             </Button>
@@ -254,7 +256,7 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                                 onClick={clearRecording}
                                 variant="outline"
                                 size="icon"
-                                className="h-12 w-12"
+                                className="h-11 sm:h-12 w-11 sm:w-12"
                                 disabled={isAnalyzing}
                             >
                                 <Trash2 className="h-4 w-4" />

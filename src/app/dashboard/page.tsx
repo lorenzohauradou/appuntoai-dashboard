@@ -10,7 +10,7 @@ import { LiveRecordingSection } from "@/src/components/dashboard/live-recording-
 import { ProcessingStatus } from "@/src/components/dashboard/processing-status"
 import { ResultsDisplay } from "@/src/components/dashboard/results-display"
 import { RecentFiles } from "@/src/components/dashboard/recent-files"
-import { FeedbackWidget } from "@/src/components/dashboard/feedback-section"
+import { FeedbackWidget } from "@/src/components/dashboard/widget-feedback"
 import { BackgroundPattern } from "@/src/components/ui/background-pattern"
 import { cn } from "@/src/lib/utils"
 import { useToast } from "@/src/components/ui/use-toast"
@@ -173,10 +173,12 @@ function DashboardContent() {
     <div className="flex min-h-screen bg-background">
       <BackgroundPattern />
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onToggle={handleSidebarToggle} />
-      <div className={cn("flex-1", "md:ml-64", !sidebarExpanded && "md:ml-20")}>
+      <div className={cn("flex-1 w-full", "md:ml-64", !sidebarExpanded && "md:ml-20")}>
         <Header />
-        <main className="flex-1 overflow-auto p-4 md:p-6">
-          {renderContent()}
+        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-24 max-w-full">
+          <div className="max-w-full mx-auto">
+            {renderContent()}
+          </div>
         </main>
       </div>
       <FeedbackWidget />
