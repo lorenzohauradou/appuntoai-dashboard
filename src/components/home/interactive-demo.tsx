@@ -77,7 +77,7 @@ export function InteractiveDemo() {
             )
             formData.append('audio', audioFile)
 
-            const response = await fetch('/api/analyze-live', {
+            const response = await fetch('/api/analyze/live', {
                 method: 'POST',
                 body: formData,
             })

@@ -65,7 +65,7 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
         try {
             setIsProcessing(true)
 
-            const response = await fetch('/api/analyze-youtube', {
+            const response = await fetch('/api/analyze/youtube', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ youtube_url: youtubeUrl }),

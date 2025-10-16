@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data, { status: 200 });
 
   } catch (error: any) {
-    console.error("Errore in /api/analyze:", error);
+    console.error("Errore in /api/analyze/upload:", error);
     return NextResponse.json({ 
       detail: error.message || 'Errore interno del server' 
     }, { status: 500 });

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const data = await backendResponse.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Errore API analyze-youtube:', error);
+    console.error('Errore API analyze/youtube:', error);
     return NextResponse.json(
       { error: 'Errore interno del server' },
       { status: 500 }
