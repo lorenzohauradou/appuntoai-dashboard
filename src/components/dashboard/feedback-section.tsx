@@ -60,11 +60,14 @@ export function FeedbackWidget() {
         .toUpperCase() || 'U'
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex items-end gap-3">
+        <div className={cn(
+            "fixed bottom-6 right-6 z-50 flex items-end gap-3",
+            !isExpanded && "pointer-events-none"
+        )}>
             <div
                 className={cn(
                     "transition-all duration-300 ease-in-out origin-right",
-                    isExpanded ? "opacity-100 scale-100" : "opacity-0 scale-0 pointer-events-none"
+                    isExpanded ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-0 pointer-events-none"
                 )}
             >
                 <div className="w-[380px] rounded-2xl border-2 border-primary/20 bg-white shadow-2xl">
@@ -130,7 +133,7 @@ export function FeedbackWidget() {
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={cn(
-                    "group relative transition-all duration-300",
+                    "group relative transition-all duration-300 pointer-events-auto",
                     isExpanded && "scale-90"
                 )}
             >

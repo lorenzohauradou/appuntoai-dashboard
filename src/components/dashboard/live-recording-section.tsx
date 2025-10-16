@@ -9,6 +9,7 @@ import { useAudioRecorder } from '@/src/hooks/use-audio-recorder'
 import { toast } from 'sonner'
 import { ResultsType } from './types'
 import { cn } from '@/src/lib/utils'
+import { MeetRecordingDialog } from './meet-recording-dialog'
 
 interface LiveRecordingSectionProps {
     onAnalysisComplete: (results: ResultsType) => void
@@ -106,15 +107,7 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
             <CardHeader className="space-y-1 pb-4">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                        <div className={cn(
-                            "p-2 rounded-lg transition-colors",
-                            isRecording ? "bg-red-500/10" : "bg-primary/10"
-                        )}>
-                            <Mic className={cn(
-                                "h-5 w-5",
-                                isRecording ? "text-red-500" : "text-primary"
-                            )} />
-                        </div>
+
                         <div>
                             <CardTitle className="text-xl">Registrazione Live</CardTitle>
                             <CardDescription className="text-sm">
@@ -123,16 +116,18 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                         </div>
                     </div>
 
-                    {/* Pulsante registrazione */}
                     {!isRecording && !audioUrl && (
-                        <Button
-                            onClick={handleStartRecording}
-                            size="lg"
-                            className="h-14 px-8 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all"
-                        >
-                            <Mic className="h-5 w-5 mr-2" />
-                            Inizia Registrazione
-                        </Button>
+                        <div className="flex gap-2">
+                            <MeetRecordingDialog onAnalysisComplete={onAnalysisComplete} />
+                            <Button
+                                onClick={handleStartRecording}
+                                size="lg"
+                                className="h-14 px-8 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+                            >
+                                <Mic className="h-5 w-5 mr-2" />
+                                Registra Audio
+                            </Button>
+                        </div>
                     )}
 
                     {isRecording && (
@@ -152,7 +147,6 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                     </div>
                 )}
 
-                {/* Stato registrazione attiva */}
                 {isRecording && (
                     <div className="space-y-4 p-6 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border border-red-200">
                         <div className="flex items-center justify-between">
@@ -212,7 +206,6 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
                     </div>
                 )}
 
-                {/* Anteprima audio */}
                 {audioUrl && !isRecording && (
                     <div className="space-y-4">
                         <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
