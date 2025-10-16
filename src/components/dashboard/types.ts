@@ -4,13 +4,18 @@ export interface Participant {
   role: string;
 }
 
+export interface ExamQuestion {
+  domanda: string;
+  risposta: string;
+}
+
 export interface LectureResults {
   contentType: "lezione";
   summary: string;
   keyPoints: string[];
   topics: string[];
   participants: Participant[];
-  possibleQuestions: string[];
+  possibleQuestions: (string | ExamQuestion)[];
   bibliography: string[];
   transcript_id?: string;
   suggested_questions?: string[];

@@ -21,6 +21,7 @@ import { LectureResults, ResultsDisplayProps } from "./types"
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/src/components/ui/dialog"
 import { Loader2 } from "lucide-react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/src/components/ui/accordion"
 
 export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
 
@@ -219,22 +220,41 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
                 <GraduationCap /> Possibili Domande d'Esame
               </CardTitle>
               <CardDescription>
-                Domande che potrebbero emergere da questo contenuto
+                Domande e risposte per prepararti all'esame
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 w-full">
-              <ul className="space-y-3">
-                {lectureResults.possibleQuestions.length > 0 ? (
-                  lectureResults.possibleQuestions.map((question, i) => (
-                    <li key={i} className="flex items-start gap-3 p-4 rounded-lg border overflow-hidden w-full">
-                      <HelpCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="break-words">{question}</span>
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground py-4">Nessuna domanda d'esame suggerita.</p>
-                )}
-              </ul>
+              {lectureResults.possibleQuestions.length > 0 ? (
+                <Accordion type="single" collapsible className="w-full space-y-3">
+                  {lectureResults.possibleQuestions.map((item, i) => {
+                    const isQuestionObject = typeof item === 'object' && item !== null && 'domanda' in item;
+                    const domanda = isQuestionObject ? item.domanda : item;
+                    const risposta = isQuestionObject ? item.risposta : "Risposta non disponibile";
+
+                    return (
+                      <AccordionItem
+                        key={i}
+                        value={`question-${i}`}
+                        className="border rounded-lg px-4 overflow-hidden"
+                      >
+                        <AccordionTrigger className="hover:no-underline py-4">
+                          <div className="flex items-start gap-3 text-left">
+                            <HelpCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            <span className="break-words font-medium">{domanda}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 pt-2 pl-8">
+                          <div className="bg-muted/30 rounded-lg p-4">
+                            <p className="text-sm leading-relaxed break-words">{risposta}</p>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              ) : (
+                <p className="text-center text-muted-foreground py-4">Nessuna domanda d'esame suggerita.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
