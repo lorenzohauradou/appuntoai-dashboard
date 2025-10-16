@@ -108,122 +108,127 @@ export function InteractiveDemo() {
     const progressPercentage = audioUrl ? 100 : isRecording ? 33 : 0
 
     return (
-        <div className="relative w-full max-w-[500px] rounded-xl border bg-white p-4 shadow-lg">
-            <div className="rounded-lg bg-slate-50/60 p-4">
-                <h3 className="mb-4 text-center text-lg font-medium">Demo interattiva</h3>
+        <div className="relative w-full max-w-[500px]">
+            <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50/50 p-8 shadow-2xl backdrop-blur-sm">
+                <h3 className="mb-6 text-center text-2xl font-semibold text-slate-800">Demo interattiva</h3>
 
-                <div className="mx-auto mb-6 h-1.5 w-full max-w-[250px] overflow-hidden rounded-full bg-slate-200">
+                <div className="mx-auto mb-8 h-2 w-full max-w-[280px] overflow-hidden rounded-full bg-slate-200/80 shadow-inner">
                     <div
-                        className="h-full rounded-full bg-primary transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-[#7c3aed] to-[#e84bbd] transition-all duration-500 ease-out"
                         style={{ width: `${progressPercentage}%` }}
                     />
                 </div>
 
-                <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-white/70 p-6">
-                    <div className="flex h-full flex-col items-center justify-center">
-                        <div className="mb-8 text-center">
-                            <p className="text-5xl font-bold tracking-tight">{formatTime(recordingTime)}</p>
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 to-white p-8 shadow-inner">
+                    <div className="flex h-full min-h-[380px] flex-col items-center justify-center">
+                        <div className="mb-10 text-center">
+                            <p className="text-6xl font-bold tracking-tight text-slate-800">
+                                {formatTime(recordingTime)}
+                            </p>
                             {isRecording && (
-                                <p className="text-sm text-muted-foreground mt-2">
-                                    {isPaused ? 'In pausa' : 'Registrazione in corso...'}
-                                </p>
+                                <div className="mt-3 flex items-center justify-center gap-2">
+                                    <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                                    <p className="text-sm font-medium text-slate-600">
+                                        {isPaused ? 'In pausa' : 'Registrazione in corso'}
+                                    </p>
+                                </div>
                             )}
                         </div>
 
                         {!audioUrl && (
-                            <div className="flex items-center justify-center gap-6">
+                            <div className="flex items-center justify-center gap-4">
                                 {isRecording && (
                                     <Button
                                         size="icon"
                                         variant="outline"
-                                        className="h-14 w-14 rounded-full border-2 shadow-sm"
+                                        className="h-16 w-16 rounded-full border-2 border-slate-300 bg-white shadow-lg transition-all hover:scale-105 hover:border-[#7c3aed] hover:bg-white"
                                         onClick={isPaused ? resumeRecording : pauseRecording}
                                     >
                                         <span className="sr-only">{isPaused ? 'Riprendi' : 'Pausa'}</span>
                                         {isPaused ? (
-                                            <Play className="h-6 w-6" />
+                                            <Play className="h-7 w-7 text-slate-700" fill="currentColor" />
                                         ) : (
-                                            <Pause className="h-6 w-6" />
+                                            <Pause className="h-7 w-7 text-slate-700" />
                                         )}
                                     </Button>
                                 )}
 
-                                <Button
-                                    size="icon"
-                                    className={`h-24 w-24 rounded-full text-white shadow-lg ${isRecording
-                                        ? 'bg-red-600 hover:bg-red-700'
-                                        : 'bg-[#e84bbd] hover:bg-[#e84bbd]/90'
+                                <button
+                                    className={`group relative h-32 w-32 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 ${isRecording
+                                        ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+                                        : 'bg-gradient-to-br from-[#e84bbd] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#e84bbd]'
                                         }`}
                                     onClick={isRecording ? handleStopRecording : handleStartRecording}
                                     disabled={sessionStatus === 'loading'}
                                 >
                                     <span className="sr-only">{isRecording ? 'Ferma' : 'Registra'}</span>
-                                    {isRecording ? (
-                                        <Square className="h-8 w-8" />
-                                    ) : (
-                                        <Mic className="h-10 w-10" />
-                                    )}
-                                </Button>
+                                    <div className="flex h-full w-full items-center justify-center">
+                                        {isRecording ? (
+                                            <Square className="h-12 w-12 text-white" fill="currentColor" />
+                                        ) : (
+                                            <Mic className="h-16 w-16 text-white transition-transform group-hover:scale-110" strokeWidth={2} />
+                                        )}
+                                    </div>
+                                </button>
 
                                 {isRecording && (
                                     <Button
                                         size="icon"
                                         variant="outline"
-                                        className="h-14 w-14 rounded-full border-2 shadow-sm"
+                                        className="h-16 w-16 rounded-full border-2 border-slate-300 bg-white shadow-lg transition-all hover:scale-105 hover:border-red-400 hover:bg-white"
                                         onClick={() => {
                                             stopRecording()
                                             clearRecording()
                                         }}
                                     >
                                         <span className="sr-only">Elimina</span>
-                                        <Trash2 className="h-6 w-6" />
+                                        <Trash2 className="h-7 w-7 text-red-500" />
                                     </Button>
                                 )}
                             </div>
                         )}
-
                         {audioUrl && !isRecording && (
-                            <div className="w-full space-y-4">
-                                <audio
-                                    src={audioUrl}
-                                    controls
-                                    className="w-full rounded-lg"
-                                />
-                                <div className="flex gap-2">
-                                    <Button
-                                        onClick={clearRecording}
-                                        variant="outline"
-                                        className="flex-1"
-                                        disabled={isAnalyzing}
-                                    >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Elimina
-                                    </Button>
+                            <div className="w-full space-y-5">
+                                <div className="overflow-hidden rounded-xl bg-white p-4 shadow-md">
+                                    <audio
+                                        src={audioUrl}
+                                        controls
+                                        className="w-full"
+                                    />
                                 </div>
+                                <Button
+                                    onClick={clearRecording}
+                                    variant="outline"
+                                    className="w-full rounded-xl border-2 border-slate-300 bg-white py-6 text-slate-700 shadow-sm transition-all hover:border-red-400 hover:bg-white"
+                                    disabled={isAnalyzing}
+                                >
+                                    <Trash2 className="mr-2 h-5 w-5 text-red-500" />
+                                    Elimina registrazione
+                                </Button>
                             </div>
                         )}
 
                         {audioUrl && !isAnalyzing && (
                             <Button
-                                className="mt-6 bg-[#7c3aed] text-white hover:bg-[#7c3aed]/90 px-10 rounded-full shadow-md"
+                                className="mt-6 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#e84bbd] px-12 py-6 text-lg font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                                 onClick={handleAnalyze}
                             >
-                                Analizza
+                                Analizza Registrazione
                             </Button>
                         )}
 
                         {isAnalyzing && (
                             <Button
-                                className="mt-6 bg-[#7c3aed] text-white px-10 rounded-full shadow-md"
+                                className="mt-6 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#e84bbd] px-12 py-6 text-lg font-semibold text-white shadow-lg"
                                 disabled
                             >
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 Analisi in corso...
                             </Button>
                         )}
 
                         {!isRecording && !audioUrl && (
-                            <p className="mt-8 text-sm text-slate-500 text-center">
+                            <p className="mt-10 max-w-[280px] text-center text-sm text-slate-500">
                                 {sessionStatus === 'unauthenticated'
                                     ? 'Clicca il microfono per iniziare (richiede login)'
                                     : 'Prova! Clicca il microfono per iniziare a registrare'
