@@ -143,12 +143,12 @@ export function MeetRecordingDialog({ onAnalysisComplete }: MeetRecordingDialogP
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-50 rounded-lg">
+                        <div className="p-2 bg-transparent rounded-lg">
                             <Image
                                 src="/meet.png"
                                 alt="Google Meet"
-                                width={24}
-                                height={24}
+                                width={32}
+                                height={32}
                             />
                         </div>
                         <div>
