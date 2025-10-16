@@ -6,7 +6,7 @@ import { Check, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { loadStripe } from '@stripe/stripe-js';
 import { useState } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
 
@@ -20,12 +20,9 @@ async function handleSubscription(
   sessionStatus: string,
   router: ReturnType<typeof useRouter>
 ) {
-  console.log("handleSubscription chiamato per piano:", plan, "Stato Sessione:", sessionStatus);
-
   setLoading(true);
 
   if (sessionStatus !== 'authenticated') {
-    console.log("Utente non autenticato, mostro toast (sonner).");
     toast.error("Autenticazione Richiesta", {
       description: "Accedi o registrati per poter sottoscrivere un piano.",
       action: {
@@ -34,23 +31,16 @@ async function handleSubscription(
       },
     });
     setLoading(false);
-    console.log("handleSubscription terminato (non autenticato).");
     return;
   }
 
-  console.log("Utente autenticato, controllo Stripe Promise...");
-
   if (!stripePromise) {
-    console.error('Chiave pubblicabile Stripe non configurata.');
     toast.error("Errore Configurazione", {
       description: "Il sistema di pagamento non è configurato correttamente."
     });
     setLoading(false);
-    console.log("handleSubscription terminato (Stripe non configurato).");
     return;
   }
-
-  console.log("Stripe configurato, avvio fetch a /api/create-checkout-session...");
 
   try {
     const response = await fetch('/api/create-checkout-session', {
@@ -60,18 +50,14 @@ async function handleSubscription(
       },
       body: JSON.stringify({ plan }),
     });
-    console.log("Fetch completata, status:", response.status);
 
     const data = await response.json();
-    console.log("Dati ricevuti dalla API:", data);
 
     if (response.ok && data.url) {
-      console.log("Risposta OK, reindirizzo a:", data.url);
       window.location.href = data.url;
     } else {
       console.error('Errore dalla API:', data.error || 'Errore sconosciuto', "Status:", response.status);
       if (response.status === 401) {
-        console.log("Errore 401 ricevuto, mostro toast autenticazione.");
         toast.error("Errore Autenticazione", {
           description: data.error || "Sessione scaduta. Effettua nuovamente l'accesso.",
           action: {
@@ -80,7 +66,6 @@ async function handleSubscription(
           },
         });
       } else {
-        console.log("Errore generico pagamento, mostro toast.");
         toast.error("Errore Pagamento", {
           description: `Errore: ${data.error || 'Riprova più tardi.'}`
         });
@@ -88,13 +73,11 @@ async function handleSubscription(
       setLoading(false);
     }
   } catch (error) {
-    console.error('Errore durante la chiamata API (catch):', error);
     toast.error("Errore di Rete", {
       description: 'Si è verificato un errore di rete. Riprova più tardi.'
     });
     setLoading(false);
   }
-  console.log("Fine esecuzione handleSubscription (se non reindirizzato).");
 }
 
 export function PricingSection() {

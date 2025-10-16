@@ -7,7 +7,7 @@ import { CheckCircle, Brain, GraduationCap, UserCheck, ListTodo, HelpCircle, Boo
 import { Badge } from "@/src/components/ui/badge"
 import { Button } from "@/src/components/ui/button"
 
-// --- Dati di Esempio ---
+
 const meetingInput = `
 <p className="mb-2 font-bold">Marco (Project Manager):</p>
 <p className="mb-4 text-sm">
@@ -86,11 +86,10 @@ const interviewInput = `
 </p>
 `;
 
-// Definisci tipo per i dati dei tab
 interface TabInfo {
   value: string;
   label: string;
-  Icon: React.ElementType; // Usa React.ElementType per tipi di componente
+  Icon: React.ElementType;
 }
 
 interface OutputTabData {
@@ -98,7 +97,6 @@ interface OutputTabData {
   tabs: TabInfo[];
 }
 
-// --- Componente --- 
 export function DemoSection() {
   const [selectedInputType, setSelectedInputType] = useState<'Meeting' | 'Lezione' | 'Intervista'>('Meeting');
 
@@ -111,7 +109,6 @@ export function DemoSection() {
     }
   };
 
-  // Funzione con tipo di ritorno esplicito
   const getOutputTabs = (): OutputTabData => {
     switch (selectedInputType) {
       case 'Meeting':
@@ -144,7 +141,6 @@ export function DemoSection() {
             { value: "nextSteps", label: "Prossimi Passi", Icon: Send },
           ]
         };
-      // Fallback corretto
       default:
         return {
           defaultTab: "summary",
@@ -172,11 +168,9 @@ export function DemoSection() {
 
         <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {/* Input Card */}
             <Card className="overflow-hidden">
               <div className="bg-primary p-4 text-white">
                 <h3 className="text-lg font-medium mb-3">Input: Video/Audio/Testo - {selectedInputType}</h3>
-                {/* Pulsanti di Selezione Input */}
                 <div className="flex space-x-2">
                   {(['Meeting', 'Lezione', 'Intervista'] as const).map((type) => (
                     <Button
@@ -199,16 +193,12 @@ export function DemoSection() {
               </CardContent>
             </Card>
 
-            {/* Output Section - Wrapped in Card */}
             <Card className="overflow-hidden">
-              {/* Output Header */}
               <div className="bg-primary p-4 text-white">
                 <h3 className="text-lg font-medium">Risultato Analisi</h3>
               </div>
-
-              {/* Tabs Component - Now inside the Card */}
               <Tabs defaultValue={currentOutput.defaultTab} className="w-full">
-                <TabsList className="flex w-full border-b border-border rounded-none px-4"> {/* Added px-4 for padding consistency */}
+                <TabsList className="flex w-full border-b border-border rounded-none px-4">
                   {currentOutput.tabs.map(tab => (
                     <TabsTrigger
                       key={tab.value}
@@ -221,10 +211,8 @@ export function DemoSection() {
                   ))}
                 </TabsList>
 
-                {/* Output Content - Meeting */}
                 {selectedInputType === 'Meeting' && (
-                  /* Removed the inner Card wrapper, using CardContent directly */
-                  <CardContent className="p-0 mt-0"> {/* Use CardContent, remove margin */}
+                  <CardContent className="p-0 mt-0">
                     <TabsContent value="summary">
                       <div className="p-4">
                         <h3 className="mb-4 text-lg font-medium">Riassunto della riunione</h3>
@@ -300,10 +288,8 @@ export function DemoSection() {
                   </CardContent>
                 )}
 
-                {/* Output Content - Lezione */}
                 {selectedInputType === 'Lezione' && (
-                  /* Removed the inner Card wrapper, using CardContent directly */
-                  <CardContent className="p-0 mt-0"> {/* Use CardContent, remove margin */}
+                  <CardContent className="p-0 mt-0">
                     <TabsContent value="summary">
                       <div className="p-4">
                         <h3 className="mb-4 text-lg font-medium">Riassunto della Lezione</h3>
@@ -380,10 +366,8 @@ export function DemoSection() {
                   </CardContent>
                 )}
 
-                {/* Output Content - Intervista */}
                 {selectedInputType === 'Intervista' && (
-                  /* Removed the inner Card wrapper, using CardContent directly */
-                  <CardContent className="p-0 mt-0"> {/* Use CardContent, remove margin */}
+                  <CardContent className="p-0 mt-0">
                     <TabsContent value="summary">
                       <div className="p-4">
                         <h3 className="mb-4 text-lg font-medium">Riassunto del Dibattito</h3>

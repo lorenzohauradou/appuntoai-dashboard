@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import type React from 'react';
 import {
   FileText,
   Users,
@@ -30,7 +29,6 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false)
   const lectureResults = results as LectureResults;
 
-  // Funzione per copiare il riassunto
   const handleCopySummary = async () => {
     if (!results.summary) {
       toast.error("Errore Copia", { description: "Il riassunto è vuoto." });

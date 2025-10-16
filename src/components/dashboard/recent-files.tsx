@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src
 import { Button } from "@/src/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/src/components/ui/dropdown-menu"
 import { ResultsDisplay } from "./results-display"
-import { useToast } from "@/src/components/ui/use-toast"
 import { ResultsType, RecentFileRaw } from "./types"
 import { Badge } from "@/src/components/ui/badge"
 
@@ -18,7 +17,6 @@ interface RecentFilesProps {
 
 export function RecentFiles({ files = [], onDelete, formatApiResult }: RecentFilesProps) {
   const [expandedFileId, setExpandedFileId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -34,7 +32,6 @@ export function RecentFiles({ files = [], onDelete, formatApiResult }: RecentFil
   };
 
   const handleToggleExpand = (fileId: string) => {
-    console.log(`Toggling file expansion for ID: ${fileId}`);
     setExpandedFileId(prevId => (prevId === fileId ? null : fileId));
   };
 
@@ -86,10 +83,8 @@ export function RecentFiles({ files = [], onDelete, formatApiResult }: RecentFil
 
               let formattedResultsForDisplay: ResultsType | null = null;
               if (expandedFileId === file.id) {
-                console.log(`RecentFiles: Formatting rawData for expanded file ${file.id}`);
                 formattedResultsForDisplay = formatApiResult(file.rawData);
                 if (!formattedResultsForDisplay) {
-                  console.error(`RecentFiles: Failed to format rawData for file ${file.id}`, file.rawData);
                 }
               }
 
