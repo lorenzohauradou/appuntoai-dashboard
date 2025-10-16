@@ -278,7 +278,7 @@ export function ResultsDisplay({ results, onChatOpen }: ResultsDisplayProps) {
           <div className="flex flex-wrap gap-2">
             <Button onClick={onChatOpen} className="gap-2 bg-primary text-white">
               <MessageSquare className="h-4 w-4" />
-              Chatta con il documento!
+              Chatta con il documento
             </Button>
             <Button onClick={handleStartQuiz} variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-white">
               <Brain className="h-4 w-4" />

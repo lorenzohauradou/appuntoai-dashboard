@@ -102,12 +102,6 @@ export function RecentFiles({ files = [], onDelete, formatApiResult }: RecentFil
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={`text-xs px-2 py-1 ${typeStyle.className}`}>
-                        {typeStyle.text}
-                      </Badge>
-                      <Badge className="text-xs text-green-600 bg-green-100 px-2 py-1 hover:bg-green-200">
-                        {file.status}
-                      </Badge>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
