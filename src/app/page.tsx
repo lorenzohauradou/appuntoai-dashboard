@@ -7,7 +7,7 @@ import { ForWhoSection } from "@/src/components/home/for-who-section"
 import { FaqSection } from "@/src/components/home/faq-section"
 import { CtaSection } from "@/src/components/home/cta-section"
 import { Footer } from "@/src/components/home/footer"
-import { Navbar } from "@/src/components/navbar"
+import { Navbar } from "@/src/components/home/navbar"
 import { BackgroundPattern } from "@/src/components/ui/background-pattern"
 import { RagVideoSection } from "@/src/components/home/rag-video-section"
 
