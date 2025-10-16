@@ -185,9 +185,15 @@ export function MeetRecordingDialog({ onAnalysisComplete }: MeetRecordingDialogP
                                         </p>
                                     </div>
 
-                                    <div className="bg-slate-50 rounded-xl p-8 border border-slate-200">
-                                        <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center">
-                                            <MonitorPlay className="h-20 w-20 text-slate-400" />
+                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                                        <div className="aspect-video bg-white rounded-lg overflow-hidden">
+                                            <Image
+                                                src="/step/step1.png"
+                                                alt="Step 1: Seleziona Scheda Chrome"
+                                                width={800}
+                                                height={450}
+                                                className="w-full h-full object-contain"
+                                            />
                                         </div>
                                     </div>
 
@@ -210,9 +216,15 @@ export function MeetRecordingDialog({ onAnalysisComplete }: MeetRecordingDialogP
                                         </p>
                                     </div>
 
-                                    <div className="bg-slate-50 rounded-xl p-8 border border-slate-200">
-                                        <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center">
-                                            <Video className="h-20 w-20 text-slate-400" />
+                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                                        <div className="aspect-video bg-white rounded-lg overflow-hidden">
+                                            <Image
+                                                src="/step/step2.png"
+                                                alt="Step 2: Scegli scheda Google Meet"
+                                                width={800}
+                                                height={450}
+                                                className="w-full h-full object-contain"
+                                            />
                                         </div>
                                     </div>
 
@@ -245,9 +257,15 @@ export function MeetRecordingDialog({ onAnalysisComplete }: MeetRecordingDialogP
                                         </p>
                                     </div>
 
-                                    <div className="bg-emerald-50 rounded-xl p-8 border-2 border-emerald-200">
-                                        <div className="aspect-video bg-white rounded-lg flex items-center justify-center">
-                                            <Volume2 className="h-20 w-20 text-emerald-600" />
+                                    <div className="bg-emerald-50 rounded-xl p-4 border-2 border-emerald-200">
+                                        <div className="aspect-video bg-white rounded-lg overflow-hidden">
+                                            <Image
+                                                src="/step/step3.png"
+                                                alt="Step 3: Spunta Condividi audio scheda"
+                                                width={800}
+                                                height={450}
+                                                className="w-full h-full object-contain"
+                                            />
                                         </div>
                                     </div>
 
