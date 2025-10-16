@@ -221,11 +221,11 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
         {!isUploading && !isProcessing && (
           <Tabs defaultValue="video" value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid grid-cols-2 mb-6">
-              <TabsTrigger value="video" className="flex items-center gap-2">
+              <TabsTrigger value="video" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white">
                 <FileVideo className="w-4 h-4" />
                 Video
               </TabsTrigger>
-              <TabsTrigger value="audio" className="flex items-center gap-2">
+              <TabsTrigger value="audio" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white">
                 <FileAudio className="w-4 h-4" />
                 Audio
               </TabsTrigger>
