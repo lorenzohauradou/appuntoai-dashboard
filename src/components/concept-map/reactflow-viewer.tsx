@@ -43,16 +43,17 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     const dagreGraph = new dagre.graphlib.Graph()
     dagreGraph.setDefaultEdgeLabel(() => ({}))
     dagreGraph.setGraph({
-        rankdir: 'TB', // Top to Bottom
-        align: 'UL', // Allineamento Upper Left per compattare
-        nodesep: 60, // Ridotto per maggiore compattezza orizzontale
-        ranksep: 100, // Ridotto per maggiore compattezza verticale
-        marginx: 40,
-        marginy: 40,
+        rankdir: 'TB',
+        align: 'UL',
+        nodesep: 40,
+        ranksep: 80,
+        marginx: 30,
+        marginy: 30,
+        ranker: 'tight-tree',
     })
 
     nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: node.width || 250, height: node.height || 100 })
+        dagreGraph.setNode(node.id, { width: node.width || 180, height: node.height || 75 })
     })
 
     edges.forEach((edge) => {
@@ -64,8 +65,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     nodes.forEach((node) => {
         const nodeWithPosition = dagreGraph.node(node.id)
         node.position = {
-            x: nodeWithPosition.x - (node.width || 250) / 2,
-            y: nodeWithPosition.y - (node.height || 100) / 2,
+            x: nodeWithPosition.x - (node.width || 180) / 2,
+            y: nodeWithPosition.y - (node.height || 75) / 2,
         }
         return node
     })
@@ -87,9 +88,9 @@ const getNodeColor = (type: string, category: string): string => {
 
 // Dimensione del nodo basata sulla categoria
 const getNodeSize = (category: string): { width: number; height: number } => {
-    if (category === 'main') return { width: 240, height: 100 }
-    if (category === 'secondary') return { width: 200, height: 85 }
-    return { width: 180, height: 75 }
+    if (category === 'main') return { width: 200, height: 85 }
+    if (category === 'secondary') return { width: 180, height: 75 }
+    return { width: 160, height: 70 }
 }
 
 export function ReactFlowViewer({ nodes: conceptNodes, edges: conceptEdges }: ReactFlowViewerProps) {
@@ -107,9 +108,9 @@ export function ReactFlowViewer({ nodes: conceptNodes, edges: conceptEdges }: Re
                 type: 'default',
                 data: {
                     label: (
-                        <div className="p-3 text-center">
-                            <div className="font-bold text-xs mb-1 leading-tight">{node.label}</div>
-                            <div className="text-[10px] opacity-90 line-clamp-2 leading-tight">{node.description}</div>
+                        <div className="p-2 text-center">
+                            <div className="font-bold text-[10px] mb-0.5 leading-tight">{node.label}</div>
+                            <div className="text-[9px] opacity-90 line-clamp-2 leading-tight">{node.description}</div>
                         </div>
                     ),
                 },

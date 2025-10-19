@@ -77,16 +77,16 @@ export function MapLoadingAnimation() {
 
                         // Calcola posizione pseudo-gerarchica (centrate perfettamente)
                         const positions = [
-                            { x: '50%', y: '18%' }, // root - centrato in alto
-                            { x: '20%', y: '48%' }, // concept 1 - sinistra
-                            { x: '50%', y: '48%' }, // concept 2 - centro
-                            { x: '80%', y: '48%' }, // concept 3 - destra
-                            { x: '27%', y: '78%' }, // def 1
-                            { x: '50%', y: '78%' }, // def 2 - centrato
-                            { x: '73%', y: '78%' }, // example
+                            { left: '50%', top: '18%' }, // root - centrato in alto
+                            { left: '17%', top: '48%' }, // concept 1 - sinistra
+                            { left: '50%', top: '48%' }, // concept 2 - centro
+                            { left: '83%', top: '48%' }, // concept 3 - destra
+                            { left: '27%', top: '78%' }, // def 1
+                            { left: '50%', top: '78%' }, // def 2 - centrato
+                            { left: '73%', top: '78%' }, // example
                         ]
 
-                        const pos = positions[index] || { x: '50%', y: '50%' }
+                        const pos = positions[index] || { left: '50%', top: '50%' }
 
                         return (
                             <motion.div
@@ -104,7 +104,7 @@ export function MapLoadingAnimation() {
                                     ease: "easeInOut",
                                 }}
                                 className="absolute -translate-x-1/2 -translate-y-1/2"
-                                style={{ left: pos.x, top: pos.y }}
+                                style={{ left: pos.left, top: pos.top }}
                             >
                                 <div
                                     className={`${getNodeSize(node.type)} bg-gradient-to-br ${getNodeColor(
