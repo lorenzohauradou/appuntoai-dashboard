@@ -42,7 +42,11 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
     const handleAnalyze = async () => {
         if (sessionStatus === 'unauthenticated') {
             toast.error("Accesso richiesto", {
-                description: "Devi effettuare l'accesso per analizzare video YouTube"
+                description: "Devi effettuare l'accesso per analizzare video YouTube",
+                action: {
+                    label: 'Accedi',
+                    onClick: () => window.location.href = '/login'
+                }
             })
             return
         }

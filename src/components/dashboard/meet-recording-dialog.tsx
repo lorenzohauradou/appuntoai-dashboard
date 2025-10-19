@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/src/components/ui/dialog'
 import { Button } from '@/src/components/ui/button'
 import { Alert, AlertDescription } from '@/src/components/ui/alert'
 import { Progress } from '@/src/components/ui/progress'
 import {
     Video,
-    MonitorPlay,
-    Volume2,
     CheckCircle2,
     AlertCircle,
     Loader2,
@@ -28,6 +27,7 @@ interface MeetRecordingDialogProps {
 }
 
 export function MeetRecordingDialog({ onAnalysisComplete }: MeetRecordingDialogProps) {
+    const { data: session, status: sessionStatus } = useSession()
     const [open, setOpen] = useState(false)
     const [currentStep, setCurrentStep] = useState(1)
     const [isUploading, setIsUploading] = useState(false)
@@ -53,6 +53,18 @@ export function MeetRecordingDialog({ onAnalysisComplete }: MeetRecordingDialogP
     }
 
     const handleStartRecording = async () => {
+        if (sessionStatus === 'unauthenticated') {
+            toast.error('Accesso richiesto', {
+                description: 'Devi effettuare l\'accesso per registrare',
+                action: {
+                    label: 'Accedi',
+                    onClick: () => window.location.href = '/login'
+                }
+            })
+            setOpen(false)
+            return
+        }
+
         await startRecording()
         setCurrentStep(1)
     }

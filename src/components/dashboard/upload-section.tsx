@@ -99,7 +99,13 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
 
   const handleProcessClick = async () => {
     if (sessionStatus === 'unauthenticated') {
-      router.push('/login')
+      toast.error("Accesso richiesto", {
+        description: "Devi effettuare l'accesso per analizzare",
+        action: {
+          label: 'Accedi',
+          onClick: () => router.push('/login')
+        }
+      })
       return
     }
 

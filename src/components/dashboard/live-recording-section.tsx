@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Button } from '@/src/components/ui/button'
 import { Progress } from '@/src/components/ui/progress'
@@ -15,6 +16,7 @@ interface LiveRecordingSectionProps {
 }
 
 export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectionProps) {
+    const { data: session, status: sessionStatus } = useSession()
     const {
         isRecording,
         isPaused,
@@ -38,6 +40,17 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
     }
 
     const handleStartRecording = async () => {
+        if (sessionStatus === 'unauthenticated') {
+            toast.error('Accesso richiesto', {
+                description: 'Devi effettuare l\'accesso per registrare',
+                action: {
+                    label: 'Accedi',
+                    onClick: () => window.location.href = '/login'
+                }
+            })
+            return
+        }
+
         try {
             await startRecording()
             toast.success('Registrazione avviata', {
