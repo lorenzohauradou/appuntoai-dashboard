@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/src/components/ui/card'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { LandingHeader } from '@/src/components/shared/landing-header'
 import { TranscriberHero } from '@/src/components/transcriber/transcriber-hero'
 import { TranscriberForm } from '@/src/components/transcriber/transcriber-form'
 import { TranscriptResult } from '@/src/components/transcriber/transcript-result'
@@ -80,6 +81,7 @@ export default function YouTubeTranscriberPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+            <LandingHeader />
             <div className="container mx-auto px-4 py-8 max-w-5xl">
                 <TranscriberHero />
 
