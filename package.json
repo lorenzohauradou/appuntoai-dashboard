@@ -81,8 +81,6 @@
   },
   "devDependencies": {
     "@types/dagre": "^0.7.53",
-    "@types/html2canvas": "^1.0.0",
-    "@types/jspdf": "^2.0.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
