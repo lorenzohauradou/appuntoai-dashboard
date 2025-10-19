@@ -20,12 +20,8 @@ export async function POST(request: NextRequest) {
     }
 
     const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL;
-    if (!workerUrl) {
-      console.error("NEXT_PUBLIC_WORKER_URL non configurato");
-      return NextResponse.json({ detail: 'Configurazione server incompleta' }, { status: 500 });
-    }
 
-    const backendUrl = `${workerUrl}/analyze`;
+    const backendUrl = `${workerUrl}/analyze-upload`;
     console.log(`Inoltro richiesta a ${backendUrl}`);
 
     const response = await fetch(backendUrl, {

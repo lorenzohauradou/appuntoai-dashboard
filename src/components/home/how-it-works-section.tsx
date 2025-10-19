@@ -69,11 +69,11 @@ export function HowItWorksSection() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                  <span>Estrazione Task</span>
+                  <span>Mappa Concettuale</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                  <span>Identificazione Decisioni</span>
+                  <span>Quiz su misura</span>
                 </li>
               </ul>
             </CardContent>

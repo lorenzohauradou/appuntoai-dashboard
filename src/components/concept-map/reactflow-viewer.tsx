@@ -38,14 +38,17 @@ interface ReactFlowViewerProps {
     edges: ConceptEdge[]
 }
 
-// Layout automatico con Dagre per grafo gerarchico
+// Layout automatico con Dagre per grafo gerarchico compatto
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     const dagreGraph = new dagre.graphlib.Graph()
     dagreGraph.setDefaultEdgeLabel(() => ({}))
     dagreGraph.setGraph({
         rankdir: 'TB', // Top to Bottom
-        nodesep: 100,
-        ranksep: 150,
+        align: 'UL', // Allineamento Upper Left per compattare
+        nodesep: 60, // Ridotto per maggiore compattezza orizzontale
+        ranksep: 100, // Ridotto per maggiore compattezza verticale
+        marginx: 40,
+        marginy: 40,
     })
 
     nodes.forEach((node) => {
@@ -84,9 +87,9 @@ const getNodeColor = (type: string, category: string): string => {
 
 // Dimensione del nodo basata sulla categoria
 const getNodeSize = (category: string): { width: number; height: number } => {
-    if (category === 'main') return { width: 280, height: 120 }
-    if (category === 'secondary') return { width: 240, height: 100 }
-    return { width: 200, height: 80 }
+    if (category === 'main') return { width: 240, height: 100 }
+    if (category === 'secondary') return { width: 200, height: 85 }
+    return { width: 180, height: 75 }
 }
 
 export function ReactFlowViewer({ nodes: conceptNodes, edges: conceptEdges }: ReactFlowViewerProps) {
@@ -104,9 +107,9 @@ export function ReactFlowViewer({ nodes: conceptNodes, edges: conceptEdges }: Re
                 type: 'default',
                 data: {
                     label: (
-                        <div className="p-4 text-center">
-                            <div className="font-bold text-sm mb-1">{node.label}</div>
-                            <div className="text-xs opacity-90 line-clamp-2">{node.description}</div>
+                        <div className="p-3 text-center">
+                            <div className="font-bold text-xs mb-1 leading-tight">{node.label}</div>
+                            <div className="text-[10px] opacity-90 line-clamp-2 leading-tight">{node.description}</div>
                         </div>
                     ),
                 },
@@ -147,16 +150,16 @@ export function ReactFlowViewer({ nodes: conceptNodes, edges: conceptEdges }: Re
                 strokeWidth: 2,
             },
             labelStyle: {
-                fontSize: 11,
+                fontSize: 9,
                 fontWeight: 600,
                 fill: '#374151',
             },
             labelBgStyle: {
                 fill: '#ffffff',
-                fillOpacity: 0.9,
+                fillOpacity: 0.85,
             },
-            labelBgPadding: [8, 4],
-            labelBgBorderRadius: 4,
+            labelBgPadding: [6, 3],
+            labelBgBorderRadius: 3,
         }))
     }, [conceptEdges])
 
