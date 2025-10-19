@@ -3,13 +3,6 @@ import { NextResponse } from 'next/server';
 import { auth } from "@/auth";
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const session = await auth();
-  
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const userId = session.user.id;
   const body = (await request.json()) as HandleUploadBody;
 
   try {
@@ -17,6 +10,12 @@ export async function POST(request: Request): Promise<NextResponse> {
       body,
       request,
       onBeforeGenerateToken: async (pathname: string) => {
+        const session = await auth();
+        
+        if (!session?.user?.id) {
+          throw new Error('Unauthorized');
+        }
+
         return {
           allowedContentTypes: [
             'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska',
@@ -26,7 +25,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           maximumSizeInBytes: 7 * 1024 * 1024 * 1024,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({
-            userId: userId,
+            userId: session.user.id,
           }),
         };
       },
@@ -34,9 +33,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
+    const message = (error as Error).message;
+    const status = message === 'Unauthorized' ? 401 : 400;
     return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 },
+      { error: message },
+      { status },
     );
   }
 }
