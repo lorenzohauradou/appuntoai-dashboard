@@ -97,31 +97,39 @@ export function PricingSection() {
         <div className="mx-auto grid max-w-[1400px] gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="flex flex-col border-2">
             <CardHeader>
-              <CardTitle>Free</CardTitle>
-              <div className="mt-4 flex items-baseline text-5xl font-extrabold">Gratis</div>
-              <CardDescription className="mt-4 h-10">Ideale per provare il servizio</CardDescription>
+              <CardTitle>Gratis</CardTitle>
+              <div className="mt-4 flex items-baseline text-5xl font-extrabold">€0</div>
+              <CardDescription className="mt-4 h-10">Perfetto per provare il servizio</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm">2 report al mese</span>
+                  <span className="text-sm font-semibold">90 minuti di trascrizione / mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm">Analisi base (Task, Decisioni, Temi)</span>
+                  <span className="text-sm">Analisi completa: Riassunto, Concetti Chiave, Argomenti</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Quiz illimitati per progetto</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
+                  <span className="text-sm">Mappa Concettuale per progetto</span>
                 </li>
                 <li className="flex items-start gap-2 font-medium text-muted-foreground/80">
                   <MessageSquare className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm">Chatta con il contenuto (2 chat/mese)</span>
+                  <span className="text-sm">Chat con il documento</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm">Esportazione in PDF e TXT</span>
+                  <span className="text-sm">Limite upload: max 200MB per file</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm">Supporto email</span>
+                  <span className="text-sm">Chat Globale con i tuoi progetti</span>
                 </li>
               </ul>
             </CardContent>
@@ -132,36 +140,45 @@ export function PricingSection() {
             </CardFooter>
           </Card>
 
-          <Card className="flex flex-col border-2">
+          <Card className="flex flex-col border-2 border-primary">
             <CardHeader>
-              <CardTitle>Pro</CardTitle>
+              <div className="flex justify-end">
+                <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary -mt-2 -mr-2">
+                  Più popolare
+                </div>
+              </div>
+              <CardTitle className="mt-0">Premium</CardTitle>
               <div className="mt-4 flex items-baseline text-5xl font-extrabold">
-                14€
+                €6,99
                 <span className="ml-1 text-lg font-medium text-muted-foreground">/ mese</span>
               </div>
-              <CardDescription className="mt-4 h-10">Per professionisti e uso regolare</CardDescription>
+              <CardDescription className="mt-4 h-10">Per studenti che studiano seriamente</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">30 report al mese</span>
+                  <span className="text-sm font-semibold">600 minuti di trascrizione / mese (10 ore)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Video / audio fino a 500 MB per report</span>
+                  <span className="text-sm">Upload più grandi: fino a 5GB per file</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Analisi base (Task, Decisioni, Temi)</span>
+                  <span className="text-sm">Tutte le funzionalità del piano Gratis</span>
                 </li>
                 <li className="flex items-start gap-2 font-medium text-primary">
                   <MessageSquare className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Chatta con il contenuto (30 chat/mese)</span>
+                  <span className="text-sm font-semibold">Chat Globale ILLIMITATA con tutti i tuoi progetti</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Esportazione in PDF e TXT</span>
+                  <span className="text-sm">Esportazione (Mappa Concettuale in PNG/PDF)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">Feature AI avanzate (Crea testo d&apos;esame, Confronta lezioni)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
@@ -171,55 +188,44 @@ export function PricingSection() {
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
               <Button
-                variant="outline"
-                className="w-full"
+                className="w-full bg-primary text-white hover:bg-primary/90"
                 onClick={() => handleSubscription('pro', setIsLoadingPro, sessionStatus, router)}
                 disabled={isLoadingPro || !stripePromise}
               >
-                {isLoadingPro ? 'Caricamento...' : 'Scegli Pro'}
+                {isLoadingPro ? 'Caricamento...' : 'Scegli Premium'}
               </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                Piano annuale: €59/anno (risparmi 2 mesi)
+              </p>
             </CardFooter>
           </Card>
 
-          <Card className="flex flex-col border-2 border-primary">
+          <Card className="flex flex-col border-2">
             <CardHeader>
-              <div className="flex justify-end">
-                <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary -mt-2 -mr-2">
-                  Più popolare
-                </div>
-              </div>
-              <CardTitle className="mt-0">Business</CardTitle>
+              <CardTitle>Business</CardTitle>
               <div className="mt-4 flex items-baseline text-5xl font-extrabold">
-                29€
+                €29
                 <span className="ml-1 text-lg font-medium text-muted-foreground">/ mese</span>
               </div>
-              <CardDescription className="mt-4 h-10">Per team e organizzazioni</CardDescription>
+              <CardDescription className="mt-4 h-10">Per power user e piccoli team</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">80 report al mese</span>
+                  <span className="text-sm font-semibold">2500 minuti di trascrizione / mese (35 ore)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Video / audio fino a 7 GB per report</span>
+                  <span className="text-sm">Video / audio fino a 7 GB per file</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Tutte le funzionalità Pro</span>
+                  <span className="text-sm">Tutte le funzionalità Premium</span>
                 </li>
                 <li className="flex items-start gap-2 font-medium text-primary">
                   <MessageSquare className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Chat illimitata con i contenuti</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm">Funzionalità aggiuntive:</span>
-                </li>
-                <li className="flex items-start gap-2 pl-6">
-                  <Check className="mt-1 h-3 w-3 text-primary flex-shrink-0" />
-                  <span className="text-xs">Trascrizione grezza per ogni report</span>
+                  <span className="text-sm">Chat Globale illimitata con i contenuti</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
