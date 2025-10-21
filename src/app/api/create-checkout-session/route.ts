@@ -42,6 +42,16 @@ export async function POST(req: Request) {
       });
       stripeCustomerId = user?.stripeCustomerId ?? null;
       console.log(`Stripe Customer ID per ${userId}: ${stripeCustomerId}`);
+      
+      if (stripeCustomerId) {
+        try {
+          await stripe.customers.retrieve(stripeCustomerId);
+          console.log(`Customer ${stripeCustomerId} esiste in Stripe.`);
+        } catch (customerError) {
+          console.warn(`Customer ${stripeCustomerId} non esiste più in Stripe. Verrà creato un nuovo customer.`);
+          stripeCustomerId = null;
+        }
+      }
     } catch (dbError) {
       console.error(`Errore DB nel recupero stripeCustomerId per user ${userId}:`, dbError);
     }
@@ -55,7 +65,7 @@ export async function POST(req: Request) {
       ],
       mode: 'subscription',
       success_url: `${DOMAIN}/dashboard?success=true`, 
-      cancel_url: `${DOMAIN}/prezzi?canceled=true`,   
+      cancel_url: `${DOMAIN}/?canceled=true`,   
       automatic_tax: { enabled: true }, 
       allow_promotion_codes: true,     
       client_reference_id: userId,

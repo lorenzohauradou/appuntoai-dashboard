@@ -10,14 +10,9 @@ export function getStripeInstance(): Stripe {
       throw new Error("La variabile d'ambiente STRIPE_SECRET_KEY non è configurata.");
     }
 
-    console.log("Inizializzazione istanza Stripe...");
     stripeInstance = new Stripe(secretKey, {
       apiVersion: '2025-08-27.basil',
-      typescript: true,
-      appInfo: { 
-        name: "AppuntoAI Dashboard",
-        version: "0.1.0",
-      }
+      typescript: true
     });
   }
   return stripeInstance;
