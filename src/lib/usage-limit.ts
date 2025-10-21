@@ -2,8 +2,8 @@ import { prisma } from "./prisma";
 
 const USAGE_LIMITS = {
   free: 3,
-  pro: 600,
-  business: 2500,
+  pro: 20,
+  business: 60,
 };
 
 export interface UsageLimitResult {
@@ -20,12 +20,7 @@ export async function checkUsageLimit(userId: string): Promise<UsageLimitResult>
     select: {
       subscriptionStatus: true,
       limitResetDate: true,
-      transcriptions: {
-        select: {
-          id: true,
-          createdAt: true,
-        },
-      },
+      monthlyAnalysesCount: true,
     },
   });
 
@@ -37,25 +32,24 @@ export async function checkUsageLimit(userId: string): Promise<UsageLimitResult>
   const limit = USAGE_LIMITS[subscriptionStatus as keyof typeof USAGE_LIMITS] || USAGE_LIMITS.free;
 
   const now = new Date();
-  const lastResetDate = user.limitResetDate || user.transcriptions[0]?.createdAt || now;
-  
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastResetDate = user.limitResetDate || new Date(0);
+  
   const shouldResetLimit = lastResetDate < monthStart;
 
+  let currentCount = user.monthlyAnalysesCount || 0;
+
   if (shouldResetLimit) {
+    currentCount = 0;
     await prisma.user.update({
       where: { id: userId },
-      data: { limitResetDate: now },
+      data: { 
+        limitResetDate: now,
+        monthlyAnalysesCount: 0
+      },
     });
   }
 
-  const filterDate = shouldResetLimit ? now : lastResetDate;
-
-  const currentMonthTranscriptions = user.transcriptions.filter(
-    (t) => t.createdAt >= filterDate
-  );
-
-  const currentCount = currentMonthTranscriptions.length;
   const allowed = currentCount < limit;
 
   let message: string | undefined;
@@ -63,7 +57,7 @@ export async function checkUsageLimit(userId: string): Promise<UsageLimitResult>
     if (subscriptionStatus === "free") {
       message = `Hai raggiunto il limite di ${limit} analisi gratuite. Passa a Premium per continuare!`;
     } else {
-      message = `Hai raggiunto il limite mensile di ${limit} minuti di trascrizione. Attendi il prossimo mese o passa a un piano superiore.`;
+      message = `Hai raggiunto il limite mensile di ${limit} analisi. Attendi il prossimo mese o passa a un piano superiore.`;
     }
   }
 
@@ -76,20 +70,24 @@ export async function checkUsageLimit(userId: string): Promise<UsageLimitResult>
   };
 }
 
+export async function incrementUsageCount(userId: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      monthlyAnalysesCount: {
+        increment: 1
+      }
+    }
+  });
+}
+
 export async function getUserUsageInfo(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       subscriptionStatus: true,
       limitResetDate: true,
-      transcriptions: {
-        select: {
-          createdAt: true,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      },
+      monthlyAnalysesCount: true,
     },
   });
 
@@ -102,19 +100,16 @@ export async function getUserUsageInfo(userId: string) {
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastResetDate = user.limitResetDate || user.transcriptions[0]?.createdAt || now;
+  const lastResetDate = user.limitResetDate || new Date(0);
   
-  const filterDate = lastResetDate < monthStart ? now : lastResetDate;
-
-  const currentMonthTranscriptions = user.transcriptions.filter(
-    (t) => t.createdAt >= filterDate
-  );
+  const shouldReset = lastResetDate < monthStart;
+  const currentCount = shouldReset ? 0 : (user.monthlyAnalysesCount || 0);
 
   return {
     subscriptionStatus,
-    currentCount: currentMonthTranscriptions.length,
+    currentCount,
     limit,
-    remaining: Math.max(0, limit - currentMonthTranscriptions.length),
+    remaining: Math.max(0, limit - currentCount),
   };
 }
 

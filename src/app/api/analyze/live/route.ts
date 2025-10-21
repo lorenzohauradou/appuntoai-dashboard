@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { checkUsageLimit } from '@/src/lib/usage-limit'
+import { checkUsageLimit, incrementUsageCount } from '@/src/lib/usage-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,6 +56,8 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
+
+    await incrementUsageCount(session.user.id!)
 
     return NextResponse.json(data)
   } catch (error) {

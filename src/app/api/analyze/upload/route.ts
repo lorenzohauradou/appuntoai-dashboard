@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/auth";
-import { checkUsageLimit } from "@/src/lib/usage-limit";
+import { checkUsageLimit, incrementUsageCount } from "@/src/lib/usage-limit";
 
 export const maxDuration = 300;
 
@@ -72,6 +72,9 @@ export async function POST(request: NextRequest) {
     }
     
     console.log("Analisi completata");
+    
+    await incrementUsageCount(userId);
+    
     return NextResponse.json(data, { status: 200 });
 
   } catch (error: any) {

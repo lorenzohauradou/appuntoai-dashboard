@@ -105,7 +105,7 @@ export function PricingSection() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
-                  <span className="text-sm font-semibold">90 minuti di trascrizione / mese</span>
+                  <span className="text-sm font-semibold">3 progetti / mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-muted-foreground/80 flex-shrink-0" />
@@ -158,7 +158,7 @@ export function PricingSection() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm font-semibold">600 minuti di trascrizione / mese (10 ore)</span>
+                  <span className="text-sm font-semibold">20 progetti / mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
@@ -213,7 +213,7 @@ export function PricingSection() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm font-semibold">2500 minuti di trascrizione / mese (35 ore)</span>
+                  <span className="text-sm font-semibold">80 progetti / mese</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-1 h-4 w-4 text-primary flex-shrink-0" />

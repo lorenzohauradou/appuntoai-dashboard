@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { checkUsageLimit } from '@/src/lib/usage-limit';
+import { checkUsageLimit, incrementUsageCount } from '@/src/lib/usage-limit';
 
 export const maxDuration = 300;
 
@@ -61,6 +61,9 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await backendResponse.json();
+    
+    await incrementUsageCount(session.user.id);
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error('Errore API analyze/youtube:', error);

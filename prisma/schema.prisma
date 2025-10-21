@@ -18,13 +18,14 @@ model User {
   sessions       Session[]
   authenticators Authenticator[]
 
-  transcriptions Transcription[] // 👈 Relazione 1:N con le transcriptions
+  transcriptions Transcription[]
 
   // ---> CAMPI PER ABBONAMENTI E LIMITI <---
   subscriptionStatus String    @default("free") // Es: "free", "pro", "business"
   stripeCustomerId   String?   @unique          // ID cliente Stripe
   stripeSubscriptionId String? @unique
   limitResetDate     DateTime? @map("limit_reset_date") // Data ultimo reset limite mensile
+  monthlyAnalysesCount Int     @default(0)      // Contatore analisi del mese (resettato mensilmente)
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
