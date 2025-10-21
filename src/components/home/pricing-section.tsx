@@ -199,6 +199,7 @@ export function PricingSection() {
               </p>
             </CardFooter>
           </Card>
+
           <Card className="flex flex-col border-2">
             <CardHeader>
               <CardTitle>Business</CardTitle>
