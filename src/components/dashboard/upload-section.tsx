@@ -139,9 +139,26 @@ export function UploadSection({ onAnalysisComplete, formatApiResult }: UploadSec
 
       if (!analysisResponse.ok) {
         let errorMsg = 'Errore elaborazione'
+        let showUpgrade = false
+
         try {
           const errorData = await analysisResponse.json()
           errorMsg = errorData.error || errorData.detail || errorMsg
+
+          if (analysisResponse.status === 403) {
+            showUpgrade = true
+            toast.error("Limite Raggiunto", {
+              description: errorMsg,
+              duration: 10000,
+              action: {
+                label: "Passa a Premium",
+                onClick: () => router.push('/#prezzi')
+              }
+            })
+            setIsUploading(false)
+            setIsProcessing(false)
+            return
+          }
         } catch {
           const text = await analysisResponse.text()
           errorMsg = text || errorMsg

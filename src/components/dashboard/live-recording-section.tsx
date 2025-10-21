@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Button } from '@/src/components/ui/button'
 import { Progress } from '@/src/components/ui/progress'
@@ -17,6 +18,7 @@ interface LiveRecordingSectionProps {
 
 export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectionProps) {
     const { data: session, status: sessionStatus } = useSession()
+    const router = useRouter()
     const {
         isRecording,
         isPaused,
@@ -93,7 +95,23 @@ export function LiveRecordingSection({ onAnalysisComplete }: LiveRecordingSectio
             })
 
             if (!response.ok) {
-                throw new Error('Errore durante l\'analisi')
+                const errorData = await response.json().catch(() => ({}))
+                const errorMsg = errorData.error || 'Errore durante l\'analisi'
+
+                if (response.status === 403) {
+                    toast.error("Limite Raggiunto", {
+                        description: errorMsg,
+                        duration: 10000,
+                        action: {
+                            label: "Passa a Premium",
+                            onClick: () => router.push('/#prezzi')
+                        }
+                    })
+                    setIsAnalyzing(false)
+                    return
+                }
+
+                throw new Error(errorMsg)
             }
 
             const data = await response.json()

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/auth";
+import { checkUsageLimit } from "@/src/lib/usage-limit";
 
 export const maxDuration = 300;
 
@@ -10,6 +11,16 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ detail: 'Autenticazione richiesta' }, { status: 401 });
+    }
+
+    const usageCheck = await checkUsageLimit(userId);
+    if (!usageCheck.allowed) {
+      return NextResponse.json({ 
+        detail: usageCheck.message,
+        currentCount: usageCheck.currentCount,
+        limit: usageCheck.limit,
+        subscriptionStatus: usageCheck.subscriptionStatus
+      }, { status: 403 });
     }
 
     const body = await request.json();

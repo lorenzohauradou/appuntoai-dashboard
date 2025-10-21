@@ -16,6 +16,7 @@ import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { Skeleton } from "@/src/components/ui/skeleton"
+import { UsageLimitBadge } from "./usage-limit-badge"
 
 export function Header() {
   const { data: session, status } = useSession();
@@ -133,6 +134,8 @@ export function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{session.user.name || session.user.email || "Il mio Account"}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <UsageLimitBadge />
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profilo</DropdownMenuItem>
               <DropdownMenuItem>Abbonamento</DropdownMenuItem>

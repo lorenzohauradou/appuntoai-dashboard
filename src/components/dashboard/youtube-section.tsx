@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Youtube, Loader2, Link } from "lucide-react"
 import { Button } from "@/src/components/ui/button"
 import { Input } from "@/src/components/ui/input"
@@ -19,6 +20,7 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
     const [youtubeUrl, setYoutubeUrl] = useState("")
     const [isProcessing, setIsProcessing] = useState(false)
     const { data: session, status: sessionStatus } = useSession()
+    const router = useRouter()
 
     const extractVideoId = (url: string): string | null => {
         const patterns = [
@@ -80,6 +82,19 @@ export function YoutubeSection({ onAnalysisComplete, formatApiResult }: YoutubeS
                 try {
                     const errorData = await response.json()
                     errorMsg = errorData.error || errorData.detail || errorMsg
+
+                    if (response.status === 403) {
+                        toast.error("Limite Raggiunto", {
+                            description: errorMsg,
+                            duration: 10000,
+                            action: {
+                                label: "Passa a Premium",
+                                onClick: () => router.push('/#prezzi')
+                            }
+                        })
+                        setIsProcessing(false)
+                        return
+                    }
                 } catch {
                     const text = await response.text()
                     errorMsg = text || errorMsg
