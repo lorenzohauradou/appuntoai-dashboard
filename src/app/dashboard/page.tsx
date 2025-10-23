@@ -11,6 +11,7 @@ import { ProcessingStatus } from "@/src/components/dashboard/processing-status"
 import { ResultsDisplay } from "@/src/components/dashboard/results-display"
 import { RecentFiles } from "@/src/components/dashboard/recent-files"
 import { FeedbackWidget } from "@/src/components/dashboard/widget-feedback"
+import { SettingsSection } from "@/src/components/dashboard/settings-section"
 import { BackgroundPattern } from "@/src/components/ui/background-pattern"
 import { cn } from "@/src/lib/utils"
 import { useToast } from "@/src/components/ui/use-toast"
@@ -158,16 +159,7 @@ function DashboardContent() {
           formatApiResult={formatApiResult}
         />
       case "settings":
-        return (
-          <div className="container max-w-4xl py-8">
-            <h1 className="mb-8 text-3xl font-bold">Impostazioni</h1>
-            <div className="rounded-lg border p-8">
-              <p className="text-center text-lg text-muted-foreground">
-                Le impostazioni saranno disponibili a breve.
-              </p>
-            </div>
-          </div>
-        )
+        return <SettingsSection />
       default:
         return <UploadSection
           onAnalysisComplete={handleAnalysisComplete}
