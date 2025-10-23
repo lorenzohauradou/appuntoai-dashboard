@@ -59,10 +59,11 @@ export async function POST(req: NextRequest) {
             stripeSubscriptionId,
             subscriptionStatus: planStatus,
             limitResetDate: new Date(),
+            monthlyAnalysesCount: 0,
           },
         });
         
-        console.log(`✅ Utente ${userId} aggiornato a piano ${planStatus}`);
+        console.log(`✅ Utente ${userId} aggiornato a piano ${planStatus} con contatore resettato`);
         break;
       }
 
